@@ -2,518 +2,870 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0b0b0b">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
 
   <title>PCM • Controle de O.S.</title>
 
   <style>
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
 
     body {
       min-height: 100vh;
       font-family: Arial, Helvetica, sans-serif;
-      background: #080808;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* =========================
-       CONTAINER PRINCIPAL
-    ========================= */
-
-    .app {
-      width: 94%;
-      max-width: 1150px;
-      min-height: 650px;
-
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-
-      background: #111;
-
-      border: 1px solid #292929;
-      border-radius: 22px;
-
-      overflow: hidden;
-
-      box-shadow:
-        0 30px 80px rgba(0,0,0,0.65);
-    }
-
-
-    /* =========================
-       LADO DA MARCA
-    ========================= */
-
-    .brand-area {
-
-      position: relative;
-
-      padding: 60px;
-
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-
       background:
-        linear-gradient(
-          rgba(0,0,0,0.70),
-          rgba(0,0,0,0.88)
-        ),
-        radial-gradient(
-          circle at 25% 40%,
-          #60401f 0%,
-          #382312 30%,
-          #17100a 55%,
-          #070707 85%
-        );
-
-      overflow: hidden;
-    }
-
-
-    /* textura decorativa */
-
-    .brand-area::before {
-
-      content: "";
-
-      position: absolute;
-
-      width: 600px;
-      height: 600px;
-
-      right: -300px;
-      top: -250px;
-
-      border-radius: 50%;
-
-      border: 1px solid rgba(255,255,255,0.04);
-
-      box-shadow:
-        0 0 0 70px rgba(255,255,255,0.015),
-        0 0 0 140px rgba(255,255,255,0.01);
-    }
-
-
-    .brand-content {
-      position: relative;
-      z-index: 2;
-    }
-
-
-    /* =========================
-       LOGO
-    ========================= */
-
-    .logo {
-
-      font-size: 42px;
-
-      font-weight: 900;
-
-      letter-spacing: 5px;
-
+        radial-gradient(circle at 25% 40%, rgba(120, 78, 38, 0.16), transparent 35%),
+        linear-gradient(135deg, #050505 0%, #101010 55%, #050505 100%);
       color: #fff;
     }
-
-
-    .pcm {
-
-      margin-top: 8px;
-
-      font-size: 12px;
-
-      letter-spacing: 5px;
-
-      color: #c9a66b;
-
-      font-weight: bold;
-    }
-
-
-    /* =========================
-       TITULO
-    ========================= */
-
-    .title {
-
-      margin-top: 80px;
-
-      font-size: clamp(42px, 6vw, 76px);
-
-      line-height: 0.95;
-
-      letter-spacing: 5px;
-
-      font-weight: 800;
-    }
-
-
-    .subtitle {
-
-      margin-top: 22px;
-
-      max-width: 470px;
-
-      color: #999;
-
-      font-size: 16px;
-
-      line-height: 1.6;
-    }
-
 
     /* =========================
        LOGIN
     ========================= */
 
-    .login-area {
-
-      background: #151515;
-
-      padding: 60px;
-
+    #loginScreen {
+      min-height: 100vh;
       display: flex;
-
-      flex-direction: column;
-
+      align-items: center;
       justify-content: center;
+      padding: 25px;
+      position: relative;
+      overflow: hidden;
     }
 
+    #loginScreen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(
+          90deg,
+          rgba(0,0,0,0.95) 0%,
+          rgba(0,0,0,0.70) 48%,
+          rgba(0,0,0,0.94) 100%
+        );
+      z-index: 0;
+    }
 
-    .login-title {
+    .login-wrapper {
+      width: 100%;
+      max-width: 1050px;
+      min-height: 570px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      position: relative;
+      z-index: 1;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      overflow: hidden;
+      background: rgba(10,10,10,0.82);
+      box-shadow: 0 25px 80px rgba(0,0,0,0.65);
+      backdrop-filter: blur(12px);
+    }
 
-      font-size: 30px;
+    .brand-side {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(94,61,31,0.25),
+          rgba(0,0,0,0.15)
+        );
+    }
 
-      font-weight: 700;
+    .ab-logo {
+      width: 105px;
+      height: 105px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -3px;
+      background: rgba(255,255,255,0.03);
+      margin-bottom: 30px;
+    }
 
+    .brand-small {
+      font-size: 14px;
+      letter-spacing: 4px;
+      color: #aaa;
+      margin-bottom: 15px;
+    }
+
+    .brand-title {
+      font-size: clamp(40px, 5vw, 70px);
+      font-weight: 800;
+      letter-spacing: -3px;
+      line-height: 0.95;
+      margin-bottom: 22px;
+    }
+
+    .brand-title span {
+      color: #c28b4b;
+    }
+
+    .brand-description {
+      max-width: 450px;
+      color: #9c9c9c;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .footer-text {
+      margin-top: 55px;
+      color: #666;
+      font-size: 12px;
+    }
+
+    .login-side {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 45px;
+      background: rgba(255,255,255,0.025);
+      border-left: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .login-box h2 {
+      font-size: 26px;
       margin-bottom: 8px;
     }
 
-
-    .login-description {
-
-      color: #888;
-
-      font-size: 14px;
-
+    .login-subtitle {
+      color: #777;
+      font-size: 13px;
       margin-bottom: 32px;
     }
 
-
-    /* =========================
-       CAMPOS
-    ========================= */
-
     .field {
-
       margin-bottom: 20px;
     }
 
-
     .field label {
-
       display: block;
-
+      color: #aaa;
+      font-size: 12px;
       margin-bottom: 8px;
-
-      font-size: 13px;
-
-      color: #bbb;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
+    .field select,
+    .field input {
+      width: 100%;
+      height: 52px;
+      border-radius: 11px;
+      border: 1px solid #292929;
+      background: #111;
+      color: #fff;
+      padding: 0 15px;
+      font-size: 15px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .field select:focus,
+    .field input:focus {
+      border-color: #9a6b38;
+      box-shadow: 0 0 0 3px rgba(154,107,56,0.10);
+    }
 
     .field input {
-
-      width: 100%;
-
-      height: 50px;
-
-      padding: 0 15px;
-
-      border-radius: 10px;
-
-      border: 1px solid #333;
-
-      background: #0b0b0b;
-
-      color: #fff;
-
-      font-size: 14px;
-
-      outline: none;
-
-      transition: 0.2s;
+      letter-spacing: 6px;
     }
 
-
-    .field input:focus {
-
-      border-color: #c9a66b;
-
-      box-shadow:
-        0 0 0 2px rgba(201,166,107,0.08);
+    .field input::placeholder {
+      letter-spacing: normal;
+      color: #555;
     }
-
-
-    /* =========================
-       BOTÃO
-    ========================= */
 
     .btn-login {
-
       width: 100%;
-
-      height: 52px;
-
-      margin-top: 8px;
-
-      border: none;
-
-      border-radius: 10px;
-
-      background: #c9a66b;
-
-      color: #111;
-
-      font-size: 14px;
-
-      font-weight: 800;
-
+      height: 53px;
+      border: 0;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #9b6b39, #c18a4a);
+      color: #fff;
+      font-weight: 700;
       letter-spacing: 1px;
-
       cursor: pointer;
-
+      font-size: 14px;
+      margin-top: 5px;
       transition: 0.2s;
     }
 
-
     .btn-login:hover {
-
-      background: #d8b979;
-
       transform: translateY(-1px);
+      filter: brightness(1.08);
     }
 
-
-    .btn-login:active {
-
-      transform: translateY(0);
+    .login-error {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 9px;
+      background: rgba(150,30,30,0.15);
+      border: 1px solid rgba(220,70,70,0.25);
+      color: #ef8b8b;
+      font-size: 12px;
+      text-align: center;
     }
-
 
     /* =========================
-       RODAPÉ
+       SISTEMA
     ========================= */
 
-    .footer {
-
-      margin-top: 40px;
-
-      text-align: center;
-
-      color: #555;
-
-      font-size: 11px;
-
-      letter-spacing: 0.5px;
+    #appScreen {
+      display: none;
+      min-height: 100vh;
+      background: #080808;
     }
 
+    .topbar {
+      height: 72px;
+      border-bottom: 1px solid #202020;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      background: #0c0c0c;
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mini-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #171717;
+      border: 1px solid #292929;
+      font-weight: 800;
+    }
+
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .topbar-subtitle {
+      color: #666;
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .user-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .user-name {
+      color: #bbb;
+      font-size: 13px;
+    }
+
+    .logout-btn {
+      border: 1px solid #292929;
+      background: #111;
+      color: #aaa;
+      border-radius: 8px;
+      padding: 9px 13px;
+      cursor: pointer;
+    }
+
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 72px);
+    }
+
+    .sidebar {
+      width: 235px;
+      border-right: 1px solid #202020;
+      background: #0b0b0b;
+      padding: 25px 15px;
+    }
+
+    .menu-title {
+      color: #555;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin: 10px 12px;
+    }
+
+    .menu-btn {
+      width: 100%;
+      text-align: left;
+      padding: 13px 14px;
+      border: 0;
+      background: transparent;
+      color: #999;
+      border-radius: 9px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .menu-btn:hover,
+    .menu-btn.active {
+      background: #171717;
+      color: #fff;
+    }
+
+    .main {
+      flex: 1;
+      padding: 35px;
+      overflow-x: auto;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .page-subtitle {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 30px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: #101010;
+      border: 1px solid #202020;
+      border-radius: 13px;
+      padding: 20px;
+    }
+
+    .stat-label {
+      color: #777;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      margin-top: 12px;
+    }
+
+    .content-card {
+      background: #101010;
+      border: 1px solid #202020;
+      border-radius: 14px;
+      padding: 25px;
+    }
+
+    .content-card h3 {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .kanban-column {
+      background: #0a0a0a;
+      border: 1px solid #1d1d1d;
+      border-radius: 12px;
+      padding: 15px;
+      min-height: 250px;
+    }
+
+    .column-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: #aaa;
+    }
+
+    .empty-column {
+      color: #444;
+      font-size: 12px;
+      text-align: center;
+      padding-top: 70px;
+    }
 
     /* =========================
-       RESPONSIVO
+       MOBILE
     ========================= */
 
     @media (max-width: 800px) {
 
-      body {
-        align-items: stretch;
-      }
-
-      .app {
-
-        width: 100%;
-
-        min-height: 100vh;
-
+      .login-wrapper {
         grid-template-columns: 1fr;
-
-        border: none;
-
-        border-radius: 0;
+        min-height: auto;
       }
 
-
-      .brand-area {
-
-        min-height: 43vh;
-
-        padding: 40px 30px;
+      .brand-side {
+        padding: 35px 30px;
+        text-align: center;
+        align-items: center;
       }
 
-
-      .login-area {
-
-        padding: 40px 30px;
+      .brand-description {
+        font-size: 13px;
       }
 
-
-      .title {
-
-        margin-top: 45px;
-
-        font-size: 48px;
-      }
-    }
-
-
-    @media (max-width: 450px) {
-
-      .brand-area {
-        min-height: 40vh;
+      .footer-text {
+        margin-top: 30px;
       }
 
-      .logo {
-        font-size: 34px;
+      .login-side {
+        border-left: 0;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        padding: 35px 25px;
       }
 
-      .pcm {
-        font-size: 10px;
-        letter-spacing: 3px;
+      .sidebar {
+        display: none;
       }
 
-      .title {
-        font-size: 40px;
+      .main {
+        padding: 22px 16px;
       }
 
-      .subtitle {
-        font-size: 14px;
+      .topbar {
+        padding: 0 15px;
+      }
+
+      .user-name {
+        display: none;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .kanban {
+        grid-template-columns: 1fr;
       }
     }
 
+    @media (max-width: 430px) {
+
+      #loginScreen {
+        padding: 12px;
+      }
+
+      .brand-title {
+        font-size: 42px;
+      }
+
+      .ab-logo {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stat-number {
+        font-size: 26px;
+      }
+    }
   </style>
 </head>
 
-
 <body>
 
-  <main class="app">
+  <!-- =========================
+       LOGIN
+  ========================= -->
 
+  <section id="loginScreen">
 
-    <!-- =========================
-         ÁREA DA MARCA
-    ========================== -->
+    <div class="login-wrapper">
 
-    <section class="brand-area">
+      <div class="brand-side">
 
-      <div class="brand-content">
-
-        <div class="logo">
+        <div class="ab-logo">
           AB
         </div>
 
-        <div class="pcm">
+        <div class="brand-small">
           PCM • CONTROLE INDUSTRIAL
         </div>
 
-
-        <h1 class="title">
+        <div class="brand-title">
           CONTROLE<br>
-          DE O.S.
-        </h1>
+          DE <span>O.S.</span>
+        </div>
 
-
-        <p class="subtitle">
-          Gestão de ordens de serviço da manutenção fabril.
+        <p class="brand-description">
+          Sistema de gerenciamento de ordens de serviço
+          para planejamento, execução e controle da manutenção industrial.
         </p>
 
+        <div class="footer-text">
+          Juntos por um futuro melhor
+        </div>
+
       </div>
 
-    </section>
+      <div class="login-side">
 
+        <div class="login-box">
 
+          <h2>Acesso ao sistema</h2>
 
-    <!-- =========================
-         ÁREA DE LOGIN
-    ========================== -->
+          <div class="login-subtitle">
+            Informe seu usuário e PIN para continuar.
+          </div>
 
-    <section class="login-area">
+          <div class="field">
 
-      <h2 class="login-title">
-        Acesso ao sistema
-      </h2>
+            <label for="usuario">
+              Usuário
+            </label>
 
+            <select id="usuario">
 
-      <p class="login-description">
-        Entre para acompanhar e gerenciar as ordens de serviço.
-      </p>
+              <option value="">
+                Selecione seu usuário
+              </option>
 
+              <option value="PCM">
+                PCM / Administrador
+              </option>
 
-      <form id="loginForm">
+              <option value="Adryan">
+                Adryan
+              </option>
 
-        <div class="field">
+              <option value="Fabio">
+                Fabio
+              </option>
 
-          <label for="usuario">
-            Usuário
-          </label>
+              <option value="Rodrigo">
+                Rodrigo
+              </option>
 
-          <input
-            id="usuario"
-            type="text"
-            placeholder="Digite seu usuário"
-            autocomplete="username"
-            required
+              <option value="Leonardo">
+                Leonardo
+              </option>
+
+              <option value="Vilmar">
+                Vilmar
+              </option>
+
+              <option value="Rafael">
+                Rafael
+              </option>
+
+              <option value="Danilo">
+                Danilo
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="field">
+
+            <label for="pin">
+              PIN
+            </label>
+
+            <input
+              type="password"
+              id="pin"
+              maxlength="6"
+              inputmode="numeric"
+              placeholder="Digite seu PIN"
+              autocomplete="off"
+            >
+
+          </div>
+
+          <button
+            class="btn-login"
+            onclick="entrar()"
           >
+            ENTRAR
+          </button>
+
+          <div
+            id="loginError"
+            class="login-error"
+          >
+            Selecione um usuário e informe o PIN.
+          </div>
 
         </div>
 
+      </div>
+
+    </div>
+
+  </section>
 
 
-        <div class="field">
+  <!-- =========================
+       SISTEMA
+  ========================= -->
 
-          <label for="senha">
-            Senha
-          </label>
+  <section id="appScreen">
 
-          <input
-            id="senha"
-            type="password"
-            placeholder="Digite sua senha"
-            autocomplete="current-password"
-            required
-          >
+    <header class="topbar">
 
+      <div class="topbar-brand">
+
+        <div class="mini-logo">
+          AB
         </div>
 
+        <div>
+          <div class="topbar-title">
+            PCM • CONTROLE DE O.S.
+          </div>
 
+          <div class="topbar-subtitle">
+            Controle de Manutenção Industrial
+          </div>
+        </div>
+
+      </div>
+
+      <div class="user-area">
+
+        <div
+          class="user-name"
+          id="loggedUser"
+        >
+          Usuário
+        </div>
 
         <button
-          type="submit"
-          class="btn-login"
+          class="logout-btn"
+          onclick="sair()"
         >
-          ENTRAR
+          SAIR
         </button>
 
-      </form>
-
-
-      <div class="footer">
-        Juntos por um futuro melhor
       </div>
 
-    </section>
+    </header>
 
 
-  </main>
+    <div class="layout">
 
+      <aside class="sidebar">
+
+        <div class="menu-title">
+          Principal
+        </div>
+
+        <button class="menu-btn active">
+          📊 Dashboard
+        </button>
+
+        <button class="menu-btn">
+          📝 Nova O.S.
+        </button>
+
+        <button class="menu-btn">
+          📋 O.S. em andamento
+        </button>
+
+        <button class="menu-btn">
+          ⏳ Aguardando material
+        </button>
+
+        <button class="menu-btn">
+          ✅ Finalizadas
+        </button>
+
+
+        <div class="menu-title" style="margin-top:30px;">
+          Cadastros
+        </div>
+
+        <button class="menu-btn">
+          👥 Equipe
+        </button>
+
+        <button class="menu-btn">
+          🏭 Máquinas
+        </button>
+
+
+        <div class="menu-title" style="margin-top:30px;">
+          Controle
+        </div>
+
+        <button class="menu-btn">
+          📜 Histórico
+        </button>
+
+      </aside>
+
+
+      <main class="main">
+
+        <div class="page-title">
+          Dashboard
+        </div>
+
+        <div class="page-subtitle">
+          Visão geral das ordens de serviço de manutenção.
+        </div>
+
+
+        <div class="stats">
+
+          <div class="stat-card">
+            <div class="stat-label">
+              O.S. Abertas
+            </div>
+
+            <div class="stat-number">
+              0
+            </div>
+          </div>
+
+
+          <div class="stat-card">
+            <div class="stat-label">
+              Em Produção
+            </div>
+
+            <div class="stat-number">
+              0
+            </div>
+          </div>
+
+
+          <div class="stat-card">
+            <div class="stat-label">
+              Aguardando Material
+            </div>
+
+            <div class="stat-number">
+              0
+            </div>
+          </div>
+
+
+          <div class="stat-card">
+            <div class="stat-label">
+              Finalizadas
+            </div>
+
+            <div class="stat-number">
+              0
+            </div>
+          </div>
+
+        </div>
+
+
+        <div class="content-card">
+
+          <h3>
+            Controle das O.S.
+          </h3>
+
+          <div class="kanban">
+
+            <div class="kanban-column">
+
+              <div class="column-title">
+                O.S. ABERTA
+              </div>
+
+              <div class="empty-column">
+                Nenhuma O.S.
+              </div>
+
+            </div>
+
+
+            <div class="kanban-column">
+
+              <div class="column-title">
+                EM PRODUÇÃO
+              </div>
+
+              <div class="empty-column">
+                Nenhuma O.S.
+              </div>
+
+            </div>
+
+
+            <div class="kanban-column">
+
+              <div class="column-title">
+                AGUARDANDO MATERIAL
+              </div>
+
+              <div class="empty-column">
+                Nenhuma O.S.
+              </div>
+
+            </div>
+
+
+            <div class="kanban-column">
+
+              <div class="column-title">
+                FINALIZADA
+              </div>
+
+              <div class="empty-column">
+                Nenhuma O.S.
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+
+    </div>
+
+  </section>
 
 
   <script>
@@ -521,28 +873,103 @@
     /*
       LOGIN TEMPORÁRIO
 
-      Nesta primeira etapa o botão apenas demonstra
-      que a tela está funcionando.
-
-      Na próxima etapa vamos substituir isso pela
-      autenticação real do SUPABASE.
+      IMPORTANTE:
+      Estes PINs são apenas para teste.
+      Depois vamos retirar daqui e conectar
+      o login ao Supabase.
     */
 
+    const usuarios = {
+
+      "PCM": "1234",
+
+      "Adryan": "1111",
+      "Fabio": "2222",
+      "Rodrigo": "3333",
+
+      "Leonardo": "4444",
+      "Vilmar": "5555",
+      "Rafael": "6666",
+      "Danilo": "7777"
+
+    };
+
+
+    function entrar() {
+
+      const usuario =
+        document.getElementById("usuario").value;
+
+      const pin =
+        document.getElementById("pin").value;
+
+      const erro =
+        document.getElementById("loginError");
+
+
+      if (!usuario || !pin) {
+
+        erro.textContent =
+          "Selecione um usuário e informe o PIN.";
+
+        erro.style.display = "block";
+
+        return;
+      }
+
+
+      if (usuarios[usuario] !== pin) {
+
+        erro.textContent =
+          "PIN incorreto.";
+
+        erro.style.display = "block";
+
+        return;
+      }
+
+
+      erro.style.display = "none";
+
+
+      document.getElementById("loginScreen")
+        .style.display = "none";
+
+      document.getElementById("appScreen")
+        .style.display = "block";
+
+      document.getElementById("loggedUser")
+        .textContent = usuario;
+
+    }
+
+
+    function sair() {
+
+      document.getElementById("appScreen")
+        .style.display = "none";
+
+      document.getElementById("loginScreen")
+        .style.display = "flex";
+
+      document.getElementById("usuario").value = "";
+
+      document.getElementById("pin").value = "";
+
+    }
+
+
     document
-      .getElementById("loginForm")
-      .addEventListener("submit", function(event) {
+      .getElementById("pin")
+      .addEventListener("keydown", function(event) {
 
-        event.preventDefault();
-
-        alert(
-          "Tela inicial funcionando!\n\n" +
-          "O login será conectado ao Supabase na próxima etapa."
-        );
+        if (event.key === "Enter") {
+          entrar();
+        }
 
       });
 
   </script>
-
 
 </body>
 </html>
