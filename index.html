@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f172a">
 <title>PCM • Controle de O.S.</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=tfopko_2eBwAWqVvTS2hxb7iJBpr2kMKOiFWn5qzzQs94HOPUvQZMpAYr-_YuUe1X0WQhsKaJsRr9K_yOAYPYoBP4rZkzABE1_DxP7SPPh71PkuYSHkIO_N79Z7U_dcfC59GNSGrFH1hSsRDAC8zjBmkpihI4qbBI7FhLkvhTOVeQUp5GLUtlo3nISRk7ROPCckYht6z4-1wz8dBgXHCHPm_a6egQethW-edEMziogCdF_zHT0zUW-1BqcQA2XvzmRPCGgWep3mlYRLI-RJ1l4XpA5isd1CoZa8Wb53Li5dIgg9Nd4pQAyXMyNbecqlx" charset="UTF-8"></script><script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1922,6 +1922,10 @@ function statusClass(status){
 
 async function createOS(){
 
+    const button = document.querySelector(
+        'button[onclick="createOS()"]'
+    );
+
     const osNumber =
         document.getElementById("osNumber")
         .value
@@ -1982,6 +1986,17 @@ async function createOS(){
     }
 
 
+    /*
+       O INSERT é feito sem .select().single() de propósito.
+
+       O .select() depois do INSERT exige uma permissão de SELECT
+       adicional na política RLS da tabela. Para cadastrar a O.S.,
+       não precisamos receber a linha de volta do banco.
+
+       Depois do INSERT, o dashboard é recarregado pela função
+       loadDashboardData(), que já utiliza SELECT normalmente.
+    */
+
     const payload = {
 
         os_number: osNumber,
@@ -2024,39 +2039,122 @@ async function createOS(){
     };
 
 
-    const {data,error} =
-        await db
-            .from("os_orders")
-            .insert(payload)
-            .select()
-            .single();
-
-
-    if(error){
-
-        console.error(error);
-
-        alert(
-            "Erro ao cadastrar O.S.:\n" +
-            error.message
-        );
-
-        return;
+    if(button){
+        button.disabled = true;
+        button.textContent = "CADASTRANDO...";
     }
 
 
-    alert(
-        "O.S. " +
-        osNumber +
-        " cadastrada com sucesso!"
-    );
+    try{
+
+        /*
+           Verificação rápida de duplicidade pelo número oficial
+           do WK. Não altera o banco e evita cadastrar a mesma O.S.
+           duas vezes quando a tabela permitir números repetidos.
+        */
+
+        const {data:existing,error:checkError} =
+            await db
+                .from("os_orders")
+                .select("id,os_number")
+                .eq("os_number",osNumber)
+                .limit(1);
+
+        if(checkError){
+
+            console.error(
+                "Erro ao verificar número da O.S.:",
+                checkError
+            );
+
+            throw new Error(
+                "Não foi possível verificar o número da O.S. antes do cadastro.\n\n" +
+                checkError.message
+            );
+        }
+
+        if(existing && existing.length > 0){
+
+            throw new Error(
+                "A O.S. " +
+                osNumber +
+                " já existe no sistema."
+            );
+        }
 
 
-    clearOsForm();
+        /*
+           IMPORTANTE:
+           Não usar .select().single() aqui.
+           O objetivo é somente confirmar o INSERT.
+        */
 
-    navigateTo("view-dashboard");
+        const {error} =
+            await db
+                .from("os_orders")
+                .insert(payload);
 
-    await loadDashboardData();
+
+        if(error){
+
+            console.error(
+                "Erro Supabase ao cadastrar O.S.:",
+                error
+            );
+
+            let message =
+                error.message ||
+                "Erro desconhecido no Supabase.";
+
+            if(error.code === "42501"){
+                message =
+                    "O Supabase bloqueou o cadastro por permissão/RLS.\n\n" +
+                    "Código: 42501\n" +
+                    error.message;
+            }
+
+            if(error.code === "23505"){
+                message =
+                    "Essa O.S. já existe no banco de dados.";
+            }
+
+            throw new Error(message);
+        }
+
+
+        alert(
+            "O.S. " +
+            osNumber +
+            " cadastrada com sucesso!"
+        );
+
+
+        clearOsForm();
+
+        navigateTo("view-dashboard");
+
+        await loadDashboardData();
+
+    }catch(error){
+
+        console.error(
+            "Falha no cadastro da O.S.:",
+            error
+        );
+
+        alert(
+            "Não foi possível cadastrar a O.S.\n\n" +
+            (error.message || error)
+        );
+
+    }finally{
+
+        if(button){
+            button.disabled = false;
+            button.textContent = "CADASTRAR O.S.";
+        }
+
+    }
 
 }
 
