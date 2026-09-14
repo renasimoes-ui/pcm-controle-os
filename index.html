@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="theme-color" content="#0b0f14">
 <title>PCM • Controle de O.S.</title>
 
 <style>
 *{
+    box-sizing:border-box;
     margin:0;
     padding:0;
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
 }
 
 body{
-    background:#090b0d;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#080b0f;
     color:#fff;
     min-height:100vh;
 }
@@ -29,113 +29,152 @@ body{
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:20px;
+    position:relative;
+    overflow:hidden;
     background:
-        linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.88)),
-        radial-gradient(circle at center,#25303a 0%,#080a0c 65%);
+        linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.82)),
+        radial-gradient(circle at center,#27313a 0%,#0b0f14 55%,#050608 100%);
 }
 
-.login-box{
-    width:100%;
-    max-width:430px;
-    background:rgba(17,22,27,.96);
-    border:1px solid #303941;
-    border-radius:18px;
-    padding:35px;
-    box-shadow:0 20px 60px rgba(0,0,0,.65);
+.login-bg{
+    position:absolute;
+    inset:0;
+    background:
+        linear-gradient(90deg,
+            rgba(0,0,0,.95) 0%,
+            rgba(0,0,0,.55) 50%,
+            rgba(0,0,0,.92) 100%);
+}
+
+.login-content{
+    position:relative;
+    z-index:2;
+    width:min(1100px,94%);
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    gap:70px;
+    align-items:center;
 }
 
 .brand{
-    text-align:center;
-    margin-bottom:30px;
+    text-align:left;
 }
 
-.logo-ab{
-    font-size:42px;
+.brand-ab{
+    font-size:78px;
     font-weight:900;
+    letter-spacing:-6px;
+    line-height:.8;
+}
+
+.brand-pcm{
+    margin-top:22px;
+    font-size:17px;
+    letter-spacing:4px;
+    color:#bfc7ce;
+}
+
+.brand-title{
+    margin-top:18px;
+    font-size:46px;
+    font-weight:800;
     letter-spacing:3px;
 }
 
-.brand small{
-    display:block;
-    color:#9da7af;
-    margin-top:5px;
-    font-size:12px;
-    letter-spacing:2px;
+.brand-subtitle{
+    margin-top:14px;
+    color:#8e9aa4;
+    font-size:15px;
 }
 
-.brand h1{
-    margin-top:25px;
-    font-size:27px;
-    letter-spacing:1px;
+.login-card{
+    background:rgba(15,20,26,.95);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:18px;
+    padding:35px;
+    box-shadow:0 25px 80px rgba(0,0,0,.6);
 }
 
-.brand p{
-    color:#929ba2;
-    margin-top:8px;
+.login-card h2{
+    font-size:25px;
+    margin-bottom:8px;
+}
+
+.login-card p{
+    color:#87919b;
     font-size:14px;
+    margin-bottom:25px;
+}
+
+label{
+    display:block;
+    font-size:12px;
+    font-weight:bold;
+    color:#9faab3;
+    margin-bottom:8px;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+}
+
+input,select,textarea{
+    width:100%;
+    background:#0a0e13;
+    border:1px solid #29313a;
+    border-radius:9px;
+    padding:13px 14px;
+    color:white;
+    outline:none;
+    font-size:14px;
+}
+
+input:focus,select:focus,textarea:focus{
+    border-color:#77838e;
 }
 
 .form-group{
     margin-bottom:18px;
 }
 
-label{
-    display:block;
-    font-size:12px;
-    color:#aeb6bc;
-    margin-bottom:7px;
-}
-
-select,
-input,
-textarea{
-    width:100%;
-    background:#0c1115;
-    border:1px solid #303940;
-    color:#fff;
-    border-radius:10px;
-    padding:13px;
-    outline:none;
-}
-
-select:focus,
-input:focus,
-textarea:focus{
-    border-color:#788691;
-}
-
-textarea{
-    min-height:110px;
-    resize:vertical;
-}
-
 .btn{
     width:100%;
     border:0;
-    border-radius:10px;
+    border-radius:9px;
     padding:14px;
     font-weight:bold;
     cursor:pointer;
+    font-size:14px;
     transition:.2s;
 }
 
 .btn-primary{
-    background:#e4e7e9;
-    color:#101417;
+    background:#e1e5e8;
+    color:#0b0f14;
 }
 
 .btn-primary:hover{
-    background:#fff;
+    background:white;
     transform:translateY(-1px);
 }
 
-.error{
+.login-error{
     display:none;
-    color:#ff7070;
-    text-align:center;
+    background:#3a1515;
+    color:#ffb3b3;
+    border:1px solid #713030;
+    padding:10px;
+    border-radius:8px;
     font-size:13px;
-    margin-top:12px;
+    margin-bottom:15px;
+}
+
+.footer{
+    position:absolute;
+    bottom:18px;
+    left:0;
+    right:0;
+    text-align:center;
+    color:#65717b;
+    font-size:12px;
 }
 
 /* =========================
@@ -147,105 +186,85 @@ textarea{
     min-height:100vh;
 }
 
-.header{
-    height:70px;
-    background:#11171c;
-    border-bottom:1px solid #293138;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 25px;
-}
-
-.header-brand{
-    display:flex;
-    align-items:center;
-    gap:14px;
-}
-
-.header-logo{
-    font-size:23px;
-    font-weight:900;
-    letter-spacing:2px;
-}
-
-.header-title{
-    color:#9da7ae;
-    font-size:12px;
-    letter-spacing:1px;
-}
-
-.user-area{
-    display:flex;
-    align-items:center;
-    gap:15px;
-}
-
-.user-name{
-    font-size:13px;
-    color:#dce1e4;
-}
-
-.btn-logout{
-    background:#20282e;
-    color:#d7dde0;
-    border:1px solid #374149;
-    padding:9px 14px;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-/* =========================
-   LAYOUT
-========================= */
-
-.layout{
-    display:flex;
-    min-height:calc(100vh - 70px);
-}
-
 .sidebar{
-    width:240px;
-    background:#0d1216;
-    border-right:1px solid #293138;
-    padding:20px 12px;
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    width:245px;
+    background:#0b0f14;
+    border-right:1px solid #202832;
+    padding:22px 14px;
+    z-index:10;
 }
 
-.menu-title{
-    font-size:10px;
-    color:#69747c;
-    letter-spacing:2px;
-    margin:5px 12px 12px;
+.sidebar-brand{
+    padding:8px 12px 25px;
+    border-bottom:1px solid #202832;
+    margin-bottom:20px;
+}
+
+.sidebar-brand strong{
+    font-size:19px;
+}
+
+.sidebar-brand span{
+    display:block;
+    color:#727e89;
+    font-size:11px;
+    margin-top:5px;
+    letter-spacing:1px;
 }
 
 .menu-btn{
     width:100%;
     text-align:left;
     background:transparent;
-    color:#aeb7bd;
     border:0;
+    color:#9ca7b0;
     padding:13px 14px;
     border-radius:8px;
+    margin-bottom:5px;
     cursor:pointer;
-    margin-bottom:4px;
     font-size:14px;
 }
 
 .menu-btn:hover,
 .menu-btn.active{
-    background:#20282e;
-    color:#fff;
+    background:#171e26;
+    color:white;
+}
+
+.logout{
+    position:absolute;
+    left:14px;
+    right:14px;
+    bottom:20px;
+    color:#d88989;
 }
 
 .main{
-    flex:1;
+    margin-left:245px;
+    min-height:100vh;
     padding:28px;
-    overflow:auto;
+    background:#0d1117;
 }
 
-/* =========================
-   TELAS
-========================= */
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:28px;
+}
+
+.topbar h1{
+    font-size:25px;
+}
+
+.user-info{
+    color:#87929c;
+    font-size:13px;
+}
 
 .page{
     display:none;
@@ -253,39 +272,6 @@ textarea{
 
 .page.active{
     display:block;
-}
-
-.page-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:15px;
-    margin-bottom:25px;
-}
-
-.page-header h2{
-    font-size:25px;
-}
-
-.page-header p{
-    color:#78838b;
-    margin-top:5px;
-    font-size:13px;
-}
-
-.btn-new{
-    width:auto;
-    padding:12px 18px;
-    background:#e5e8ea;
-    color:#111;
-    border:0;
-    border-radius:9px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-.btn-new:hover{
-    background:#fff;
 }
 
 /* =========================
@@ -296,34 +282,35 @@ textarea{
     display:grid;
     grid-template-columns:repeat(5,1fr);
     gap:15px;
-    margin-bottom:28px;
+    margin-bottom:25px;
 }
 
 .stat{
-    background:#12181d;
-    border:1px solid #293138;
+    background:#121820;
+    border:1px solid #202a34;
     border-radius:12px;
     padding:20px;
 }
 
-.stat-label{
-    color:#7e8991;
-    font-size:12px;
+.stat small{
+    color:#7e8a95;
+    font-size:11px;
+    text-transform:uppercase;
 }
 
-.stat-number{
-    font-size:29px;
-    font-weight:bold;
-    margin-top:9px;
+.stat strong{
+    display:block;
+    font-size:30px;
+    margin-top:10px;
 }
 
 /* =========================
-   KANBAN
+   DASHBOARD
 ========================= */
 
-.kanban-title{
-    margin-bottom:15px;
+.section-title{
     font-size:17px;
+    margin-bottom:15px;
 }
 
 .kanban{
@@ -332,65 +319,51 @@ textarea{
     gap:15px;
 }
 
-.column{
-    background:#0f1519;
-    border:1px solid #293138;
+.kanban-column{
+    background:#10161d;
+    border:1px solid #202a34;
     border-radius:12px;
-    min-height:300px;
+    min-height:350px;
     padding:14px;
 }
 
-.column-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding-bottom:12px;
-    border-bottom:1px solid #293138;
-    margin-bottom:12px;
-}
-
-.column-header span{
+.column-title{
     font-size:13px;
     font-weight:bold;
-}
-
-.column-count{
-    background:#252e35;
-    padding:4px 8px;
-    border-radius:20px;
-    font-size:11px;
-    color:#b8c0c5;
+    margin-bottom:15px;
+    color:#aab4bc;
 }
 
 .empty{
-    color:#59636a;
+    color:#596570;
     text-align:center;
-    padding-top:70px;
+    padding:50px 10px;
     font-size:13px;
 }
 
 /* =========================
-   NOVA OS
+   FORM
 ========================= */
 
-.os-form{
-    max-width:1000px;
-}
-
 .form-card{
-    background:#11171c;
-    border:1px solid #293138;
+    background:#11171e;
+    border:1px solid #222c36;
     border-radius:14px;
-    padding:24px;
-    margin-bottom:18px;
+    padding:25px;
 }
 
-.form-card h3{
-    font-size:16px;
-    margin-bottom:20px;
+.form-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
 }
 
-.form-grid{
+.form-header h2{
+    font-size:21px;
+}
+
+.grid{
     display:grid;
     grid-template-columns:repeat(2,1fr);
     gap:18px;
@@ -400,69 +373,40 @@ textarea{
     grid-column:1/-1;
 }
 
-.os-number{
-    background:#080c0f;
-    color:#9fa9b0;
-    cursor:not-allowed;
+textarea{
+    min-height:120px;
+    resize:vertical;
 }
 
-.priority{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
-}
-
-.priority label{
-    margin:0;
-}
-
-.priority input{
-    display:none;
-}
-
-.priority-box{
-    display:block;
-    text-align:center;
-    padding:13px;
-    border:1px solid #343e45;
-    border-radius:9px;
-    cursor:pointer;
-    color:#aeb7bd;
-}
-
-.priority input:checked + .priority-box{
-    border-color:#fff;
-    color:#fff;
-    background:#20282e;
-}
-
-.form-actions{
+.actions{
     display:flex;
     justify-content:flex-end;
-    gap:12px;
+    gap:10px;
+    margin-top:25px;
 }
 
-.btn-cancel{
-    background:#20282e;
-    color:#ddd;
-    border:1px solid #374149;
-    border-radius:9px;
-    padding:13px 20px;
-    cursor:pointer;
+.btn-secondary{
+    width:auto;
+    background:#202932;
+    color:#d6dce0;
+    padding:12px 20px;
 }
 
 .btn-save{
-    background:#e5e8ea;
-    color:#111;
-    border:0;
-    border-radius:9px;
-    padding:13px 25px;
-    font-weight:bold;
-    cursor:pointer;
+    width:auto;
+    background:#e1e5e8;
+    color:#080b0f;
+    padding:12px 25px;
 }
 
-.btn-save:hover{
-    background:#fff;
+.wk-info{
+    margin-top:7px;
+    font-size:11px;
+    color:#6f7b85;
+}
+
+.required{
+    color:#dca0a0;
 }
 
 /* =========================
@@ -470,112 +414,122 @@ textarea{
 ========================= */
 
 .history-box{
-    background:#11171c;
-    border:1px solid #293138;
+    background:#11171e;
+    border:1px solid #222c36;
     border-radius:14px;
-    padding:25px;
+    overflow:hidden;
 }
 
 .history-empty{
+    padding:60px;
     text-align:center;
-    color:#68737b;
-    padding:70px 20px;
+    color:#68747f;
 }
 
 /* =========================
    RESPONSIVO
 ========================= */
 
-@media(max-width:1000px){
+@media(max-width:900px){
 
-    .stats{
-        grid-template-columns:repeat(2,1fr);
+    .login-content{
+        grid-template-columns:1fr;
+        gap:30px;
+        max-width:500px;
     }
 
-    .kanban{
-        grid-template-columns:repeat(2,1fr);
+    .brand{
+        text-align:center;
     }
 
-}
-
-@media(max-width:700px){
-
-    .header{
-        padding:0 15px;
+    .brand-title{
+        font-size:34px;
     }
 
-    .header-title{
-        display:none;
-    }
-
-    .user-name{
-        display:none;
+    .brand-ab{
+        font-size:60px;
     }
 
     .sidebar{
-        width:65px;
-        padding:15px 7px;
+        width:75px;
     }
 
-    .menu-title{
+    .sidebar-brand strong{
+        font-size:0;
+    }
+
+    .sidebar-brand strong:after{
+        content:"PCM";
+        font-size:18px;
+    }
+
+    .sidebar-brand span{
         display:none;
     }
 
     .menu-btn{
-        text-align:center;
         font-size:0;
-        padding:14px 5px;
+        text-align:center;
     }
 
-    .menu-btn:first-letter{
-        font-size:18px;
+    .menu-btn:before{
+        content:"•";
+        font-size:22px;
+    }
+
+    .logout{
+        font-size:0;
+        text-align:center;
+    }
+
+    .logout:before{
+        content:"↪";
+        font-size:22px;
     }
 
     .main{
+        margin-left:75px;
         padding:18px;
     }
 
     .stats{
-        grid-template-columns:1fr 1fr;
+        grid-template-columns:repeat(2,1fr);
     }
 
     .kanban{
         grid-template-columns:1fr;
     }
 
-    .form-grid{
+    .grid{
         grid-template-columns:1fr;
     }
 
     .full{
         grid-column:auto;
     }
-
-    .page-header{
-        align-items:flex-start;
-        flex-direction:column;
-    }
-
-    .btn-new{
-        width:100%;
-    }
-
 }
 
-@media(max-width:450px){
-
-    .login-box{
-        padding:25px 20px;
-    }
+@media(max-width:550px){
 
     .stats{
-        grid-template-columns:1fr;
+        grid-template-columns:1fr 1fr;
     }
 
-    .priority{
-        grid-template-columns:1fr;
+    .login-card{
+        padding:25px;
     }
 
+    .brand-title{
+        font-size:27px;
+    }
+
+    .topbar{
+        display:block;
+    }
+
+    .user-info{
+        margin-top:7px;
+    }
 }
 </style>
 </head>
@@ -586,688 +540,500 @@ textarea{
      LOGIN
 ========================= -->
 
-<section id="loginScreen">
+<div id="loginScreen">
 
-    <div class="login-box">
+    <div class="login-bg"></div>
+
+    <div class="login-content">
 
         <div class="brand">
+            <div class="brand-ab">AB</div>
 
-            <div class="logo-ab">AB</div>
+            <div class="brand-pcm">
+                PCM • CONTROLE INDUSTRIAL
+            </div>
 
-            <small>PCM • CONTROLE INDUSTRIAL</small>
+            <div class="brand-title">
+                CONTROLE DE O.S.
+            </div>
 
-            <h1>CONTROLE DE O.S.</h1>
-
-            <p>Acesso ao sistema</p>
-
+            <div class="brand-subtitle">
+                Gestão de Ordens de Serviço de Manutenção
+            </div>
         </div>
 
-        <div class="form-group">
+        <div class="login-card">
 
-            <label>USUÁRIO</label>
+            <h2>Acesso ao sistema</h2>
+            <p>Entre utilizando seu usuário e PIN.</p>
 
-            <select id="usuario">
+            <div id="loginError" class="login-error">
+                Usuário ou PIN incorreto.
+            </div>
 
-                <option value="PCM">PCM / Administrador</option>
+            <div class="form-group">
+                <label>Usuário</label>
 
-                <option value="Adryan">Adryan</option>
-                <option value="Fabio">Fabio</option>
-                <option value="Rodrigo">Rodrigo</option>
+                <select id="usuario">
+                    <option value="">Selecione...</option>
+                    <option value="PCM">PCM / Administrador</option>
+                    <option value="Adryan">Adryan</option>
+                    <option value="Fabio">Fabio</option>
+                    <option value="Rodrigo">Rodrigo</option>
+                    <option value="Leonardo">Leonardo</option>
+                    <option value="Vilmar">Vilmar</option>
+                    <option value="Rafael">Rafael</option>
+                    <option value="Danilo">Danilo</option>
+                </select>
+            </div>
 
-                <option value="Leonardo">Leonardo</option>
-                <option value="Vilmar">Vilmar</option>
-                <option value="Rafael">Rafael</option>
-                <option value="Danilo">Danilo</option>
+            <div class="form-group">
+                <label>PIN</label>
 
-            </select>
+                <input
+                    id="pin"
+                    type="password"
+                    inputmode="numeric"
+                    maxlength="4"
+                    placeholder="Digite seu PIN"
+                >
+            </div>
 
-        </div>
+            <button class="btn btn-primary" onclick="entrar()">
+                ENTRAR
+            </button>
 
-        <div class="form-group">
-
-            <label>PIN</label>
-
-            <input
-                type="password"
-                id="pin"
-                inputmode="numeric"
-                maxlength="6"
-                placeholder="Digite seu PIN"
-            >
-
-        </div>
-
-        <button class="btn btn-primary" onclick="entrar()">
-            ENTRAR
-        </button>
-
-        <div id="loginError" class="error">
-            Usuário ou PIN incorreto.
         </div>
 
     </div>
 
-</section>
+    <div class="footer">
+        Juntos por um futuro melhor
+    </div>
+
+</div>
 
 
 <!-- =========================
-     APP
+     SISTEMA
 ========================= -->
 
-<section id="app">
+<div id="app">
 
-    <header class="header">
+    <aside class="sidebar">
 
-        <div class="header-brand">
+        <div class="sidebar-brand">
+            <strong>PCM • CONTROLE</strong>
+            <span>ORDENS DE SERVIÇO</span>
+        </div>
 
-            <div class="header-logo">AB</div>
+        <button class="menu-btn active" onclick="mostrarPagina('dashboard',this)">
+            Dashboard
+        </button>
 
-            <div class="header-title">
-                PCM • CONTROLE INDUSTRIAL
+        <button class="menu-btn" onclick="mostrarPagina('novaOS',this)">
+            Nova O.S.
+        </button>
+
+        <button class="menu-btn" onclick="mostrarPagina('historico',this)">
+            Histórico
+        </button>
+
+        <button class="menu-btn" onclick="mostrarPagina('equipe',this)">
+            Equipe
+        </button>
+
+        <button class="menu-btn" onclick="mostrarPagina('maquinas',this)">
+            Máquinas
+        </button>
+
+        <button class="menu-btn logout" onclick="sair()">
+            Sair
+        </button>
+
+    </aside>
+
+
+    <main class="main">
+
+        <div class="topbar">
+
+            <div>
+                <h1 id="pageTitle">Dashboard</h1>
+            </div>
+
+            <div class="user-info">
+                Usuário: <strong id="usuarioLogado">-</strong>
             </div>
 
         </div>
 
-        <div class="user-area">
 
-            <span class="user-name" id="usuarioLogado">
-                PCM
-            </span>
+        <!-- =========================
+             DASHBOARD
+        ========================= -->
 
-            <button class="btn-logout" onclick="sair()">
-                Sair
-            </button>
+        <section id="dashboard" class="page active">
 
-        </div>
+            <div class="stats">
 
-    </header>
+                <div class="stat">
+                    <small>O.S. Abertas</small>
+                    <strong id="statAbertas">0</strong>
+                </div>
 
+                <div class="stat">
+                    <small>Em Produção</small>
+                    <strong id="statProducao">0</strong>
+                </div>
 
-    <div class="layout">
+                <div class="stat">
+                    <small>Aguardando Material</small>
+                    <strong id="statMaterial">0</strong>
+                </div>
 
-        <!-- MENU -->
+                <div class="stat">
+                    <small>Finalizadas</small>
+                    <strong id="statFinalizadas">0</strong>
+                </div>
 
-        <aside class="sidebar">
+                <div class="stat">
+                    <small>Urgentes</small>
+                    <strong id="statUrgentes">0</strong>
+                </div>
 
-            <div class="menu-title">
-                MENU
             </div>
 
-            <button
-                class="menu-btn active"
-                onclick="mostrarPagina('dashboard', this)"
-            >
-                🏠 Dashboard
-            </button>
 
-            <button
-                class="menu-btn"
-                onclick="mostrarPagina('novaOS', this)"
-            >
-                ➕ Nova O.S.
-            </button>
-
-            <button
-                class="menu-btn"
-                onclick="mostrarPagina('historico', this)"
-            >
-                📋 Histórico
-            </button>
-
-            <div class="menu-title" style="margin-top:25px;">
-                CONTROLE
+            <div class="section-title">
+                Controle das Ordens de Serviço
             </div>
 
-            <button
-                class="menu-btn"
-                onclick="alert('Tela de Equipe será adicionada na próxima etapa.')"
-            >
-                👥 Equipe
-            </button>
+            <div class="kanban">
 
-            <button
-                class="menu-btn"
-                onclick="alert('Tela de Máquinas será adicionada na próxima etapa.')"
-            >
-                ⚙️ Máquinas
-            </button>
-
-        </aside>
-
-
-        <!-- CONTEÚDO -->
-
-        <main class="main">
-
-
-            <!-- =========================
-                 DASHBOARD
-            ========================= -->
-
-            <section id="dashboard" class="page active">
-
-                <div class="page-header">
-
-                    <div>
-
-                        <h2>Dashboard</h2>
-
-                        <p>
-                            Controle das ordens de serviço da manutenção
-                        </p>
-
+                <div class="kanban-column">
+                    <div class="column-title">
+                        O.S. ABERTA
                     </div>
 
-                    <button
-                        class="btn-new"
-                        onclick="mostrarPagina('novaOS')"
-                    >
-                        + NOVA O.S.
-                    </button>
-
+                    <div class="empty">
+                        Nenhuma O.S.
+                    </div>
                 </div>
 
 
-                <div class="stats">
-
-                    <div class="stat">
-
-                        <div class="stat-label">
-                            O.S. ABERTAS
-                        </div>
-
-                        <div class="stat-number">
-                            0
-                        </div>
-
+                <div class="kanban-column">
+                    <div class="column-title">
+                        EM PRODUÇÃO
                     </div>
 
-                    <div class="stat">
-
-                        <div class="stat-label">
-                            EM PRODUÇÃO
-                        </div>
-
-                        <div class="stat-number">
-                            0
-                        </div>
-
+                    <div class="empty">
+                        Nenhuma O.S.
                     </div>
-
-                    <div class="stat">
-
-                        <div class="stat-label">
-                            AGUARDANDO MATERIAL
-                        </div>
-
-                        <div class="stat-number">
-                            0
-                        </div>
-
-                    </div>
-
-                    <div class="stat">
-
-                        <div class="stat-label">
-                            FINALIZADAS
-                        </div>
-
-                        <div class="stat-number">
-                            0
-                        </div>
-
-                    </div>
-
-                    <div class="stat">
-
-                        <div class="stat-label">
-                            URGENTES
-                        </div>
-
-                        <div class="stat-number">
-                            0
-                        </div>
-
-                    </div>
-
                 </div>
 
 
-                <div class="kanban-title">
-                    O.S. EM ANDAMENTO
+                <div class="kanban-column">
+                    <div class="column-title">
+                        AGUARDANDO MATERIAL
+                    </div>
+
+                    <div class="empty">
+                        Nenhuma O.S.
+                    </div>
                 </div>
 
 
-                <div class="kanban">
-
-                    <div class="column">
-
-                        <div class="column-header">
-
-                            <span>
-                                O.S. ABERTA
-                            </span>
-
-                            <span class="column-count">
-                                0
-                            </span>
-
-                        </div>
-
-                        <div class="empty">
-                            Nenhuma O.S.
-                        </div>
-
+                <div class="kanban-column">
+                    <div class="column-title">
+                        FINALIZADA
                     </div>
 
-
-                    <div class="column">
-
-                        <div class="column-header">
-
-                            <span>
-                                EM PRODUÇÃO
-                            </span>
-
-                            <span class="column-count">
-                                0
-                            </span>
-
-                        </div>
-
-                        <div class="empty">
-                            Nenhuma O.S.
-                        </div>
-
+                    <div class="empty">
+                        Nenhuma O.S.
                     </div>
-
-
-                    <div class="column">
-
-                        <div class="column-header">
-
-                            <span>
-                                AGUARDANDO MATERIAL
-                            </span>
-
-                            <span class="column-count">
-                                0
-                            </span>
-
-                        </div>
-
-                        <div class="empty">
-                            Nenhuma O.S.
-                        </div>
-
-                    </div>
-
-
-                    <div class="column">
-
-                        <div class="column-header">
-
-                            <span>
-                                FINALIZADA
-                            </span>
-
-                            <span class="column-count">
-                                0
-                            </span>
-
-                        </div>
-
-                        <div class="empty">
-                            Nenhuma O.S.
-                        </div>
-
-                    </div>
-
                 </div>
 
-            </section>
+            </div>
+
+        </section>
 
 
-            <!-- =========================
-                 NOVA O.S.
-            ========================= -->
+        <!-- =========================
+             NOVA OS
+        ========================= -->
 
-            <section id="novaOS" class="page">
+        <section id="novaOS" class="page">
 
-                <div class="page-header">
+            <div class="form-card">
 
-                    <div>
-
-                        <h2>Nova O.S.</h2>
-
-                        <p>
-                            Abertura de nova ordem de serviço
-                        </p>
-
-                    </div>
-
+                <div class="form-header">
+                    <h2>Nova Ordem de Serviço</h2>
                 </div>
 
 
-                <form
-                    id="formOS"
-                    class="os-form"
-                    onsubmit="criarOS(event)"
-                >
+                <form id="formOS" onsubmit="criarOS(event)">
 
+                    <div class="grid">
 
-                    <div class="form-card">
-
-                        <h3>
-                            Identificação da O.S.
-                        </h3>
-
-                        <div class="form-grid">
-
-                            <div class="form-group">
-
-                                <label>
-                                    Nº DA O.S.
-                                </label>
-
-                                <input
-                                    id="numeroOS"
-                                    class="os-number"
-                                    type="text"
-                                    readonly
-                                >
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label>
-                                    DATA DE ABERTURA
-                                </label>
-
-                                <input
-                                    id="dataAbertura"
-                                    type="date"
-                                    required
-                                >
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-card">
-
-                        <h3>
-                            Equipamento
-                        </h3>
-
-                        <div class="form-grid">
-
-                            <div class="form-group">
-
-                                <label>
-                                    MÁQUINA
-                                </label>
-
-                                <input
-                                    id="maquina"
-                                    type="text"
-                                    placeholder="Ex.: Picador"
-                                    required
-                                >
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label>
-                                    CÓDIGO / TAG
-                                </label>
-
-                                <input
-                                    id="codigo"
-                                    type="text"
-                                    placeholder="Ex.: PIC-1101"
-                                    required
-                                >
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label>
-                                    SETOR
-                                </label>
-
-                                <select id="setor" required>
-
-                                    <option value="">
-                                        Selecione
-                                    </option>
-
-                                    <option>
-                                        TMM
-                                    </option>
-
-                                    <option>
-                                        Linha Schiffer
-                                    </option>
-
-                                    <option>
-                                        Mendes
-                                    </option>
-
-                                    <option>
-                                        Fábrica de Componentes
-                                    </option>
-
-                                    <option>
-                                        Outro
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label>
-                                    TIPO DE MANUTENÇÃO
-                                </label>
-
-                                <select id="tipo" required>
-
-                                    <option value="">
-                                        Selecione
-                                    </option>
-
-                                    <option>
-                                        Corretiva
-                                    </option>
-
-                                    <option>
-                                        Preventiva
-                                    </option>
-
-                                    <option>
-                                        Preditiva
-                                    </option>
-
-                                    <option>
-                                        Inspeção
-                                    </option>
-
-                                    <option>
-                                        Lubrificação
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-card">
-
-                        <h3>
-                            Solicitação
-                        </h3>
-
-                        <div class="form-grid">
-
-                            <div class="form-group full">
-
-                                <label>
-                                    DESCRIÇÃO DO PROBLEMA / SERVIÇO
-                                </label>
-
-                                <textarea
-                                    id="descricao"
-                                    placeholder="Descreva o problema encontrado ou o serviço solicitado..."
-                                    required
-                                ></textarea>
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label>
-                                    RESPONSÁVEL
-                                </label>
-
-                                <select id="responsavel" required>
-
-                                    <option value="">
-                                        Selecione
-                                    </option>
-
-                                    <option>
-                                        Adryan
-                                    </option>
-
-                                    <option>
-                                        Fabio
-                                    </option>
-
-                                    <option>
-                                        Rodrigo
-                                    </option>
-
-                                    <option>
-                                        Leonardo
-                                    </option>
-
-                                    <option>
-                                        Vilmar
-                                    </option>
-
-                                    <option>
-                                        Rafael
-                                    </option>
-
-                                    <option>
-                                        Danilo
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label>
-                                    PRAZO
-                                </label>
-
-                                <input
-                                    id="prazo"
-                                    type="date"
-                                >
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-card">
-
-                        <h3>
-                            Prioridade
-                        </h3>
-
-                        <div class="priority">
-
-                            <label>
-
-                                <input
-                                    type="radio"
-                                    name="prioridade"
-                                    value="Alta"
-                                    required
-                                >
-
-                                <span class="priority-box">
-                                    🔴 ALTA / URGÊNCIA
-                                </span>
-
-                            </label>
-
-
-                            <label>
-
-                                <input
-                                    type="radio"
-                                    name="prioridade"
-                                    value="Média"
-                                >
-
-                                <span class="priority-box">
-                                    🟠 MÉDIA
-                                </span>
-
-                            </label>
-
-
-                            <label>
-
-                                <input
-                                    type="radio"
-                                    name="prioridade"
-                                    value="Moderada"
-                                >
-
-                                <span class="priority-box">
-                                    🟢 MODERADA
-                                </span>
-
-                            </label>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-card">
-
-                        <h3>
-                            Observações
-                        </h3>
+                        <!-- Nº WK -->
 
                         <div class="form-group">
+
+                            <label>
+                                Nº DA O.S. WK <span class="required">*</span>
+                            </label>
+
+                            <input
+                                id="numeroWK"
+                                type="text"
+                                inputmode="numeric"
+                                maxlength="10"
+                                pattern="[0-9]{10}"
+                                placeholder="Digite os 10 números da O.S."
+                                required
+                                oninput="somenteNumeros(this)"
+                            >
+
+                            <div class="wk-info">
+                                Número oficial da O.S. gerado no sistema WK da empresa.
+                            </div>
+
+                        </div>
+
+
+                        <!-- DATA -->
+
+                        <div class="form-group">
+
+                            <label>Data de abertura</label>
+
+                            <input
+                                id="dataAbertura"
+                                type="date"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- MÁQUINA -->
+
+                        <div class="form-group">
+
+                            <label>Máquina</label>
+
+                            <input
+                                id="maquina"
+                                type="text"
+                                placeholder="Nome da máquina"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- TAG -->
+
+                        <div class="form-group">
+
+                            <label>Código / TAG</label>
+
+                            <input
+                                id="tag"
+                                type="text"
+                                placeholder="Ex.: PIC-1101"
+                            >
+
+                        </div>
+
+
+                        <!-- SETOR -->
+
+                        <div class="form-group">
+
+                            <label>Setor</label>
+
+                            <select id="setor" required>
+
+                                <option value="">
+                                    Selecione...
+                                </option>
+
+                                <option>
+                                    TMM
+                                </option>
+
+                                <option>
+                                    Linha Schiffer
+                                </option>
+
+                                <option>
+                                    Mendes
+                                </option>
+
+                                <option>
+                                    Fábrica de Componentes
+                                </option>
+
+                                <option>
+                                    Outro
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- TIPO -->
+
+                        <div class="form-group">
+
+                            <label>Tipo de manutenção</label>
+
+                            <select id="tipo" required>
+
+                                <option value="">
+                                    Selecione...
+                                </option>
+
+                                <option>
+                                    Corretiva
+                                </option>
+
+                                <option>
+                                    Preventiva
+                                </option>
+
+                                <option>
+                                    Preditiva
+                                </option>
+
+                                <option>
+                                    Inspeção
+                                </option>
+
+                                <option>
+                                    Lubrificação
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- RESPONSÁVEL -->
+
+                        <div class="form-group">
+
+                            <label>Responsável</label>
+
+                            <select id="responsavel" required>
+
+                                <option value="">
+                                    Selecione...
+                                </option>
+
+                                <option>
+                                    Adryan
+                                </option>
+
+                                <option>
+                                    Fabio
+                                </option>
+
+                                <option>
+                                    Rodrigo
+                                </option>
+
+                                <option>
+                                    Leonardo
+                                </option>
+
+                                <option>
+                                    Vilmar
+                                </option>
+
+                                <option>
+                                    Rafael
+                                </option>
+
+                                <option>
+                                    Danilo
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- PRAZO -->
+
+                        <div class="form-group">
+
+                            <label>Prazo</label>
+
+                            <input
+                                id="prazo"
+                                type="date"
+                            >
+
+                        </div>
+
+
+                        <!-- PRIORIDADE -->
+
+                        <div class="form-group">
+
+                            <label>Prioridade</label>
+
+                            <select id="prioridade" required>
+
+                                <option value="">
+                                    Selecione...
+                                </option>
+
+                                <option value="Alta">
+                                    Alta / Urgência
+                                </option>
+
+                                <option value="Média">
+                                    Média
+                                </option>
+
+                                <option value="Moderada">
+                                    Moderada
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- DESCRIÇÃO -->
+
+                        <div class="form-group full">
+
+                            <label>
+                                Descrição do problema / serviço
+                            </label>
+
+                            <textarea
+                                id="descricao"
+                                placeholder="Descreva o problema ou serviço solicitado..."
+                                required
+                            ></textarea>
+
+                        </div>
+
+
+                        <!-- OBS -->
+
+                        <div class="form-group full">
+
+                            <label>
+                                Observações
+                            </label>
 
                             <textarea
                                 id="observacoes"
@@ -1276,105 +1042,130 @@ textarea{
 
                         </div>
 
-
-                        <div class="form-actions">
-
-                            <button
-                                type="button"
-                                class="btn-cancel"
-                                onclick="mostrarPagina('dashboard')"
-                            >
-                                CANCELAR
-                            </button>
-
-                            <button
-                                type="submit"
-                                class="btn-save"
-                            >
-                                CRIAR O.S.
-                            </button>
-
-                        </div>
-
                     </div>
 
+
+                    <div class="actions">
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="mostrarPagina('dashboard')"
+                        >
+                            CANCELAR
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-save"
+                        >
+                            CRIAR O.S.
+                        </button>
+
+                    </div>
 
                 </form>
 
-            </section>
+            </div>
+
+        </section>
 
 
-            <!-- =========================
-                 HISTÓRICO
-            ========================= -->
+        <!-- =========================
+             HISTÓRICO
+        ========================= -->
 
-            <section id="historico" class="page">
+        <section id="historico" class="page">
 
-                <div class="page-header">
+            <div class="history-box">
 
-                    <div>
+                <div class="history-empty">
 
-                        <h2>Histórico</h2>
+                    <h3>Histórico de O.S.</h3>
 
-                        <p>
-                            Ordens de serviço registradas
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="history-box">
-
-                    <div class="history-empty">
-
-                        Nenhuma O.S. registrada ainda.
-
-                        <br><br>
-
-                        As ordens de serviço criadas aparecerão aqui
-                        quando conectarmos o sistema ao banco de dados.
-
-                    </div>
+                    <p style="margin-top:10px;">
+                        As ordens de serviço criadas aparecerão aqui.
+                    </p>
 
                 </div>
 
-            </section>
+            </div>
+
+        </section>
 
 
-        </main>
+        <!-- =========================
+             EQUIPE
+        ========================= -->
 
-    </div>
+        <section id="equipe" class="page">
 
-</section>
+            <div class="form-card">
+
+                <h2>Equipe de Manutenção</h2>
+
+                <p style="margin-top:15px;color:#78848f;">
+                    Cadastro e controle da equipe serão adicionados nesta tela.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             MÁQUINAS
+        ========================= -->
+
+        <section id="maquinas" class="page">
+
+            <div class="form-card">
+
+                <h2>Máquinas</h2>
+
+                <p style="margin-top:15px;color:#78848f;">
+                    Cadastro das máquinas e TAGs será adicionado nesta tela.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
 
 
 <script>
 
-/* =========================
-   USUÁRIOS E PIN
-========================= */
+/* =========================================
+   USUÁRIOS / PIN
+========================================= */
 
 const usuarios = {
 
     "PCM": "0109",
 
     "Adryan": "6101",
+
     "Fabio": "6102",
+
     "Rodrigo": "6103",
 
     "Leonardo": "6104",
+
     "Vilmar": "6105",
+
     "Rafael": "6106",
+
     "Danilo": "6107"
 
 };
 
 
-/* =========================
+/* =========================================
    LOGIN
-========================= */
+========================================= */
 
 function entrar(){
 
@@ -1389,22 +1180,20 @@ function entrar(){
 
 
     if(
-        usuarios[usuario] &&
+        usuario &&
         usuarios[usuario] === pin
     ){
 
-        document.getElementById("loginScreen").style.display =
-            "none";
+        document.getElementById("loginScreen")
+            .style.display = "none";
 
-        document.getElementById("app").style.display =
-            "block";
+        document.getElementById("app")
+            .style.display = "block";
 
-        document.getElementById("usuarioLogado").textContent =
-            usuario;
+        document.getElementById("usuarioLogado")
+            .textContent = usuario;
 
         erro.style.display = "none";
-
-        prepararNovaOS();
 
     }else{
 
@@ -1415,68 +1204,57 @@ function entrar(){
 }
 
 
-/* =========================
-   ENTER NO PIN
-========================= */
+/* ENTER NO PIN */
 
-document
-    .getElementById("pin")
-    .addEventListener("keydown", function(event){
+document.getElementById("pin")
+.addEventListener("keydown",function(e){
 
-        if(event.key === "Enter"){
-            entrar();
-        }
+    if(e.key === "Enter"){
+        entrar();
+    }
 
-    });
+});
 
 
-/* =========================
+/* =========================================
    SAIR
-========================= */
+========================================= */
 
 function sair(){
 
-    document.getElementById("app").style.display =
-        "none";
+    document.getElementById("app")
+        .style.display = "none";
 
-    document.getElementById("loginScreen").style.display =
-        "flex";
+    document.getElementById("loginScreen")
+        .style.display = "flex";
 
-    document.getElementById("pin").value =
-        "";
+    document.getElementById("pin").value = "";
 
 }
 
 
-/* =========================
-   TROCAR PÁGINA
-========================= */
+/* =========================================
+   NAVEGAÇÃO
+========================================= */
 
-function mostrarPagina(pagina, botao){
+function mostrarPagina(pagina,botao){
 
     document
         .querySelectorAll(".page")
-        .forEach(function(page){
-
-            page.classList.remove("active");
-
+        .forEach(p=>{
+            p.classList.remove("active");
         });
 
 
-    const destino =
-        document.getElementById(pagina);
-
-    if(destino){
-        destino.classList.add("active");
-    }
+    document
+        .getElementById(pagina)
+        .classList.add("active");
 
 
     document
         .querySelectorAll(".menu-btn")
-        .forEach(function(btn){
-
-            btn.classList.remove("active");
-
+        .forEach(b=>{
+            b.classList.remove("active");
         });
 
 
@@ -1485,61 +1263,103 @@ function mostrarPagina(pagina, botao){
     }
 
 
+    const titulos = {
+
+        dashboard:"Dashboard",
+
+        novaOS:"Nova O.S.",
+
+        historico:"Histórico",
+
+        equipe:"Equipe",
+
+        maquinas:"Máquinas"
+
+    };
+
+
+    document
+        .getElementById("pageTitle")
+        .textContent = titulos[pagina] || "PCM";
+
+
     if(pagina === "novaOS"){
+
         prepararNovaOS();
+
     }
 
 }
 
 
-/* =========================
-   PREPARAR NOVA O.S.
-========================= */
+/* =========================================
+   PREPARAR NOVA OS
+========================================= */
 
 function prepararNovaOS(){
 
     const hoje =
-        new Date().toISOString().split("T")[0];
+        new Date()
+        .toISOString()
+        .split("T")[0];
 
-    document.getElementById("dataAbertura").value =
-        hoje;
 
-
-    /*
-       TEMPORARIAMENTE:
-       número demonstrativo.
-
-       Depois que conectarmos ao Supabase,
-       o banco vai gerar o número automaticamente
-       de forma global.
-    */
-
-    const numero =
-        localStorage.getItem("proximaOS") || "6100";
-
-    document.getElementById("numeroOS").value =
-        numero;
+    document
+        .getElementById("dataAbertura")
+        .value = hoje;
 
 }
 
 
-/* =========================
-   CRIAR O.S.
-========================= */
+/* =========================================
+   SOMENTE NÚMEROS
+========================================= */
+
+function somenteNumeros(campo){
+
+    campo.value =
+        campo.value
+        .replace(/\D/g,"")
+        .slice(0,10);
+
+}
+
+
+/* =========================================
+   CRIAR OS
+========================================= */
 
 function criarOS(event){
 
     event.preventDefault();
 
 
-    const numero =
-        document.getElementById("numeroOS").value;
+    const numeroWK =
+        document.getElementById("numeroWK").value.trim();
+
+
+    /* VALIDAÇÃO DO WK */
+
+    if(!/^\d{10}$/.test(numeroWK)){
+
+        alert(
+            "O número da O.S. WK deve conter exatamente 10 números."
+        );
+
+        document
+            .getElementById("numeroWK")
+            .focus();
+
+        return;
+
+    }
+
 
     const maquina =
         document.getElementById("maquina").value;
 
-    const codigo =
-        document.getElementById("codigo").value;
+    const tag =
+        document.getElementById("tag").value;
 
     const setor =
         document.getElementById("setor").value;
@@ -1547,77 +1367,59 @@ function criarOS(event){
     const tipo =
         document.getElementById("tipo").value;
 
-    const descricao =
-        document.getElementById("descricao").value;
-
     const responsavel =
         document.getElementById("responsavel").value;
 
     const prioridade =
-        document.querySelector(
-            'input[name="prioridade"]:checked'
-        ).value;
+        document.getElementById("prioridade").value;
 
-
-    /*
-       Por enquanto a O.S. fica apenas
-       no navegador.
-
-       Na próxima etapa vamos salvar
-       definitivamente no Supabase.
-    */
+    const descricao =
+        document.getElementById("descricao").value;
 
 
     alert(
-        "O.S. " +
-        numero +
-        " criada com sucesso!\n\n" +
+        "O.S. criada com sucesso!\n\n" +
 
-        "Máquina: " +
-        maquina +
-        "\n" +
+        "Nº O.S. WK: " + numeroWK + "\n" +
 
-        "Código: " +
-        codigo +
-        "\n" +
+        "Máquina: " + maquina + "\n" +
 
-        "Setor: " +
-        setor +
-        "\n" +
+        "TAG: " + tag + "\n" +
 
-        "Tipo: " +
-        tipo +
-        "\n" +
+        "Setor: " + setor + "\n" +
 
-        "Responsável: " +
-        responsavel +
-        "\n" +
+        "Tipo: " + tipo + "\n" +
 
-        "Prioridade: " +
-        prioridade
+        "Responsável: " + responsavel + "\n" +
+
+        "Prioridade: " + prioridade + "\n\n" +
+
+        "Descrição:\n" + descricao
     );
 
 
-    /*
-       Próximo número temporário.
-    */
+    /* LIMPA FORMULÁRIO */
 
-    const proxima =
-        parseInt(numero) + 1;
+    document
+        .getElementById("formOS")
+        .reset();
 
-    localStorage.setItem(
-        "proximaOS",
-        proxima
-    );
-
-
-    document.getElementById("formOS").reset();
 
     prepararNovaOS();
+
+
+    /* VOLTA AO DASHBOARD */
 
     mostrarPagina("dashboard");
 
 }
+
+
+/* =========================================
+   INICIALIZAÇÃO
+========================================= */
+
+prepararNovaOS();
 
 </script>
 
