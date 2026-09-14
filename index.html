@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="theme-color" content="#0f172a">
 <meta name="color-scheme" content="dark">
 <meta name="mobile-web-app-capable" content="yes">
@@ -11,20 +14,21 @@
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:,">
 
-<!-- CARREGAMENTO MOBILE SEGURO: impede versões antigas de Service Worker/cache de prender o app em tela preta. -->
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=cgnsQoghLfxQxjXqBvGqZNPkW3iJbNk3vUotuXxOqzjYVBDDH-vUbCccWYqsO4medVnhtMmvC0cyxq-OLe7VdlkvT2bOw5RRteby5InF1RwXRAzT2pS0eeAtEgEAV8_fIkFYFNMF4qlFScjyQy3Lst_nhXCqf7B8B6e-QcLz2th_IRgon-6TBk2_Xv0XRlds_EeGrgEotmzn6-PUHLNkh4tqjxrIdXbjTZ30pIIgqOrXkDi4iC4PA9P0_dPyBzjr0-0ecTey4CIHClr-9yr5-cwIV6-eIRdTsFtSjs4Ejtlrf9-pHguZ7_axcfKx0qWC9W8fF647j6sR6mhyIUv6FQ" charset="UTF-8"></script><script>
+<!-- PROTEÇÃO CONTRA CACHE/SERVICE WORKER ANTIGO -->
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=PfwyY1A0V62zYEjty2dadMxDNQwefNoWEbkW5kXLj5mdnLHUTgqNMs6v1SU3k_cf5RYZC3Fp-fKE8_7vM67s-HJHFwFj_BDdV9n5psxoK5CZ-dLAIP7mU7spT446Dh65GuCz91bU7GYD3RCv5S4W1VdmQfbQuRUYjcqn5DC9y8GMRIPIzGQbNXKEQkuc23BLX8tRW-wCco-cSDcNds98hit7q0UVln3ZIg3Puq_Jcde6I9NduHGTPHaKCwKafsNeHhmW02xPNavpddDvS72bXgQjOIx3tgAFb1SapY3VOS3MzRGa8V2tYriMpbmHh0j7XDKC8kRdeABE6VuPxFIS848c12Lcck_xtT48bef3mU4" charset="UTF-8"></script><script>
 (function(){
   try{
-    if('serviceWorker' in navigator && sessionStorage.getItem('pcm_cache_clean') !== '1'){
+    if('serviceWorker' in navigator){
       navigator.serviceWorker.getRegistrations().then(function(regs){
-        if(!regs.length) return;
-        return Promise.all(regs.map(function(r){return r.unregister();})).then(function(){
-          return caches && caches.keys ? caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k);}));}) : null;
-        }).then(function(){
-          sessionStorage.setItem('pcm_cache_clean','1');
-          location.reload();
-        });
-      }).catch(function(){ try{sessionStorage.setItem('pcm_cache_clean','1');}catch(e){} });
+        if(!regs || !regs.length) return;
+        return Promise.all(regs.map(function(r){ return r.unregister().catch(function(){return false;}); }));
+      }).then(function(){
+        if(window.caches && typeof caches.keys === 'function'){
+          return caches.keys().then(function(keys){
+            return Promise.all(keys.map(function(k){ return caches.delete(k).catch(function(){return false;}); }));
+          });
+        }
+      }).catch(function(){});
     }
   }catch(e){}
 })();
@@ -1298,6 +1302,14 @@ body{min-height:100dvh;overflow-x:hidden;-webkit-text-size-adjust:100%;}
 .team-busy{display:inline-flex;align-items:center;gap:5px;color:#bbf7d0;font-weight:800}.team-busy-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block}
 .team-material{display:inline-flex;align-items:center;gap:5px;color:#fed7aa;font-weight:800}.team-material-dot{width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block}
 @media(max-width:700px){.user-control-head{align-items:flex-start;flex-direction:column}.user-actions{min-width:150px}.user-action{padding:9px 10px}}
+
+/* EXPORTAÇÃO DO HISTÓRICO */
+.history-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.history-actions button{white-space:nowrap}
+@media(max-width:700px){
+  .history-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .history-actions button{width:100%;min-height:42px}
+}
 </style>
 </head>
 
@@ -1819,12 +1831,13 @@ window.addEventListener('unhandledrejection',function(ev){
                     </div>
                 </div>
 
-                <button
-                    class="btn-secondary"
-                    onclick="loadHistory()"
-                >
-                    ATUALIZAR
-                </button>
+                <div class="history-actions">
+                    <button class="btn-secondary" onclick="loadHistory()">↻ ATUALIZAR</button>
+                    <button class="btn-secondary" onclick="exportHistoryTXT()">TXT</button>
+                    <button class="btn-secondary" onclick="exportHistoryCSV()">CSV / EXCEL</button>
+                    <button class="btn-secondary" onclick="exportHistoryJSON()">JSON</button>
+                    <button class="btn-primary" onclick="exportHistoryPDF()">PDF</button>
+                </div>
 
             </div>
 
@@ -2195,7 +2208,8 @@ function ensureSupabase(){
         script.async=true;
         const sources=[
             "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
-            "https://unpkg.com/@supabase/supabase-js@2"
+            "https://unpkg.com/@supabase/supabase-js@2",
+            "https://esm.sh/@supabase/supabase-js@2"
         ];
         let sourceIndex=0;
         const tryNext=()=>{
@@ -4808,6 +4822,112 @@ async function loadTeam(){
     if(!activeEmployees.length){
         table.innerHTML = '<tr><td colspan="4" style="color:#64748b">Nenhum funcionário ativo cadastrado.</td></tr>';
     }
+}
+
+
+/* =========================================================
+   EXPORTAÇÃO DO HISTÓRICO
+========================================================= */
+
+function historyDate(value){
+    return value ? new Date(value).toLocaleString("pt-BR") : "-";
+}
+
+async function getHistoryExportData(){
+    await ensureSupabase();
+    const [ordersResult, execResult] = await Promise.all([
+        db.from("os_orders").select("*").order("created_at",{ascending:false}),
+        db.from("os_execution_history").select("*").order("created_at",{ascending:false}).limit(2000)
+    ]);
+    if(ordersResult.error) throw ordersResult.error;
+    if(execResult.error) throw execResult.error;
+    return {orders:ordersResult.data || [], execution:execResult.data || []};
+}
+
+function downloadTextFile(filename, content, mime){
+    const blob=new Blob([content],{type:mime || "text/plain;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function csvCell(value){
+    return '"'+String(value ?? "").replace(/"/g,'""')+'"';
+}
+
+async function exportHistoryCSV(){
+    try{
+        const {orders}=await getHistoryExportData();
+        const headers=["OS","Data abertura","Máquina","TAG","Setor","Tipo manutenção","Prioridade","Responsável","Status","Tempo total (segundos)"];
+        const rows=orders.map(o=>[o.os_number,historyDate(o.opening_date),o.machine,o.tag,o.sector,o.maintenance_type,o.priority,o.responsible,o.status,getTotalTime(o)]);
+        const csv="\uFEFF"+[headers,...rows].map(r=>r.map(csvCell).join(";")).join("\r\n");
+        downloadTextFile("historico_os_pcm.csv",csv,"text/csv;charset=utf-8");
+        showPCMToast("Histórico exportado em CSV. Pode abrir no Excel.","success");
+    }catch(e){console.error(e);showPCMToast("Não foi possível exportar o histórico.","error");}
+}
+
+async function exportHistoryTXT(){
+    try{
+        const {orders,execution}=await getHistoryExportData();
+        let text="PCM • CONTROLE DE O.S.\nHISTÓRICO DE ORDENS DE SERVIÇO\n"+"=".repeat(80)+"\n\n";
+        orders.forEach(o=>{
+            text+=[
+                "O.S.: "+(o.os_number||"-"),
+                "Abertura: "+historyDate(o.opening_date),
+                "Máquina: "+(o.machine||"-"),
+                "TAG: "+(o.tag||"-"),
+                "Setor: "+(o.sector||"-"),
+                "Manutenção: "+(o.maintenance_type||"-"),
+                "Prioridade: "+(o.priority||"-"),
+                "Responsável: "+(o.responsible||"-"),
+                "Status: "+(o.status||"-"),
+                "Tempo total: "+formatSeconds(getTotalTime(o)),
+                "Descrição: "+(o.description||"-"),
+                "Observações: "+(o.observations||"-"),
+                "-".repeat(80)
+            ].join("\n")+"\n";
+        });
+        text+="\nHISTÓRICO DE EXECUÇÃO\n"+"=".repeat(80)+"\n\n";
+        execution.forEach(e=>{
+            text+=[
+                "O.S.: "+(e.os_number||"-"),
+                "Funcionário: "+(e.employee||"-"),
+                "Ação: "+(e.action||"-"),
+                "Motivo: "+(e.reason||"-"),
+                "Duração: "+formatSeconds(e.duration_seconds||0),
+                "Data: "+historyDate(e.created_at),
+                "-".repeat(80)
+            ].join("\n")+"\n";
+        });
+        downloadTextFile("historico_os_pcm.txt",text,"text/plain;charset=utf-8");
+        showPCMToast("Histórico exportado em TXT.","success");
+    }catch(e){console.error(e);showPCMToast("Não foi possível exportar o histórico.","error");}
+}
+
+async function exportHistoryJSON(){
+    try{
+        const data=await getHistoryExportData();
+        downloadTextFile("historico_os_pcm.json",JSON.stringify(data,null,2),"application/json;charset=utf-8");
+        showPCMToast("Histórico exportado em JSON.","success");
+    }catch(e){console.error(e);showPCMToast("Não foi possível exportar o histórico.","error");}
+}
+
+async function exportHistoryPDF(){
+    try{
+        const {orders,execution}=await getHistoryExportData();
+        const popup=window.open("","_blank");
+        if(!popup){showPCMToast("O navegador bloqueou a janela do PDF. Permita pop-ups para este site.","warning");return;}
+        const orderRows=orders.map(o=>`<tr><td>${escapeHtml(o.os_number)}</td><td>${escapeHtml(o.machine)}</td><td>${escapeHtml(o.tag||"-")}</td><td>${escapeHtml(o.sector||"-")}</td><td>${escapeHtml(o.responsible||"-")}</td><td>${escapeHtml(o.status||"-")}</td><td>${escapeHtml(formatSeconds(getTotalTime(o)))}</td></tr>`).join("");
+        const execRows=execution.map(e=>`<tr><td>${escapeHtml(e.os_number||"-")}</td><td>${escapeHtml(e.employee||"-")}</td><td>${escapeHtml(e.action||"-")}</td><td>${escapeHtml(e.reason||"-")}</td><td>${escapeHtml(formatSeconds(e.duration_seconds||0))}</td><td>${escapeHtml(historyDate(e.created_at))}</td></tr>`).join("");
+        popup.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Histórico PCM</title><style>body{font-family:Arial,sans-serif;color:#111827;padding:24px;font-size:11px}h1{font-size:20px;margin:0 0 4px}h2{font-size:14px;margin:24px 0 8px}p{color:#475569;margin:0 0 18px}table{width:100%;border-collapse:collapse;margin-bottom:18px}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left;vertical-align:top}th{background:#e2e8f0;font-weight:700}@media print{body{padding:10mm}h2{break-after:avoid}table{break-inside:auto}tr{break-inside:avoid}}</style></head><body><h1>PCM • CONTROLE DE O.S.</h1><p>Histórico de ordens de serviço — gerado em ${escapeHtml(new Date().toLocaleString("pt-BR"))}</p><h2>Ordens de serviço</h2><table><thead><tr><th>O.S.</th><th>Máquina</th><th>TAG</th><th>Setor</th><th>Responsável</th><th>Status</th><th>Tempo</th></tr></thead><tbody>${orderRows||'<tr><td colspan="7">Nenhuma O.S.</td></tr>'}</tbody></table><h2>Histórico de execução</h2><table><thead><tr><th>O.S.</th><th>Funcionário</th><th>Ação</th><th>Motivo</th><th>Duração</th><th>Data</th></tr></thead><tbody>${execRows||'<tr><td colspan="6">Nenhum registro.</td></tr>'}</tbody></table><script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script></body></html>`);
+        popup.document.close();
+        showPCMToast("PDF preparado. Na tela de impressão, escolha Salvar como PDF.","success");
+    }catch(e){console.error(e);showPCMToast("Não foi possível gerar o PDF.","error");}
 }
 
 
