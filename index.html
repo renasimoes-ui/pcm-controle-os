@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f172a">
 <title>PCM • Controle de O.S.</title>
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=rUhePcUWr7BpB97KZU7kwe6DawpGksJmH_UJvr3kr4m5aTujL21WzApwCC1of7Gw_ub_09ovVaO6IRujX_kA1CzDHZqzSSJfP06u0OW1kDlEQSs0rgw77D9qmRJcfoGvtuCtFp6UiXTsgWjwRqHoqsyWOxsQzuAQb_X1RnQM9-Bqk0vZ9DjjUFP1Eq9fG43X8CYAHZ28deEvk7dCs3rb_VIktDyHCwCIbXIEwI6U2pL6ahF1y5xlJLIWt37RrizsPuOHRQz4NdAZAdVQHf2ag6yOa-SkTpw-a_FcdhAxujlXpNKWvYVsV6h61utpCG3g" charset="UTF-8"></script><script src="https://cdn.tailwindcss.com"></script>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=kudqXLmoeHnXbRV8IdjSjh4iwOPPgsqt3IQ1go_16iaKDxgWX9eWDDr-dBZ7t2IBA0pX95cCEDkN_5gPva8G74RJbxKCqsxjqx2cEATrai1Wc8lpYKO-yIdbxlyaw0pdCdggWECOdVWqi9cCbuHJAfMIxpQ3--dF4_XVpHJPD-4D5CDPjvzBlztymQtkuFAYtjgyrKYl6i3C4DmUxq8XIaSU7zdiPMOKvO6by4L8BNHp_yiEmZDF0_0bMXTIlQwk0GxbyHw463nAb_K0bBMtcJpSuWAtZXbVnrvzGNePVSV1xgeBdN-uGQwfbIusbu_N" charset="UTF-8"></script><script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2792,14 +2792,35 @@ function createEmployeeCard(order){
 
     if(order.status === "O.S. ABERTA"){
 
-        buttons += `
-            <button
-                class="action-btn btn-start"
-                onclick="startOS(${order.id})"
-            >
-                ▶ INICIAR O.S.
-            </button>
-        `;
+        if(order.emergency_interrupted_at){
+
+            buttons += `
+                <div style="
+                    margin-top:15px;
+                    padding:10px;
+                    border-radius:8px;
+                    background:#451a03;
+                    color:#fed7aa;
+                    font-size:11px;
+                    text-align:center;
+                ">
+                    ▲ PARADA IMEDIATA REGISTRADA.<br>
+                    O PCM fará a redistribuição da O.S.
+                </div>
+            `;
+
+        }else{
+
+            buttons += `
+                <button
+                    class="action-btn btn-start"
+                    onclick="startOS(${order.id})"
+                >
+                    ▶ INICIAR O.S.
+                </button>
+            `;
+
+        }
 
     }
 
@@ -3307,7 +3328,7 @@ async function finishOS(osId){
 
 
     const confirmFinish =
-        confirm(
+        await pcmConfirm(
             "Deseja realmente finalizar esta O.S.?"
         );
 
@@ -3429,7 +3450,7 @@ async function emergencyStopOS(osId){
 
 
     const confirmed =
-        confirm(
+        await pcmConfirm(
             "PARADA IMEDIATA\n\n" +
             "A O.S. será retirada da sua execução e retornará ao PCM para redistribuição.\n\n" +
             "Deseja continuar?"
@@ -3504,7 +3525,10 @@ async function emergencyStopOS(osId){
 
                 total_service_seconds:newTotal,
 
-                responsible:null
+                // A coluna responsible é NOT NULL no banco.
+                // Mantemos o responsável atual e deixamos a O.S.
+                // aberta para o PCM redistribuir.
+                responsible:order.responsible
 
             })
             .eq("id",osId);
@@ -3830,7 +3854,9 @@ async function releaseMaterialRequest(){
 
                 pause_reason:null,
 
-                material_requested_at:null
+                material_requested_at:null,
+
+                emergency_interrupted_at:null
 
             })
             .eq("id",osId);
@@ -4494,6 +4520,150 @@ document
         .toISOString()
         .split("T")[0];
 
+
+
+/* =========================================================
+   NOTIFICACOES PCM - SEM ALERT/CONFIRM DO NAVEGADOR
+========================================================= */
+(function(){
+
+    const style=document.createElement("style");
+    style.textContent=`
+        #pcmToastContainer{
+            position:fixed;
+            top:22px;
+            right:22px;
+            z-index:99999;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            width:min(360px,calc(100vw - 28px));
+            pointer-events:none;
+        }
+        .pcm-toast{
+            display:flex;
+            align-items:flex-start;
+            gap:11px;
+            padding:13px 15px;
+            border:1px solid rgba(255,255,255,.09);
+            border-radius:14px;
+            background:rgba(15,23,42,.96);
+            box-shadow:0 18px 45px rgba(0,0,0,.35);
+            backdrop-filter:blur(14px);
+            color:#e5e7eb;
+            font-size:13px;
+            line-height:1.4;
+            animation:pcmToastIn .28s ease both;
+            pointer-events:auto;
+        }
+        .pcm-toast.success{border-color:rgba(34,197,94,.28)}
+        .pcm-toast.error{border-color:rgba(239,68,68,.28)}
+        .pcm-toast.warning{border-color:rgba(245,158,11,.28)}
+        .pcm-toast.info{border-color:rgba(59,130,246,.28)}
+        .pcm-toast-icon{
+            width:27px;height:27px;min-width:27px;border-radius:50%;
+            display:grid;place-items:center;font-weight:900;font-size:14px;
+            background:rgba(34,197,94,.14);color:#4ade80;
+        }
+        .pcm-toast.error .pcm-toast-icon{background:rgba(239,68,68,.14);color:#f87171}
+        .pcm-toast.warning .pcm-toast-icon{background:rgba(245,158,11,.14);color:#fbbf24}
+        .pcm-toast.info .pcm-toast-icon{background:rgba(59,130,246,.14);color:#60a5fa}
+        .pcm-toast-content{flex:1;white-space:pre-line}
+        .pcm-toast-title{font-weight:800;margin-bottom:2px}
+        .pcm-toast-close{
+            border:0;background:transparent;color:#64748b;cursor:pointer;
+            font-size:18px;line-height:1;padding:0 2px;
+        }
+        .pcm-toast-close:hover{color:#fff}
+        .pcm-toast.hide{animation:pcmToastOut .25s ease forwards}
+        @keyframes pcmToastIn{from{opacity:0;transform:translateY(-10px) scale(.97)}to{opacity:1;transform:none}}
+        @keyframes pcmToastOut{to{opacity:0;transform:translateY(-8px) scale(.97)}}
+        #pcmConfirmOverlay{
+            position:fixed;inset:0;z-index:100000;display:none;place-items:center;
+            padding:20px;background:rgba(0,0,0,.62);backdrop-filter:blur(5px);
+        }
+        #pcmConfirmOverlay.show{display:grid}
+        .pcm-confirm{
+            width:min(420px,100%);background:#0f172a;color:#f8fafc;
+            border:1px solid #263449;border-radius:18px;padding:22px;
+            box-shadow:0 25px 80px rgba(0,0,0,.55);animation:pcmConfirmIn .2s ease both;
+        }
+        .pcm-confirm-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+            background:rgba(245,158,11,.13);color:#fbbf24;font-size:20px;margin-bottom:13px}
+        .pcm-confirm-title{font-size:16px;font-weight:850;margin-bottom:7px}
+        .pcm-confirm-text{font-size:13px;color:#94a3b8;line-height:1.55;white-space:pre-line}
+        .pcm-confirm-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+        .pcm-confirm-actions button{border:0;border-radius:10px;padding:11px 17px;font-weight:800;cursor:pointer}
+        .pcm-confirm-cancel{background:#1e293b;color:#cbd5e1}
+        .pcm-confirm-ok{background:#f8fafc;color:#020617}
+        @keyframes pcmConfirmIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+        @media(max-width:600px){
+            #pcmToastContainer{top:12px;right:14px;width:calc(100vw - 28px)}
+            .pcm-toast{padding:12px 13px}
+        }
+    `;
+    document.head.appendChild(style);
+
+    const container=document.createElement("div");
+    container.id="pcmToastContainer";
+    document.body.appendChild(container);
+
+    const overlay=document.createElement("div");
+    overlay.id="pcmConfirmOverlay";
+    overlay.innerHTML=`
+        <div class="pcm-confirm" role="dialog" aria-modal="true">
+            <div class="pcm-confirm-icon">⚠</div>
+            <div class="pcm-confirm-title">Confirmar ação</div>
+            <div class="pcm-confirm-text"></div>
+            <div class="pcm-confirm-actions">
+                <button type="button" class="pcm-confirm-cancel">Cancelar</button>
+                <button type="button" class="pcm-confirm-ok">Continuar</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+
+    const esc=(value)=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+    window.showPCMToast=function(message,type="success",title=""){
+        const icons={success:"✓",error:"!",warning:"⚠",info:"i"};
+        const toast=document.createElement("div");
+        toast.className=`pcm-toast ${type}`;
+        toast.innerHTML=`<div class="pcm-toast-icon">${icons[type]||"✓"}</div><div class="pcm-toast-content">${title?`<div class="pcm-toast-title">${esc(title)}</div>`:""}${esc(message)}</div><button class="pcm-toast-close" aria-label="Fechar">×</button>`;
+        container.appendChild(toast);
+        const close=()=>{if(toast.classList.contains("hide"))return;toast.classList.add("hide");setTimeout(()=>toast.remove(),260)};
+        toast.querySelector(".pcm-toast-close").onclick=close;
+        setTimeout(close,3600);
+    };
+
+    window.alert=function(message){
+        const text=String(message??"");
+        const lower=text.toLowerCase();
+        let type="success",title="Tudo certo";
+        if(lower.includes("erro")||lower.includes("não foi")||lower.includes("violates")||lower.includes("falha")){type="error";title="Não foi possível concluir"}
+        else if(lower.includes("atenção")||lower.includes("precisa")||lower.includes("já possui")){type="warning";title="Atenção"}
+        showPCMToast(text,type,title);
+    };
+
+    window.pcmConfirm=function(message){
+        return new Promise(resolve=>{
+            const text=overlay.querySelector(".pcm-confirm-text");
+            const ok=overlay.querySelector(".pcm-confirm-ok");
+            const cancel=overlay.querySelector(".pcm-confirm-cancel");
+            text.textContent=String(message??"");
+            overlay.classList.add("show");
+            const finish=(value)=>{
+                overlay.classList.remove("show");
+                ok.onclick=null;cancel.onclick=null;
+                overlay.onclick=null;
+                resolve(value);
+            };
+            ok.onclick=()=>finish(true);
+            cancel.onclick=()=>finish(false);
+            overlay.onclick=e=>{if(e.target===overlay)finish(false)};
+        });
+    };
+
+})();
 
 </script>
 
