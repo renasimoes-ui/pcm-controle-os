@@ -1,1427 +1,900 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0b0f14">
-<title>PCM • Controle de O.S.</title>
-
-<style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-}
-
-body{
-    font-family:Arial,Helvetica,sans-serif;
-    background:#080b0f;
-    color:#fff;
-    min-height:100vh;
-}
-
-/* =========================
-   LOGIN
-========================= */
-
-#loginScreen{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-    overflow:hidden;
-    background:
-        linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.82)),
-        radial-gradient(circle at center,#27313a 0%,#0b0f14 55%,#050608 100%);
-}
-
-.login-bg{
-    position:absolute;
-    inset:0;
-    background:
-        linear-gradient(90deg,
-            rgba(0,0,0,.95) 0%,
-            rgba(0,0,0,.55) 50%,
-            rgba(0,0,0,.92) 100%);
-}
-
-.login-content{
-    position:relative;
-    z-index:2;
-    width:min(1100px,94%);
-    display:grid;
-    grid-template-columns:1.2fr .8fr;
-    gap:70px;
-    align-items:center;
-}
-
-.brand{
-    text-align:left;
-}
-
-.brand-ab{
-    font-size:78px;
-    font-weight:900;
-    letter-spacing:-6px;
-    line-height:.8;
-}
-
-.brand-pcm{
-    margin-top:22px;
-    font-size:17px;
-    letter-spacing:4px;
-    color:#bfc7ce;
-}
-
-.brand-title{
-    margin-top:18px;
-    font-size:46px;
-    font-weight:800;
-    letter-spacing:3px;
-}
-
-.brand-subtitle{
-    margin-top:14px;
-    color:#8e9aa4;
-    font-size:15px;
-}
-
-.login-card{
-    background:rgba(15,20,26,.95);
-    border:1px solid rgba(255,255,255,.1);
-    border-radius:18px;
-    padding:35px;
-    box-shadow:0 25px 80px rgba(0,0,0,.6);
-}
-
-.login-card h2{
-    font-size:25px;
-    margin-bottom:8px;
-}
-
-.login-card p{
-    color:#87919b;
-    font-size:14px;
-    margin-bottom:25px;
-}
-
-label{
-    display:block;
-    font-size:12px;
-    font-weight:bold;
-    color:#9faab3;
-    margin-bottom:8px;
-    text-transform:uppercase;
-    letter-spacing:.5px;
-}
-
-input,select,textarea{
-    width:100%;
-    background:#0a0e13;
-    border:1px solid #29313a;
-    border-radius:9px;
-    padding:13px 14px;
-    color:white;
-    outline:none;
-    font-size:14px;
-}
-
-input:focus,select:focus,textarea:focus{
-    border-color:#77838e;
-}
-
-.form-group{
-    margin-bottom:18px;
-}
-
-.btn{
-    width:100%;
-    border:0;
-    border-radius:9px;
-    padding:14px;
-    font-weight:bold;
-    cursor:pointer;
-    font-size:14px;
-    transition:.2s;
-}
-
-.btn-primary{
-    background:#e1e5e8;
-    color:#0b0f14;
-}
-
-.btn-primary:hover{
-    background:white;
-    transform:translateY(-1px);
-}
-
-.login-error{
-    display:none;
-    background:#3a1515;
-    color:#ffb3b3;
-    border:1px solid #713030;
-    padding:10px;
-    border-radius:8px;
-    font-size:13px;
-    margin-bottom:15px;
-}
-
-.footer{
-    position:absolute;
-    bottom:18px;
-    left:0;
-    right:0;
-    text-align:center;
-    color:#65717b;
-    font-size:12px;
-}
-
-/* =========================
-   APP
-========================= */
-
-#app{
-    display:none;
-    min-height:100vh;
-}
-
-.sidebar{
-    position:fixed;
-    left:0;
-    top:0;
-    bottom:0;
-    width:245px;
-    background:#0b0f14;
-    border-right:1px solid #202832;
-    padding:22px 14px;
-    z-index:10;
-}
-
-.sidebar-brand{
-    padding:8px 12px 25px;
-    border-bottom:1px solid #202832;
-    margin-bottom:20px;
-}
-
-.sidebar-brand strong{
-    font-size:19px;
-}
-
-.sidebar-brand span{
-    display:block;
-    color:#727e89;
-    font-size:11px;
-    margin-top:5px;
-    letter-spacing:1px;
-}
-
-.menu-btn{
-    width:100%;
-    text-align:left;
-    background:transparent;
-    border:0;
-    color:#9ca7b0;
-    padding:13px 14px;
-    border-radius:8px;
-    margin-bottom:5px;
-    cursor:pointer;
-    font-size:14px;
-}
-
-.menu-btn:hover,
-.menu-btn.active{
-    background:#171e26;
-    color:white;
-}
-
-.logout{
-    position:absolute;
-    left:14px;
-    right:14px;
-    bottom:20px;
-    color:#d88989;
-}
-
-.main{
-    margin-left:245px;
-    min-height:100vh;
-    padding:28px;
-    background:#0d1117;
-}
-
-.topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:28px;
-}
-
-.topbar h1{
-    font-size:25px;
-}
-
-.user-info{
-    color:#87929c;
-    font-size:13px;
-}
-
-.page{
-    display:none;
-}
-
-.page.active{
-    display:block;
-}
-
-/* =========================
-   CARDS
-========================= */
-
-.stats{
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:15px;
-    margin-bottom:25px;
-}
-
-.stat{
-    background:#121820;
-    border:1px solid #202a34;
-    border-radius:12px;
-    padding:20px;
-}
-
-.stat small{
-    color:#7e8a95;
-    font-size:11px;
-    text-transform:uppercase;
-}
-
-.stat strong{
-    display:block;
-    font-size:30px;
-    margin-top:10px;
-}
-
-/* =========================
-   DASHBOARD
-========================= */
-
-.section-title{
-    font-size:17px;
-    margin-bottom:15px;
-}
-
-.kanban{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:15px;
-}
-
-.kanban-column{
-    background:#10161d;
-    border:1px solid #202a34;
-    border-radius:12px;
-    min-height:350px;
-    padding:14px;
-}
-
-.column-title{
-    font-size:13px;
-    font-weight:bold;
-    margin-bottom:15px;
-    color:#aab4bc;
-}
-
-.empty{
-    color:#596570;
-    text-align:center;
-    padding:50px 10px;
-    font-size:13px;
-}
-
-/* =========================
-   FORM
-========================= */
-
-.form-card{
-    background:#11171e;
-    border:1px solid #222c36;
-    border-radius:14px;
-    padding:25px;
-}
-
-.form-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:25px;
-}
-
-.form-header h2{
-    font-size:21px;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:18px;
-}
-
-.full{
-    grid-column:1/-1;
-}
-
-textarea{
-    min-height:120px;
-    resize:vertical;
-}
-
-.actions{
-    display:flex;
-    justify-content:flex-end;
-    gap:10px;
-    margin-top:25px;
-}
-
-.btn-secondary{
-    width:auto;
-    background:#202932;
-    color:#d6dce0;
-    padding:12px 20px;
-}
-
-.btn-save{
-    width:auto;
-    background:#e1e5e8;
-    color:#080b0f;
-    padding:12px 25px;
-}
-
-.wk-info{
-    margin-top:7px;
-    font-size:11px;
-    color:#6f7b85;
-}
-
-.required{
-    color:#dca0a0;
-}
-
-/* =========================
-   HISTÓRICO
-========================= */
-
-.history-box{
-    background:#11171e;
-    border:1px solid #222c36;
-    border-radius:14px;
-    overflow:hidden;
-}
-
-.history-empty{
-    padding:60px;
-    text-align:center;
-    color:#68747f;
-}
-
-/* =========================
-   RESPONSIVO
-========================= */
-
-@media(max-width:900px){
-
-    .login-content{
-        grid-template-columns:1fr;
-        gap:30px;
-        max-width:500px;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PCM • CONTROLE DE O.S.</title>
+  <style>
+    /* ==================== RESET & BASE ==================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
-    .brand{
-        text-align:center;
+    body {
+      background-color: #121417;
+      color: #E1E1E6;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    .brand-title{
-        font-size:34px;
+    /* ==================== LOGIN TELA ==================== */
+    #login-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #0D0E10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
     }
 
-    .brand-ab{
-        font-size:60px;
+    .login-card {
+      background-color: #1A1D23;
+      border: 1px solid #2D323E;
+      border-radius: 8px;
+      padding: 30px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
-    .sidebar{
-        width:75px;
+    .login-header {
+      text-align: center;
+      margin-bottom: 25px;
     }
 
-    .sidebar-brand strong{
-        font-size:0;
+    .login-header h1 {
+      font-size: 1.5rem;
+      color: #FFF;
+      letter-spacing: 1px;
     }
 
-    .sidebar-brand strong:after{
-        content:"PCM";
-        font-size:18px;
+    .login-header p {
+      color: #8D95A5;
+      font-size: 0.85rem;
+      margin-top: 5px;
     }
 
-    .sidebar-brand span{
-        display:none;
+    .form-group {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
     }
 
-    .menu-btn{
-        font-size:0;
-        text-align:center;
+    .form-group label {
+      font-size: 0.85rem;
+      color: #A8B0BF;
+      margin-bottom: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .menu-btn:before{
-        content:"•";
-        font-size:22px;
+    .form-control {
+      background-color: #121417;
+      border: 1px solid #2D323E;
+      border-radius: 4px;
+      padding: 12px;
+      color: #FFF;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
     }
 
-    .logout{
-        font-size:0;
-        text-align:center;
+    .form-control:focus {
+      border-color: #007ACC;
     }
 
-    .logout:before{
-        content:"↪";
-        font-size:22px;
+    select.form-control {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238D95A5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 1em;
+      padding-right: 30px;
     }
 
-    .main{
-        margin-left:75px;
-        padding:18px;
+    select.form-control option {
+      background-color: #1A1D23;
+      color: #FFF;
     }
 
-    .stats{
-        grid-template-columns:repeat(2,1fr);
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      font-size: 0.95rem;
+      text-align: center;
+      display: inline-block;
     }
 
-    .kanban{
-        grid-template-columns:1fr;
+    .btn:active {
+      transform: scale(0.98);
     }
 
-    .grid{
-        grid-template-columns:1fr;
+    .btn-primary {
+      background-color: #007ACC;
+      color: #FFF;
+      width: 100%;
     }
 
-    .full{
-        grid-column:auto;
-    }
-}
-
-@media(max-width:550px){
-
-    .stats{
-        grid-template-columns:1fr 1fr;
+    .btn-primary:hover {
+      background-color: #005A9E;
     }
 
-    .login-card{
-        padding:25px;
+    .error-msg {
+      color: #FF5555;
+      font-size: 0.85rem;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
     }
 
-    .brand-title{
-        font-size:27px;
+    /* ==================== LAYOUT PRINCIPAL ==================== */
+    #app-layout {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+      flex-direction: row;
     }
 
-    .topbar{
-        display:block;
+    /* Sidebar Navegação */
+    .sidebar {
+      width: 250px;
+      background-color: #1A1D23;
+      border-right: 1px solid #2D323E;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: all 0.3s;
     }
 
-    .user-info{
-        margin-top:7px;
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #2D323E;
+      text-align: center;
     }
-}
-</style>
+
+    .sidebar-header h2 {
+      font-size: 1.2rem;
+      color: #FFF;
+      letter-spacing: 1px;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 20px 0;
+      flex: 1;
+    }
+
+    .sidebar-menu li {
+      margin-bottom: 5px;
+    }
+
+    .sidebar-menu a {
+      display: flex;
+      align-items: center;
+      padding: 12px 25px;
+      color: #8D95A5;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .sidebar-menu a:hover, .sidebar-menu a.active {
+      background-color: #252A34;
+      color: #FFF;
+      border-left: 4px solid #007ACC;
+    }
+
+    .sidebar-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #2D323E;
+      font-size: 0.85rem;
+      color: #8D95A5;
+    }
+
+    .user-info {
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #FFF;
+    }
+
+    /* Conteúdo Principal */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+
+    /* Header Mobile */
+    .mobile-header {
+      display: none;
+      background-color: #1A1D23;
+      padding: 15px 20px;
+      border-bottom: 1px solid #2D323E;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hamburger {
+      background: none;
+      border: none;
+      color: #FFF;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    /* Views */
+    .view-section {
+      padding: 30px;
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #FFF;
+      border-bottom: 1px solid #2D323E;
+      padding-bottom: 10px;
+    }
+
+    /* ==================== DASHBOARD ==================== */
+    .kpi-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .kpi-card {
+      background-color: #1A1D23;
+      border: 1px solid #2D323E;
+      border-radius: 6px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .kpi-card h3 {
+      font-size: 0.8rem;
+      color: #8D95A5;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .kpi-card .number {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #FFF;
+    }
+
+    .kpi-card.urgent .number {
+      color: #FF5555;
+    }
+
+    /* Kanban */
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .kanban-column {
+      background-color: #1A1D23;
+      border: 1px solid #2D323E;
+      border-radius: 6px;
+      padding: 15px;
+      min-height: 350px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kanban-column h4 {
+      font-size: 0.9rem;
+      color: #A8B0BF;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #2D323E;
+    }
+
+    .kanban-empty {
+      color: #525A69;
+      font-size: 0.85rem;
+      text-align: center;
+      margin-top: 20px;
+      font-style: italic;
+    }
+
+    /* ==================== FORMULÁRIO NOVA O.S. ==================== */
+    .form-container {
+      background-color: #1A1D23;
+      border: 1px solid #2D323E;
+      border-radius: 8px;
+      padding: 25px;
+      max-width: 900px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .form-grid .full-width {
+      grid-column: span 2;
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    /* Botões de Prioridade */
+    .priority-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-priority {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid transparent;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #FFF;
+      opacity: 0.4;
+      transition: all 0.2s;
+    }
+
+    .btn-priority.high { background-color: #D32F2F; }
+    .btn-priority.medium { background-color: #F57C00; }
+    .btn-priority.moderate { background-color: #388E3C; }
+
+    .btn-priority.selected {
+      opacity: 1;
+      border-color: #FFF;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid #2D323E;
+    }
+
+    .btn-secondary {
+      background-color: #2D323E;
+      color: #FFF;
+    }
+
+    .btn-secondary:hover {
+      background-color: #3E4554;
+    }
+
+    .btn-success {
+      background-color: #2E7D32;
+      color: #FFF;
+    }
+
+    .btn-success:hover {
+      background-color: #1B5E20;
+    }
+
+    /* Feedback Mensagem */
+    .alert-box {
+      background-color: #1B5E20;
+      color: #FFF;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    /* ==================== PLACEHOLDERS ==================== */
+    .placeholder-card {
+      background-color: #1A1D23;
+      border: 1px dashed #2D323E;
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      color: #8D95A5;
+    }
+
+    /* ==================== RESPONSIVIDADE ==================== */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      #app-layout {
+        flex-direction: column;
+      }
+
+      .mobile-header {
+        display: flex;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: none;
+      }
+
+      .sidebar.open {
+        display: flex;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid .full-width {
+        grid-column: span 1;
+      }
+
+      .priority-group {
+        flex-direction: row;
+      }
+
+      .view-section {
+        padding: 15px;
+      }
+    }
+  </style>
 </head>
-
 <body>
 
-<!-- =========================
-     LOGIN
-========================= -->
+  <!-- ==================== TELA DE LOGIN ==================== -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>PCM • OS</h1>
+        <p>Controle de Ordens de Serviço</p>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-user">Usuário</label>
+          <select id="login-user" class="form-control" required>
+            <option value="" disabled selected>Selecione um usuário...</option>
+            <option value="PCM / Administrador">PCM / Administrador</option>
+            <option value="Adryan">Adryan</option>
+            <option value="Fabio">Fabio</option>
+            <option value="Rodrigo">Rodrigo</option>
+            <option value="Leonardo">Leonardo</option>
+            <option value="Vilmar">Vilmar</option>
+            <option value="Rafael">Rafael</option>
+            <option value="Danilo">Danilo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="login-pin">PIN</label>
+          <input type="password" id="login-pin" class="form-control" maxlength="4" placeholder="••••" required pattern="\d{4}" inputmode="numeric">
+        </div>
+        <button type="submit" class="btn btn-primary">ENTRAR</button>
+        <div id="login-error" class="error-msg">PIN incorreto. Tente novamente.</div>
+      </form>
+    </div>
+  </div>
 
-<div id="loginScreen">
+  <!-- ==================== LAYOUT DO SISTEMA ==================== -->
+  <div id="app-layout">
+    
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+      <strong style="color: #FFF;">PCM • CONTROLE DE O.S.</strong>
+      <button class="hamburger" id="hamburger-btn">&#9776;</button>
+    </div>
 
-    <div class="login-bg"></div>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>PCM • O.S.</h2>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="#" class="nav-link active" data-target="view-dashboard">Dashboard</a></li>
+        <li><a href="#" class="nav-link" data-target="view-nova-os">Nova O.S.</a></li>
+        <li><a href="#" class="nav-link" data-target="view-historico">Histórico</a></li>
+        <li><a href="#" class="nav-link" data-target="view-equipe">Equipe</a></li>
+        <li><a href="#" class="nav-link" data-target="view-maquinas">Máquinas</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <div class="user-info" id="logged-user-display">Usuário</div>
+        <a href="#" id="btn-logout" style="color: #FF5555; text-decoration: none; font-size: 0.85rem; font-weight: 600;">Sair</a>
+      </div>
+    </nav>
 
-    <div class="login-content">
+    <!-- Main Content Area -->
+    <main class="main-content">
 
-        <div class="brand">
-            <div class="brand-ab">AB</div>
+      <!-- ==================== VIEW: DASHBOARD ==================== -->
+      <section id="view-dashboard" class="view-section active">
+        <h2 class="page-title">Dashboard</h2>
 
-            <div class="brand-pcm">
-                PCM • CONTROLE INDUSTRIAL
-            </div>
-
-            <div class="brand-title">
-                CONTROLE DE O.S.
-            </div>
-
-            <div class="brand-subtitle">
-                Gestão de Ordens de Serviço de Manutenção
-            </div>
+        <div class="kpi-container">
+          <div class="kpi-card">
+            <h3>O.S. Abertas</h3>
+            <div class="number">0</div>
+          </div>
+          <div class="kpi-card">
+            <h3>Em Produção</h3>
+            <div class="number">0</div>
+          </div>
+          <div class="kpi-card">
+            <h3>Aguard. Material</h3>
+            <div class="number">0</div>
+          </div>
+          <div class="kpi-card">
+            <h3>Finalizadas</h3>
+            <div class="number">0</div>
+          </div>
+          <div class="kpi-card urgent">
+            <h3>Urgentes</h3>
+            <div class="number">0</div>
+          </div>
         </div>
 
-        <div class="login-card">
+        <div class="kanban-board">
+          <div class="kanban-column">
+            <h4>O.S. ABERTA</h4>
+            <div class="kanban-empty">Nenhuma O.S.</div>
+          </div>
+          <div class="kanban-column">
+            <h4>EM PRODUÇÃO</h4>
+            <div class="kanban-empty">Nenhuma O.S.</div>
+          </div>
+          <div class="kanban-column">
+            <h4>AGUARDANDO MATERIAL</h4>
+            <div class="kanban-empty">Nenhuma O.S.</div>
+          </div>
+          <div class="kanban-column">
+            <h4>FINALIZADA</h4>
+            <div class="kanban-empty">Nenhuma O.S.</div>
+          </div>
+        </div>
+      </section>
 
-            <h2>Acesso ao sistema</h2>
-            <p>Entre utilizando seu usuário e PIN.</p>
+      <!-- ==================== VIEW: NOVA O.S. ==================== -->
+      <section id="view-nova-os" class="view-section">
+        <h2 class="page-title">Nova Ordem de Serviço</h2>
 
-            <div id="loginError" class="login-error">
-                Usuário ou PIN incorreto.
-            </div>
+        <div id="os-alert" class="alert-box"></div>
 
-            <div class="form-group">
-                <label>Usuário</label>
+        <div class="form-container">
+          <form id="form-nova-os">
+            <div class="form-grid">
+              
+              <!-- 1. Nº DA O.S. WK -->
+              <div class="form-group">
+                <label for="os-numero">Nº da O.S. WK *</label>
+                <input type="text" id="os-numero" class="form-control" placeholder="10 dígitos numéricos" maxlength="10" required pattern="\d{10}">
+              </div>
 
-                <select id="usuario">
-                    <option value="">Selecione...</option>
-                    <option value="PCM">PCM / Administrador</option>
-                    <option value="Adryan">Adryan</option>
-                    <option value="Fabio">Fabio</option>
-                    <option value="Rodrigo">Rodrigo</option>
-                    <option value="Leonardo">Leonardo</option>
-                    <option value="Vilmar">Vilmar</option>
-                    <option value="Rafael">Rafael</option>
-                    <option value="Danilo">Danilo</option>
+              <!-- 2. DATA DE ABERTURA -->
+              <div class="form-group">
+                <label for="os-data-abertura">Data de Abertura *</label>
+                <input type="date" id="os-data-abertura" class="form-control" required>
+              </div>
+
+              <!-- 3. MÁQUINA -->
+              <div class="form-group">
+                <label for="os-maquina">Máquina</label>
+                <input type="text" id="os-maquina" class="form-control" placeholder="Nome da máquina">
+              </div>
+
+              <!-- 4. CÓDIGO / TAG -->
+              <div class="form-group">
+                <label for="os-tag">Código / TAG</label>
+                <input type="text" id="os-tag" class="form-control" placeholder="Ex: PIC-1101">
+              </div>
+
+              <!-- 5. SETOR -->
+              <div class="form-group">
+                <label for="os-setor">Setor *</label>
+                <select id="os-setor" class="form-control" required>
+                  <option value="" disabled selected>Selecione o setor...</option>
+                  <option value="Serraria Mendes">Serraria Mendes</option>
+                  <option value="Serraria Schiffer">Serraria Schiffer</option>
+                  <option value="Exportação">Exportação</option>
+                  <option value="Classificação">Classificação</option>
+                  <option value="Caldeira">Caldeira</option>
+                  <option value="Secagem">Secagem</option>
+                  <option value="Fábrica de Componentes">Fábrica de Componentes</option>
+                  <option value="Escritório">Escritório</option>
                 </select>
+              </div>
+
+              <!-- 6. TIPO DE MANUTENÇÃO -->
+              <div class="form-group">
+                <label for="os-tipo">Tipo de Manutenção *</label>
+                <select id="os-tipo" class="form-control" required>
+                  <option value="" disabled selected>Selecione o tipo...</option>
+                  <option value="Corretiva">Corretiva</option>
+                  <option value="Preventiva">Preventiva</option>
+                  <option value="Preditiva">Preditiva</option>
+                </select>
+              </div>
+
+              <!-- 7. DESCRIÇÃO DO PROBLEMA / SERVIÇO -->
+              <div class="form-group full-width">
+                <label for="os-descricao">Descrição do Problema / Serviço *</label>
+                <textarea id="os-descricao" class="form-control" placeholder="Descreva detalhadamente o problema ou serviço solicitado..." required></textarea>
+              </div>
+
+              <!-- 8. RESPONSÁVEL -->
+              <div class="form-group">
+                <label for="os-responsavel">Responsável *</label>
+                <select id="os-responsavel" class="form-control" required>
+                  <option value="" disabled selected>Selecione o responsável...</option>
+                  <option value="Adryan — Elétrica">Adryan — Elétrica</option>
+                  <option value="Fabio — Elétrica">Fabio — Elétrica</option>
+                  <option value="Rodrigo — Elétrica">Rodrigo — Elétrica</option>
+                  <option value="Leonardo — Mecânica">Leonardo — Mecânica</option>
+                  <option value="Vilmar — Mecânica">Vilmar — Mecânica</option>
+                  <option value="Rafael — Mecânica">Rafael — Mecânica</option>
+                  <option value="Danilo — Lubrificação / Mecânica">Danilo — Lubrificação / Mecânica</option>
+                </select>
+              </div>
+
+              <!-- 9. PRAZO -->
+              <div class="form-group">
+                <label for="os-prazo">Prazo</label>
+                <input type="date" id="os-prazo" class="form-control">
+              </div>
+
+              <!-- 10. PRIORIDADE -->
+              <div class="form-group full-width">
+                <label>Prioridade *</label>
+                <input type="hidden" id="os-prioridade" required>
+                <div class="priority-group">
+                  <button type="button" class="btn-priority high" data-value="ALTA">🟥 ALTA</button>
+                  <button type="button" class="btn-priority medium" data-value="MÉDIA">🟧 MÉDIA</button>
+                  <button type="button" class="btn-priority moderate" data-value="MODERADA">🟩 MODERADA</button>
+                </div>
+              </div>
+
+              <!-- 11. OBSERVAÇÕES -->
+              <div class="form-group full-width">
+                <label for="os-obs">Observações</label>
+                <textarea id="os-obs" class="form-control" placeholder="Observações adicionais (opcional)..."></textarea>
+              </div>
+
             </div>
 
-            <div class="form-group">
-                <label>PIN</label>
-
-                <input
-                    id="pin"
-                    type="password"
-                    inputmode="numeric"
-                    maxlength="4"
-                    placeholder="Digite seu PIN"
-                >
+            <!-- BOTÕES -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="btn-cancelar-os">CANCELAR</button>
+              <button type="submit" class="btn btn-success">CADASTRAR O.S.</button>
             </div>
-
-            <button class="btn btn-primary" onclick="entrar()">
-                ENTRAR
-            </button>
-
+          </form>
         </div>
+      </section>
 
-    </div>
-
-    <div class="footer">
-        Juntos por um futuro melhor
-    </div>
-
-</div>
-
-
-<!-- =========================
-     SISTEMA
-========================= -->
-
-<div id="app">
-
-    <aside class="sidebar">
-
-        <div class="sidebar-brand">
-            <strong>PCM • CONTROLE</strong>
-            <span>ORDENS DE SERVIÇO</span>
+      <!-- ==================== VIEW: HISTÓRICO ==================== -->
+      <section id="view-historico" class="view-section">
+        <h2 class="page-title">Histórico de O.S.</h2>
+        <div class="placeholder-card">
+          <h3>Histórico</h3>
+          <p style="margin-top: 10px;">Esta seção será conectada ao banco de dados posteriormente.</p>
         </div>
+      </section>
 
-        <button class="menu-btn active" onclick="mostrarPagina('dashboard',this)">
-            Dashboard
-        </button>
-
-        <button class="menu-btn" onclick="mostrarPagina('novaOS',this)">
-            Nova O.S.
-        </button>
-
-        <button class="menu-btn" onclick="mostrarPagina('historico',this)">
-            Histórico
-        </button>
-
-        <button class="menu-btn" onclick="mostrarPagina('equipe',this)">
-            Equipe
-        </button>
-
-        <button class="menu-btn" onclick="mostrarPagina('maquinas',this)">
-            Máquinas
-        </button>
-
-        <button class="menu-btn logout" onclick="sair()">
-            Sair
-        </button>
-
-    </aside>
-
-
-    <main class="main">
-
-        <div class="topbar">
-
-            <div>
-                <h1 id="pageTitle">Dashboard</h1>
-            </div>
-
-            <div class="user-info">
-                Usuário: <strong id="usuarioLogado">-</strong>
-            </div>
-
+      <!-- ==================== VIEW: EQUIPE ==================== -->
+      <section id="view-equipe" class="view-section">
+        <h2 class="page-title">Equipe de Manutenção</h2>
+        <div class="placeholder-card">
+          <h3>Controle de Equipe</h3>
+          <p style="margin-top: 10px;">Esta página será usada para o controle da equipe de manutenção.</p>
         </div>
-
-
-        <!-- =========================
-             DASHBOARD
-        ========================= -->
-
-        <section id="dashboard" class="page active">
-
-            <div class="stats">
-
-                <div class="stat">
-                    <small>O.S. Abertas</small>
-                    <strong id="statAbertas">0</strong>
-                </div>
-
-                <div class="stat">
-                    <small>Em Produção</small>
-                    <strong id="statProducao">0</strong>
-                </div>
-
-                <div class="stat">
-                    <small>Aguardando Material</small>
-                    <strong id="statMaterial">0</strong>
-                </div>
-
-                <div class="stat">
-                    <small>Finalizadas</small>
-                    <strong id="statFinalizadas">0</strong>
-                </div>
-
-                <div class="stat">
-                    <small>Urgentes</small>
-                    <strong id="statUrgentes">0</strong>
-                </div>
-
-            </div>
-
-
-            <div class="section-title">
-                Controle das Ordens de Serviço
-            </div>
-
-            <div class="kanban">
-
-                <div class="kanban-column">
-                    <div class="column-title">
-                        O.S. ABERTA
-                    </div>
-
-                    <div class="empty">
-                        Nenhuma O.S.
-                    </div>
-                </div>
-
-
-                <div class="kanban-column">
-                    <div class="column-title">
-                        EM PRODUÇÃO
-                    </div>
-
-                    <div class="empty">
-                        Nenhuma O.S.
-                    </div>
-                </div>
-
-
-                <div class="kanban-column">
-                    <div class="column-title">
-                        AGUARDANDO MATERIAL
-                    </div>
-
-                    <div class="empty">
-                        Nenhuma O.S.
-                    </div>
-                </div>
-
-
-                <div class="kanban-column">
-                    <div class="column-title">
-                        FINALIZADA
-                    </div>
-
-                    <div class="empty">
-                        Nenhuma O.S.
-                    </div>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             NOVA OS
-        ========================= -->
-
-        <section id="novaOS" class="page">
-
-            <div class="form-card">
-
-                <div class="form-header">
-                    <h2>Nova Ordem de Serviço</h2>
-                </div>
-
-
-                <form id="formOS" onsubmit="criarOS(event)">
-
-                    <div class="grid">
-
-                        <!-- Nº WK -->
-
-                        <div class="form-group">
-
-                            <label>
-                                Nº DA O.S. WK <span class="required">*</span>
-                            </label>
-
-                            <input
-                                id="numeroWK"
-                                type="text"
-                                inputmode="numeric"
-                                maxlength="10"
-                                pattern="[0-9]{10}"
-                                placeholder="Digite os 10 números da O.S."
-                                required
-                                oninput="somenteNumeros(this)"
-                            >
-
-                            <div class="wk-info">
-                                Número oficial da O.S. gerado no sistema WK da empresa.
-                            </div>
-
-                        </div>
-
-
-                        <!-- DATA -->
-
-                        <div class="form-group">
-
-                            <label>Data de abertura</label>
-
-                            <input
-                                id="dataAbertura"
-                                type="date"
-                                required
-                            >
-
-                        </div>
-
-
-                        <!-- MÁQUINA -->
-
-                        <div class="form-group">
-
-                            <label>Máquina</label>
-
-                            <input
-                                id="maquina"
-                                type="text"
-                                placeholder="Nome da máquina"
-                                required
-                            >
-
-                        </div>
-
-
-                        <!-- TAG -->
-
-                        <div class="form-group">
-
-                            <label>Código / TAG</label>
-
-                            <input
-                                id="tag"
-                                type="text"
-                                placeholder="Ex.: PIC-1101"
-                            >
-
-                        </div>
-
-
-                        <!-- SETOR -->
-
-                        <div class="form-group">
-
-                            <label>Setor</label>
-
-                            <select id="setor" required>
-
-                                <option value="">
-                                    Selecione...
-                                </option>
-
-                                <option>
-                                    TMM
-                                </option>
-
-                                <option>
-                                    Linha Schiffer
-                                </option>
-
-                                <option>
-                                    Mendes
-                                </option>
-
-                                <option>
-                                    Fábrica de Componentes
-                                </option>
-
-                                <option>
-                                    Outro
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- TIPO -->
-
-                        <div class="form-group">
-
-                            <label>Tipo de manutenção</label>
-
-                            <select id="tipo" required>
-
-                                <option value="">
-                                    Selecione...
-                                </option>
-
-                                <option>
-                                    Corretiva
-                                </option>
-
-                                <option>
-                                    Preventiva
-                                </option>
-
-                                <option>
-                                    Preditiva
-                                </option>
-
-                                <option>
-                                    Inspeção
-                                </option>
-
-                                <option>
-                                    Lubrificação
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- RESPONSÁVEL -->
-
-                        <div class="form-group">
-
-                            <label>Responsável</label>
-
-                            <select id="responsavel" required>
-
-                                <option value="">
-                                    Selecione...
-                                </option>
-
-                                <option>
-                                    Adryan
-                                </option>
-
-                                <option>
-                                    Fabio
-                                </option>
-
-                                <option>
-                                    Rodrigo
-                                </option>
-
-                                <option>
-                                    Leonardo
-                                </option>
-
-                                <option>
-                                    Vilmar
-                                </option>
-
-                                <option>
-                                    Rafael
-                                </option>
-
-                                <option>
-                                    Danilo
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- PRAZO -->
-
-                        <div class="form-group">
-
-                            <label>Prazo</label>
-
-                            <input
-                                id="prazo"
-                                type="date"
-                            >
-
-                        </div>
-
-
-                        <!-- PRIORIDADE -->
-
-                        <div class="form-group">
-
-                            <label>Prioridade</label>
-
-                            <select id="prioridade" required>
-
-                                <option value="">
-                                    Selecione...
-                                </option>
-
-                                <option value="Alta">
-                                    Alta / Urgência
-                                </option>
-
-                                <option value="Média">
-                                    Média
-                                </option>
-
-                                <option value="Moderada">
-                                    Moderada
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- DESCRIÇÃO -->
-
-                        <div class="form-group full">
-
-                            <label>
-                                Descrição do problema / serviço
-                            </label>
-
-                            <textarea
-                                id="descricao"
-                                placeholder="Descreva o problema ou serviço solicitado..."
-                                required
-                            ></textarea>
-
-                        </div>
-
-
-                        <!-- OBS -->
-
-                        <div class="form-group full">
-
-                            <label>
-                                Observações
-                            </label>
-
-                            <textarea
-                                id="observacoes"
-                                placeholder="Informações adicionais..."
-                            ></textarea>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="actions">
-
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            onclick="mostrarPagina('dashboard')"
-                        >
-                            CANCELAR
-                        </button>
-
-                        <button
-                            type="submit"
-                            class="btn btn-save"
-                        >
-                            CRIAR O.S.
-                        </button>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             HISTÓRICO
-        ========================= -->
-
-        <section id="historico" class="page">
-
-            <div class="history-box">
-
-                <div class="history-empty">
-
-                    <h3>Histórico de O.S.</h3>
-
-                    <p style="margin-top:10px;">
-                        As ordens de serviço criadas aparecerão aqui.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             EQUIPE
-        ========================= -->
-
-        <section id="equipe" class="page">
-
-            <div class="form-card">
-
-                <h2>Equipe de Manutenção</h2>
-
-                <p style="margin-top:15px;color:#78848f;">
-                    Cadastro e controle da equipe serão adicionados nesta tela.
-                </p>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             MÁQUINAS
-        ========================= -->
-
-        <section id="maquinas" class="page">
-
-            <div class="form-card">
-
-                <h2>Máquinas</h2>
-
-                <p style="margin-top:15px;color:#78848f;">
-                    Cadastro das máquinas e TAGs será adicionado nesta tela.
-                </p>
-
-            </div>
-
-        </section>
+      </section>
+
+      <!-- ==================== VIEW: MÁQUINAS ==================== -->
+      <section id="view-maquinas" class="view-section">
+        <h2 class="page-title">Cadastro e Controle de Máquinas</h2>
+        <div class="placeholder-card">
+          <h3>Máquinas</h3>
+          <p style="margin-top: 10px;">Esta página será utilizada para o cadastro e controle das máquinas.</p>
+        </div>
+      </section>
 
     </main>
+  </div>
 
-</div>
-
-
-<script>
-
-/* =========================================
-   USUÁRIOS / PIN
-========================================= */
-
-const usuarios = {
-
-    "PCM": "0109",
-
-    "Adryan": "6101",
-
-    "Fabio": "6102",
-
-    "Rodrigo": "6103",
-
-    "Leonardo": "6104",
-
-    "Vilmar": "6105",
-
-    "Rafael": "6106",
-
-    "Danilo": "6107"
-
-};
-
-
-/* =========================================
-   LOGIN
-========================================= */
-
-function entrar(){
-
-    const usuario =
-        document.getElementById("usuario").value;
-
-    const pin =
-        document.getElementById("pin").value;
-
-    const erro =
-        document.getElementById("loginError");
-
-
-    if(
-        usuario &&
-        usuarios[usuario] === pin
-    ){
-
-        document.getElementById("loginScreen")
-            .style.display = "none";
-
-        document.getElementById("app")
-            .style.display = "block";
-
-        document.getElementById("usuarioLogado")
-            .textContent = usuario;
-
-        erro.style.display = "none";
-
-    }else{
-
-        erro.style.display = "block";
-
-    }
-
-}
-
-
-/* ENTER NO PIN */
-
-document.getElementById("pin")
-.addEventListener("keydown",function(e){
-
-    if(e.key === "Enter"){
-        entrar();
-    }
-
-});
-
-
-/* =========================================
-   SAIR
-========================================= */
-
-function sair(){
-
-    document.getElementById("app")
-        .style.display = "none";
-
-    document.getElementById("loginScreen")
-        .style.display = "flex";
-
-    document.getElementById("pin").value = "";
-
-}
-
-
-/* =========================================
-   NAVEGAÇÃO
-========================================= */
-
-function mostrarPagina(pagina,botao){
-
-    document
-        .querySelectorAll(".page")
-        .forEach(p=>{
-            p.classList.remove("active");
-        });
-
-
-    document
-        .getElementById(pagina)
-        .classList.add("active");
-
-
-    document
-        .querySelectorAll(".menu-btn")
-        .forEach(b=>{
-            b.classList.remove("active");
-        });
-
-
-    if(botao){
-        botao.classList.add("active");
-    }
-
-
-    const titulos = {
-
-        dashboard:"Dashboard",
-
-        novaOS:"Nova O.S.",
-
-        historico:"Histórico",
-
-        equipe:"Equipe",
-
-        maquinas:"Máquinas"
-
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    // --- USUÁRIOS E PINS DEFINIDOS ---
+    const usersDB = {
+      "PCM / Administrador": "0109",
+      "Adryan": "6101",
+      "Fabio": "6102",
+      "Rodrigo": "6103",
+      "Leonardo": "6104",
+      "Vilmar": "6105",
+      "Rafael": "6106",
+      "Danilo": "6107"
     };
 
+    let currentUser = null;
 
-    document
-        .getElementById("pageTitle")
-        .textContent = titulos[pagina] || "PCM";
+    // --- ELEMENTOS DOM ---
+    const loginScreen = document.getElementById('login-screen');
+    const loginForm = document.getElementById('login-form');
+    const loginUser = document.getElementById('login-user');
+    const loginPin = document.getElementById('login-pin');
+    const loginError = document.getElementById('login-error');
 
+    const appLayout = document.getElementById('app-layout');
+    const loggedUserDisplay = document.getElementById('logged-user-display');
+    const btnLogout = document.getElementById('btn-logout');
 
-    if(pagina === "novaOS"){
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebar = document.getElementById('sidebar');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const viewSections = document.querySelectorAll('.view-section');
 
-        prepararNovaOS();
+    const formNovaOS = document.getElementById('form-nova-os');
+    const fieldDataAbertura = document.getElementById('os-data-abertura');
+    const fieldNumeroWK = document.getElementById('os-numero');
+    const priorityButtons = document.querySelectorAll('.btn-priority');
+    const hiddenPriority = document.getElementById('os-prioridade');
+    const btnCancelarOS = document.getElementById('btn-cancelar-os');
+    const osAlert = document.getElementById('os-alert');
 
+    // --- AUTENTICAÇÃO ---
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const selectedUser = loginUser.value;
+      const enteredPin = loginPin.value;
+
+      if (usersDB[selectedUser] && usersDB[selectedUser] === enteredPin) {
+        currentUser = selectedUser;
+        loginError.style.display = 'none';
+        loginScreen.style.display = 'none';
+        appLayout.style.display = 'flex';
+        loggedUserDisplay.textContent = currentUser;
+        
+        // Inicializações
+        setTodayDate();
+        navigateTo('view-dashboard');
+      } else {
+        loginError.style.display = 'block';
+      }
+    });
+
+    btnLogout.addEventListener('click', (e) => {
+      e.preventDefault();
+      currentUser = null;
+      loginForm.reset();
+      loginError.style.display = 'none';
+      appLayout.style.display = 'none';
+      loginScreen.style.display = 'flex';
+    });
+
+    // --- DATA ATUAL AUTOMÁTICA ---
+    function setTodayDate() {
+      const today = new Date().toISOString().split('T')[0];
+      fieldDataAbertura.value = today;
     }
 
-}
+    // --- NAVEGAÇÃO SPA ---
+    function navigateTo(targetId) {
+      viewSections.forEach(section => {
+        section.classList.remove('active');
+        if (section.id === targetId) {
+          section.classList.add('active');
+        }
+      });
 
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-target') === targetId) {
+          link.classList.add('active');
+        }
+      });
 
-/* =========================================
-   PREPARAR NOVA OS
-========================================= */
+      // Fechar menu mobile ao clicar
+      sidebar.classList.remove('open');
+    }
 
-function prepararNovaOS(){
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = link.getAttribute('data-target');
+        navigateTo(target);
+      });
+    });
 
-    const hoje =
-        new Date()
-        .toISOString()
-        .split("T")[0];
+    // Toggle menu mobile
+    hamburgerBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
 
+    // --- MANIPULAÇÃO DE PRIORIDADE (3 BOTÕES) ---
+    priorityButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        priorityButtons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        hiddenPriority.value = btn.getAttribute('data-value');
+      });
+    });
 
-    document
-        .getElementById("dataAbertura")
-        .value = hoje;
+    // Restrição para o campo de número WK aceitar apenas numéricos
+    fieldNumeroWK.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '');
+    });
 
-}
+    // --- CANCELAR FORMULÁRIO ---
+    btnCancelarOS.addEventListener('click', () => {
+      resetForm();
+      navigateTo('view-dashboard');
+    });
 
+    function resetForm() {
+      formNovaOS.reset();
+      setTodayDate();
+      hiddenPriority.value = '';
+      priorityButtons.forEach(b => b.classList.remove('selected'));
+    }
 
-/* =========================================
-   SOMENTE NÚMEROS
-========================================= */
+    // --- SUBMIT DO FORMULÁRIO ---
+    formNovaOS.addEventListener('submit', (e) => {
+      e.preventDefault();
 
-function somenteNumeros(campo){
-
-    campo.value =
-        campo.value
-        .replace(/\D/g,"")
-        .slice(0,10);
-
-}
-
-
-/* =========================================
-   CRIAR OS
-========================================= */
-
-function criarOS(event){
-
-    event.preventDefault();
-
-
-    const numeroWK =
-        document.getElementById("numeroWK").value.trim();
-
-
-    /* VALIDAÇÃO DO WK */
-
-    if(!/^\d{10}$/.test(numeroWK)){
-
-        alert(
-            "O número da O.S. WK deve conter exatamente 10 números."
-        );
-
-        document
-            .getElementById("numeroWK")
-            .focus();
-
+      const numWK = fieldNumeroWK.value.trim();
+      if (numWK.length !== 10) {
+        alert('O Nº da O.S. WK deve conter exatamente 10 números.');
         return;
+      }
 
-    }
+      if (!hiddenPriority.value) {
+        alert('Por favor, selecione uma Prioridade antes de cadastrar.');
+        return;
+      }
 
+      const setor = document.getElementById('os-setor').value;
+      const tipo = document.getElementById('os-tipo').value;
+      const prioridade = hiddenPriority.value;
+      const responsavel = document.getElementById('os-responsavel').value;
 
-    const maquina =
-        document.getElementById("maquina").value;
+      // Exibir mensagem de sucesso
+      osAlert.innerHTML = `
+        <strong>O.S. Cadastrada com Sucesso!</strong><br>
+        • Nº da O.S.: ${numWK}<br>
+        • Setor: ${setor}<br>
+        • Tipo: ${tipo}<br>
+        • Prioridade: ${prioridade}<br>
+        • Responsável: ${responsavel}
+      `;
+      osAlert.style.display = 'block';
 
-    const tag =
-        document.getElementById("tag").value;
+      // Limpar formulário e redirecionar
+      resetForm();
 
-    const setor =
-        document.getElementById("setor").value;
-
-    const tipo =
-        document.getElementById("tipo").value;
-
-    const responsavel =
-        document.getElementById("responsavel").value;
-
-    const prioridade =
-        document.getElementById("prioridade").value;
-
-    const descricao =
-        document.getElementById("descricao").value;
-
-
-    alert(
-        "O.S. criada com sucesso!\n\n" +
-
-        "Nº O.S. WK: " + numeroWK + "\n" +
-
-        "Máquina: " + maquina + "\n" +
-
-        "TAG: " + tag + "\n" +
-
-        "Setor: " + setor + "\n" +
-
-        "Tipo: " + tipo + "\n" +
-
-        "Responsável: " + responsavel + "\n" +
-
-        "Prioridade: " + prioridade + "\n\n" +
-
-        "Descrição:\n" + descricao
-    );
-
-
-    /* LIMPA FORMULÁRIO */
-
-    document
-        .getElementById("formOS")
-        .reset();
-
-
-    prepararNovaOS();
-
-
-    /* VOLTA AO DASHBOARD */
-
-    mostrarPagina("dashboard");
-
-}
-
-
-/* =========================================
-   INICIALIZAÇÃO
-========================================= */
-
-prepararNovaOS();
-
-</script>
-
+      setTimeout(() => {
+        osAlert.style.display = 'none';
+        navigateTo('view-dashboard');
+      }, 4000);
+    });
+  </script>
 </body>
 </html>
