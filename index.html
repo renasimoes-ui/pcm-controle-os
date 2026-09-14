@@ -12,7 +12,7 @@
 <link rel="icon" href="data:,">
 
 <!-- CARREGAMENTO MOBILE SEGURO: impede versões antigas de Service Worker/cache de prender o app em tela preta. -->
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=2ecwFndG_t8l8hmW1B_3ZJG4kPBS-GKS9KskLzo8Nz3LpHdh-aNrJ-jIT09HkOtNJBjKdykb-UfECBO8UhwvF3no3Wkxj2gJMsi1ckeE7uVgEIxxktnNOq57uHkWYGX_dTXVDEIOVEbflf6hZpnS6xOSjwqtH8HSzaObnrOXFwB9KYNKzZonbvQ7Stw6xKe7UUnAsWJLCCDpcs9Tj_iFivP1gMonz1GLZrkJGmmS6inEWsYsB2AEMWponRYcVfwg-dpQ_PTjoAzQzvYIrszKP9XPE8czdEXJmWfhue6NVTDc6ZJoE1FIQrMJpqc9yrxq2g5NI3_DWb3kL9nWJKXOWw" charset="UTF-8"></script><script>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=cgnsQoghLfxQxjXqBvGqZNPkW3iJbNk3vUotuXxOqzjYVBDDH-vUbCccWYqsO4medVnhtMmvC0cyxq-OLe7VdlkvT2bOw5RRteby5InF1RwXRAzT2pS0eeAtEgEAV8_fIkFYFNMF4qlFScjyQy3Lst_nhXCqf7B8B6e-QcLz2th_IRgon-6TBk2_Xv0XRlds_EeGrgEotmzn6-PUHLNkh4tqjxrIdXbjTZ30pIIgqOrXkDi4iC4PA9P0_dPyBzjr0-0ecTey4CIHClr-9yr5-cwIV6-eIRdTsFtSjs4Ejtlrf9-pHguZ7_axcfKx0qWC9W8fF647j6sR6mhyIUv6FQ" charset="UTF-8"></script><script>
 (function(){
   try{
     if('serviceWorker' in navigator && sessionStorage.getItem('pcm_cache_clean') !== '1'){
@@ -1283,6 +1283,21 @@ body{min-height:100dvh;overflow-x:hidden;-webkit-text-size-adjust:100%;}
  .dashboard-date{text-align:left}
  .dashboard-stat .stat-icon{font-size:15px;margin-bottom:5px}
 }
+
+/* CONTROLE DE FUNCIONÁRIOS */
+.user-control-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}
+.user-form-card{background:#020617;border:1px solid #1e293b;border-radius:14px;padding:18px;margin-bottom:18px}
+.user-form-title{font-size:13px;font-weight:800;margin-bottom:15px}
+.user-status{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;font-size:8px;font-weight:900}
+.user-status.active{background:#14532d;color:#bbf7d0}.user-status.inactive{background:#3f3f46;color:#d4d4d8}
+.user-actions{display:flex;gap:7px;flex-wrap:wrap}
+.user-action{border:1px solid #334155;background:#0f172a;color:#e2e8f0;border-radius:7px;padding:7px 9px;font-size:9px;font-weight:800;cursor:pointer}
+.user-action:hover{filter:brightness(1.18)}
+.user-action.danger{border-color:#7f1d1d;color:#fecaca}.user-action.success{border-color:#166534;color:#bbf7d0}
+.team-free{display:inline-flex;align-items:center;gap:5px;color:#cbd5e1;font-weight:800}.team-free-dot{width:7px;height:7px;border-radius:50%;background:#94a3b8;display:inline-block}
+.team-busy{display:inline-flex;align-items:center;gap:5px;color:#bbf7d0;font-weight:800}.team-busy-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block}
+.team-material{display:inline-flex;align-items:center;gap:5px;color:#fed7aa;font-weight:800}.team-material-dot{width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block}
+@media(max-width:700px){.user-control-head{align-items:flex-start;flex-direction:column}.user-actions{min-width:150px}.user-action{padding:9px 10px}}
 </style>
 </head>
 
@@ -1327,15 +1342,7 @@ window.addEventListener('unhandledrejection',function(ev){
 
         <label class="form-label">USUÁRIO</label>
         <select id="loginUser" class="form-select">
-            <option value="">Selecione o usuário</option>
-            <option value="PCM / Administrador">PCM / Administrador</option>
-            <option value="Adryan">Adryan</option>
-            <option value="Fabio">Fabio</option>
-            <option value="Rodrigo">Rodrigo</option>
-            <option value="Leonardo">Leonardo</option>
-            <option value="Vilmar">Vilmar</option>
-            <option value="Rafael">Rafael</option>
-            <option value="Danilo">Danilo</option>
+            <option value="">Carregando usuários...</option>
         </select>
 
         <div style="height:15px"></div>
@@ -1395,6 +1402,11 @@ window.addEventListener('unhandledrejection',function(ev){
             <button class="nav-btn" onclick="navigateTo('view-team',this)">
                 <span>♙</span>
                 <span>Equipe</span>
+            </button>
+
+            <button class="nav-btn" onclick="navigateTo('view-users',this)">
+                <span>♙</span>
+                <span>Funcionários</span>
             </button>
 
             <button class="nav-btn" onclick="navigateTo('view-machines',this)">
@@ -1714,14 +1726,7 @@ window.addEventListener('unhandledrejection',function(ev){
 
                             <option value="">A definir pelo PCM</option>
 
-                            <option>Adryan — Elétrica</option>
-                            <option>Fabio — Elétrica</option>
-                            <option>Rodrigo — Elétrica</option>
-
-                            <option>Leonardo — Mecânica</option>
-                            <option>Vilmar — Mecânica</option>
-                            <option>Rafael — Mecânica</option>
-                            <option>Danilo — Lubrificação / Mecânica</option>
+                            <option value="">Carregando funcionários...</option>
 
                         </select>
 
@@ -1929,6 +1934,71 @@ window.addEventListener('unhandledrejection',function(ev){
 
                 </div>
 
+            </div>
+
+        </section>
+
+
+        <!-- CONTROLE DE FUNCIONÁRIOS -->
+
+        <section id="view-users" class="app-view hidden">
+
+            <div class="topbar">
+                <div>
+                    <div class="page-title">Controle de funcionários</div>
+                    <div class="page-subtitle">Cadastre, edite, ative ou desative os usuários do sistema</div>
+                </div>
+                <button class="btn-primary" onclick="newUserForm()">＋ Novo funcionário</button>
+            </div>
+
+            <div class="user-form-card" id="userFormCard">
+                <div class="user-form-title" id="userFormTitle">Novo funcionário</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nome</label>
+                        <input id="userFormName" class="form-input" placeholder="Nome do funcionário">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">PIN</label>
+                        <input id="userFormPin" class="form-input" type="password" inputmode="numeric" maxlength="4" placeholder="4 dígitos">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Setor / equipe</label>
+                        <select id="userFormSector" class="form-select">
+                            <option value="Elétrica">Elétrica</option>
+                            <option value="Mecânica">Mecânica</option>
+                            <option value="Lubrificação / Mecânica">Lubrificação / Mecânica</option>
+                            <option value="PCM">PCM</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Perfil</label>
+                        <select id="userFormRole" class="form-select">
+                            <option value="Técnico">Técnico</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-secondary" onclick="cancelUserForm()">Cancelar</button>
+                    <button class="btn-primary" onclick="saveUser()">Salvar funcionário</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="user-control-head">
+                    <div>
+                        <div class="panel-title" style="margin-bottom:4px">Equipe cadastrada</div>
+                        <div style="font-size:10px;color:#64748b">Usuário inativo não consegue entrar no sistema.</div>
+                    </div>
+                    <button class="btn-secondary" onclick="loadUsers(true)">↻ Atualizar</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Funcionário</th><th>Setor</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
+                        <tbody id="usersTable"></tbody>
+                    </table>
+                </div>
             </div>
 
         </section>
@@ -2154,30 +2224,22 @@ function ensureSupabase(){
    USUÁRIOS
 ========================================================= */
 
-const usersDB = {
+let usersDB = {};
+let usersRows = [];
+let editingUserId = null;
 
-    "PCM / Administrador":"0109",
-
-    "Adryan":"6101",
-    "Fabio":"6102",
-    "Rodrigo":"6103",
-
-    "Leonardo":"6104",
-    "Vilmar":"6105",
-    "Rafael":"6106",
-    "Danilo":"6107"
-
-};
-
-const employeeList = [
-    "Adryan",
-    "Fabio",
-    "Rodrigo",
-    "Leonardo",
-    "Vilmar",
-    "Rafael",
-    "Danilo"
+const defaultUsers = [
+    {name:"PCM / Administrador",pin:"0109",sector:"PCM",role:"admin",active:true},
+    {name:"Adryan",pin:"6101",sector:"Elétrica",role:"Técnico",active:true},
+    {name:"Fabio",pin:"6102",sector:"Elétrica",role:"Técnico",active:true},
+    {name:"Rodrigo",pin:"6103",sector:"Elétrica",role:"Técnico",active:true},
+    {name:"Leonardo",pin:"6104",sector:"Mecânica",role:"Técnico",active:true},
+    {name:"Vilmar",pin:"6105",sector:"Mecânica",role:"Técnico",active:true},
+    {name:"Rafael",pin:"6106",sector:"Mecânica",role:"Técnico",active:true},
+    {name:"Danilo",pin:"6107",sector:"Lubrificação / Mecânica",role:"Técnico",active:true}
 ];
+
+let employeeList = defaultUsers.slice(1).map(u=>u.name);
 
 let currentUser = null;
 let isAdmin = false;
@@ -2204,6 +2266,8 @@ async function login(){
         return;
     }
 
+    await loadUsers();
+
     const user =
         document.getElementById("loginUser").value;
 
@@ -2214,23 +2278,21 @@ async function login(){
     const error =
         document.getElementById("loginError");
 
-    if(
-        !user ||
-        !usersDB[user] ||
-        usersDB[user] !== pin
-    ){
+    const foundUser = usersRows.find(u =>
+        String(u.name) === String(user) &&
+        String(u.pin) === String(pin) &&
+        u.active === true
+    );
 
+    if(!foundUser){
+        error.textContent = "Usuário, PIN ou status de acesso inválido.";
         error.classList.remove("hidden");
-
         return;
     }
 
     error.classList.add("hidden");
-
-    currentUser = user;
-
-    isAdmin =
-        user === "PCM / Administrador";
+    currentUser = foundUser.name;
+    isAdmin = foundUser.role === "admin" || foundUser.name === "PCM / Administrador";
 
     document
         .getElementById("loginScreen")
@@ -2359,6 +2421,10 @@ function navigateTo(viewId, button = null){
 
     if(viewId === "view-team"){
         loadTeam();
+    }
+
+    if(viewId === "view-users"){
+        loadUsers(true);
     }
 
     if(viewId === "view-machines"){
@@ -4695,112 +4761,206 @@ async function loadExecutionHistory(){
 
 async function loadTeam(){
 
-    if(!isAdmin){
-        return;
-    }
+    if(!isAdmin){ return; }
 
+    await loadUsers();
 
-    const {data,error} =
-        await db
-            .from("os_orders")
-            .select("*")
-            .eq("status","EM PRODUÇÃO");
+    const {data,error} = await db
+        .from("os_orders")
+        .select("*");
 
+    if(error){ console.error(error); return; }
 
-    if(error){
+    const table = document.getElementById("teamTable");
+    const activeEmployees = usersRows.filter(u => u.active && u.role !== "admin");
 
-        console.error(error);
-
-        return;
-    }
-
-
-    const table =
-        document.getElementById(
-            "teamTable"
+    table.innerHTML = activeEmployees.map(user=>{
+        const active = (data || []).find(order =>
+            order.status === "EM PRODUÇÃO" &&
+            normalizeEmployee(order.active_employee) === normalizeEmployee(user.name)
+        );
+        const material = (data || []).find(order =>
+            order.status === "AGUARDANDO MATERIAL" &&
+            normalizeEmployee(order.responsible) === normalizeEmployee(user.name)
         );
 
+        let situation = '<span class="team-free"><span class="team-free-dot"></span>LIVRE</span>';
+        let osText = '-';
+        let timeText = '-';
 
-    table.innerHTML =
-        employeeList.map(employee=>{
+        if(active){
+            situation = '<span class="team-busy"><span class="team-busy-dot"></span>EM PRODUÇÃO</span>';
+            osText = "O.S. " + escapeHtml(active.os_number || "-");
+            timeText = formatSeconds(getTotalTime(active));
+        }else if(material){
+            situation = '<span class="team-material"><span class="team-material-dot"></span>AGUARDANDO MATERIAL</span>';
+            osText = "O.S. " + escapeHtml(material.os_number || "-");
+        }
 
-            const active =
-                (data || []).find(order =>
-                    normalizeEmployee(
-                        order.active_employee
-                    )
-                    ===
-                    normalizeEmployee(employee)
-                );
+        return `<tr>
+            <td><strong>${escapeHtml(user.name)}</strong></td>
+            <td>${escapeHtml(user.sector || "-")}</td>
+            <td>${situation}<div style="margin-top:5px;color:#64748b;font-size:9px">${osText}</div></td>
+            <td>${timeText}</td>
+        </tr>`;
+    }).join("");
 
-
-            let team = "";
-
-            if(
-                ["Adryan","Fabio","Rodrigo"]
-                .includes(employee)
-            ){
-
-                team = "Elétrica";
-
-            }else if(employee === "Danilo"){
-
-                team =
-                    "Lubrificação / Mecânica";
-
-            }else{
-
-                team = "Mecânica";
-
-            }
-
-
-            return `
-
-                <tr>
-
-                    <td>
-                        <strong>
-                            ${employee}
-                        </strong>
-                    </td>
-
-                    <td>
-                        ${team}
-                    </td>
-
-                    <td>
-                        ${
-                            active
-                            ?
-                            "O.S. " +
-                            escapeHtml(
-                                active.os_number
-                            )
-                            :
-                            '<span style="color:#64748b">Livre</span>'
-                        }
-                    </td>
-
-                    <td>
-                        ${
-                            active
-                            ?
-                            formatSeconds(
-                                getTotalTime(active)
-                            )
-                            :
-                            "-"
-                        }
-                    </td>
-
-                </tr>
-
-            `;
-
-        }).join("");
-
+    if(!activeEmployees.length){
+        table.innerHTML = '<tr><td colspan="4" style="color:#64748b">Nenhum funcionário ativo cadastrado.</td></tr>';
+    }
 }
+
+
+/* =========================================================
+   CONTROLE DE FUNCIONÁRIOS
+========================================================= */
+
+async function loadUsers(refreshLogin=false){
+    try{
+        await ensureSupabase();
+        const {data,error} = await db.from("users").select("*").order("name",{ascending:true});
+        if(error) throw error;
+
+        usersRows = data || [];
+
+        // Migra os usuários atuais somente se a tabela estiver vazia.
+        if(usersRows.length === 0){
+            const {data:seeded,error:seedError} = await db.from("users").insert(defaultUsers).select("*");
+            if(seedError) throw seedError;
+            usersRows = seeded || defaultUsers;
+        }
+
+        usersDB = {};
+        usersRows.forEach(u=>{ usersDB[u.name] = String(u.pin || ""); });
+        employeeList = usersRows.filter(u=>u.active && u.role !== "admin").map(u=>u.name);
+
+        refreshLoginUsers();
+        refreshResponsibleSelects();
+        if(document.getElementById("usersTable")) renderUsersTable();
+        return usersRows;
+    }catch(e){
+        console.error("loadUsers",e);
+        if(refreshLogin) showPCMToast("Não foi possível carregar os funcionários.","error");
+        throw e;
+    }
+}
+
+function refreshResponsibleSelects(){
+    const active=usersRows.filter(u=>u.active && u.role !== "admin");
+    const selects=[document.getElementById("osResponsible"),document.getElementById("releaseEmployee")];
+    selects.forEach(select=>{
+        if(!select) return;
+        const current=select.value;
+        const first=select.id === "osResponsible" ? '<option value="">A definir pelo PCM</option>' : '<option value="">Selecione o responsável</option>';
+        select.innerHTML=first + active.map(u=>{
+            const label = `${u.name} — ${u.sector || ""}`.replace(/ — $/,"");
+            return `<option value="${escapeHtml(label)}">${escapeHtml(label)}</option>`;
+        }).join("");
+        if(active.some(u=>`${u.name} — ${u.sector || ""}`.replace(/ — $/,"")===current)) select.value=current;
+    });
+}
+
+function refreshLoginUsers(){
+    const select=document.getElementById("loginUser");
+    if(!select) return;
+    const current=select.value;
+    const active=usersRows.filter(u=>u.active);
+    select.innerHTML='<option value="">Selecione o usuário</option>' + active.map(u=>
+        `<option value="${escapeHtml(u.name)}">${escapeHtml(u.name)}${u.role === "admin" ? " — ADMIN" : ""}</option>`
+    ).join("");
+    if(active.some(u=>u.name===current)) select.value=current;
+}
+
+function renderUsersTable(){
+    const table=document.getElementById("usersTable");
+    if(!table) return;
+    if(!usersRows.length){
+        table.innerHTML='<tr><td colspan="5" style="color:#64748b">Nenhum funcionário cadastrado.</td></tr>';
+        return;
+    }
+    table.innerHTML=usersRows.map(u=>`
+        <tr>
+            <td><strong>${escapeHtml(u.name)}</strong></td>
+            <td>${escapeHtml(u.sector || "-")}</td>
+            <td>${escapeHtml(u.role === "admin" ? "Administrador" : (u.role || "Técnico"))}</td>
+            <td>${u.active ? '<span class="user-status active">● ATIVO</span>' : '<span class="user-status inactive">● INATIVO</span>'}</td>
+            <td><div class="user-actions">
+                <button class="user-action" onclick="editUser(${Number(u.id)})">✏ Editar</button>
+                ${u.active
+                    ? `<button class="user-action danger" onclick="toggleUser(${Number(u.id)},false)">Desativar</button>`
+                    : `<button class="user-action success" onclick="toggleUser(${Number(u.id)},true)">Ativar</button>`}
+            </div></td>
+        </tr>
+    `).join("");
+}
+
+function newUserForm(){
+    editingUserId=null;
+    document.getElementById("userFormTitle").textContent="Novo funcionário";
+    document.getElementById("userFormName").value="";
+    document.getElementById("userFormPin").value="";
+    document.getElementById("userFormSector").value="Mecânica";
+    document.getElementById("userFormRole").value="Técnico";
+    document.getElementById("userFormName").focus();
+}
+
+function cancelUserForm(){ newUserForm(); }
+
+function editUser(id){
+    const u=usersRows.find(x=>Number(x.id)===Number(id));
+    if(!u) return;
+    editingUserId=u.id;
+    document.getElementById("userFormTitle").textContent="Editar funcionário";
+    document.getElementById("userFormName").value=u.name || "";
+    document.getElementById("userFormPin").value=u.pin || "";
+    document.getElementById("userFormSector").value=u.sector || "Mecânica";
+    document.getElementById("userFormRole").value=u.role || "Técnico";
+    document.getElementById("userFormCard").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+async function saveUser(){
+    const name=document.getElementById("userFormName").value.trim();
+    const pin=document.getElementById("userFormPin").value.replace(/\D/g,"");
+    const sector=document.getElementById("userFormSector").value;
+    const role=document.getElementById("userFormRole").value;
+
+    if(!name){ alert("Informe o nome do funcionário."); return; }
+    if(!/^\d{4}$/.test(pin)){ alert("O PIN deve ter 4 dígitos."); return; }
+
+    const duplicate=usersRows.find(u => String(u.name).trim().toLowerCase()===name.toLowerCase() && Number(u.id)!==Number(editingUserId));
+    if(duplicate){ alert("Já existe um funcionário com esse nome."); return; }
+    const duplicatePin=usersRows.find(u => String(u.pin)===pin && Number(u.id)!==Number(editingUserId));
+    if(duplicatePin){ alert("Esse PIN já está sendo usado por outro usuário."); return; }
+
+    const payload={name,pin,sector,role};
+    let result;
+    if(editingUserId){
+        result=await db.from("users").update(payload).eq("id",editingUserId);
+    }else{
+        result=await db.from("users").insert({...payload,active:true});
+    }
+    if(result.error){ console.error(result.error); alert("Não foi possível salvar o funcionário: " + result.error.message); return; }
+
+    showPCMToast(editingUserId ? "Funcionário atualizado." : "Funcionário cadastrado.","success");
+    await loadUsers(true);
+    newUserForm();
+}
+
+async function toggleUser(id,active){
+    const u=usersRows.find(x=>Number(x.id)===Number(id));
+    if(!u) return;
+    if(!active && u.name === currentUser){
+        alert("Você não pode desativar o usuário que está logado.");
+        return;
+    }
+    const ok=await pcmConfirm(`${active ? "Ativar" : "Desativar"} o usuário ${u.name}?`);
+    if(!ok) return;
+    const {error}=await db.from("users").update({active}).eq("id",id);
+    if(error){ alert("Não foi possível alterar o status: " + error.message); return; }
+    showPCMToast(active ? "Usuário ativado." : "Usuário desativado.","success");
+    await loadUsers(true);
+}
+
 
 
 /* =========================================================
@@ -5164,6 +5324,16 @@ document
 
 })();
 
+</script>
+
+<script>
+(function(){
+    document.addEventListener("DOMContentLoaded",function(){
+        setTimeout(function(){
+            loadUsers().catch(function(e){ console.error("Inicialização de usuários",e); });
+        },50);
+    });
+})();
 </script>
 
 <script>
