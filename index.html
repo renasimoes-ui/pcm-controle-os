@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PCM • CONTROLE DE O.S.</title>
+  <!-- SDK do Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* ==================== RESET & BASE ==================== */
     * {
@@ -149,7 +151,6 @@
       flex-direction: row;
     }
 
-    /* Sidebar Navegação */
     .sidebar {
       width: 250px;
       background-color: #1A1D23;
@@ -211,7 +212,6 @@
       color: #FFF;
     }
 
-    /* Conteúdo Principal */
     .main-content {
       flex: 1;
       display: flex;
@@ -220,7 +220,6 @@
       max-height: 100vh;
     }
 
-    /* Header Mobile */
     .mobile-header {
       display: none;
       background-color: #1A1D23;
@@ -238,7 +237,6 @@
       cursor: pointer;
     }
 
-    /* Views */
     .view-section {
       padding: 30px;
       display: none;
@@ -289,7 +287,6 @@
       color: #FF5555;
     }
 
-    /* Kanban */
     .kanban-board {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -304,13 +301,14 @@
       min-height: 350px;
       display: flex;
       flex-direction: column;
+      gap: 10px;
     }
 
     .kanban-column h4 {
       font-size: 0.9rem;
       color: #A8B0BF;
       text-transform: uppercase;
-      margin-bottom: 15px;
+      margin-bottom: 5px;
       padding-bottom: 10px;
       border-bottom: 2px solid #2D323E;
     }
@@ -321,6 +319,42 @@
       text-align: center;
       margin-top: 20px;
       font-style: italic;
+    }
+
+    .os-card {
+      background-color: #121417;
+      border: 1px solid #2D323E;
+      border-left: 4px solid #007ACC;
+      border-radius: 4px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .os-card.priority-ALTA { border-left-color: #D32F2F; }
+    .os-card.priority-MÉDIA { border-left-color: #F57C00; }
+    .os-card.priority-MODERADA { border-left-color: #388E3C; }
+
+    .os-card-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      font-size: 0.9rem;
+      color: #FFF;
+    }
+
+    .os-card-body {
+      font-size: 0.82rem;
+      color: #A8B0BF;
+    }
+
+    .os-card-footer {
+      font-size: 0.75rem;
+      color: #8D95A5;
+      margin-top: 5px;
+      display: flex;
+      justify-content: space-between;
     }
 
     /* ==================== FORMULÁRIO NOVA O.S. ==================== */
@@ -347,7 +381,6 @@
       min-height: 90px;
     }
 
-    /* Botões de Prioridade */
     .priority-group {
       display: flex;
       gap: 10px;
@@ -389,20 +422,15 @@
       color: #FFF;
     }
 
-    .btn-secondary:hover {
-      background-color: #3E4554;
-    }
+    .btn-secondary:hover { background-color: #3E4554; }
 
     .btn-success {
       background-color: #2E7D32;
       color: #FFF;
     }
 
-    .btn-success:hover {
-      background-color: #1B5E20;
-    }
+    .btn-success:hover { background-color: #1B5E20; }
 
-    /* Feedback Mensagem */
     .alert-box {
       background-color: #1B5E20;
       color: #FFF;
@@ -412,7 +440,6 @@
       display: none;
     }
 
-    /* ==================== PLACEHOLDERS ==================== */
     .placeholder-card {
       background-color: #1A1D23;
       border: 1px dashed #2D323E;
@@ -422,44 +449,16 @@
       color: #8D95A5;
     }
 
-    /* ==================== RESPONSIVIDADE ==================== */
     @media (max-width: 768px) {
-      body {
-        flex-direction: column;
-      }
-
-      #app-layout {
-        flex-direction: column;
-      }
-
-      .mobile-header {
-        display: flex;
-      }
-
-      .sidebar {
-        width: 100%;
-        display: none;
-      }
-
-      .sidebar.open {
-        display: flex;
-      }
-
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .form-grid .full-width {
-        grid-column: span 1;
-      }
-
-      .priority-group {
-        flex-direction: row;
-      }
-
-      .view-section {
-        padding: 15px;
-      }
+      body { flex-direction: column; }
+      #app-layout { flex-direction: column; }
+      .mobile-header { display: flex; }
+      .sidebar { width: 100%; display: none; }
+      .sidebar.open { display: flex; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid .full-width { grid-column: span 1; }
+      .priority-group { flex-direction: row; }
+      .view-section { padding: 15px; }
     }
   </style>
 </head>
@@ -500,13 +499,11 @@
   <!-- ==================== LAYOUT DO SISTEMA ==================== -->
   <div id="app-layout">
     
-    <!-- Mobile Header -->
     <div class="mobile-header">
       <strong style="color: #FFF;">PCM • CONTROLE DE O.S.</strong>
       <button class="hamburger" id="hamburger-btn">&#9776;</button>
     </div>
 
-    <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <h2>PCM • O.S.</h2>
@@ -524,57 +521,56 @@
       </div>
     </nav>
 
-    <!-- Main Content Area -->
     <main class="main-content">
 
-      <!-- ==================== VIEW: DASHBOARD ==================== -->
+      <!-- VIEW: DASHBOARD -->
       <section id="view-dashboard" class="view-section active">
         <h2 class="page-title">Dashboard</h2>
 
         <div class="kpi-container">
           <div class="kpi-card">
             <h3>O.S. Abertas</h3>
-            <div class="number">0</div>
+            <div class="number" id="kpi-abertas">0</div>
           </div>
           <div class="kpi-card">
             <h3>Em Produção</h3>
-            <div class="number">0</div>
+            <div class="number" id="kpi-producao">0</div>
           </div>
           <div class="kpi-card">
             <h3>Aguard. Material</h3>
-            <div class="number">0</div>
+            <div class="number" id="kpi-material">0</div>
           </div>
           <div class="kpi-card">
             <h3>Finalizadas</h3>
-            <div class="number">0</div>
+            <div class="number" id="kpi-finalizadas">0</div>
           </div>
           <div class="kpi-card urgent">
             <h3>Urgentes</h3>
-            <div class="number">0</div>
+            <div class="number" id="kpi-urgentes">0</div>
           </div>
         </div>
 
         <div class="kanban-board">
-          <div class="kanban-column">
+          <div class="kanban-column" id="col-aberta">
             <h4>O.S. ABERTA</h4>
-            <div class="kanban-empty">Nenhuma O.S.</div>
+            <div class="kanban-empty">Carregando...</div>
           </div>
-          <div class="kanban-column">
+          <div class="kanban-column" id="col-producao">
             <h4>EM PRODUÇÃO</h4>
-            <div class="kanban-empty">Nenhuma O.S.</div>
+            <div class="kanban-empty">Carregando...</div>
           </div>
-          <div class="kanban-column">
+          <div class="kanban-column" id="col-material">
             <h4>AGUARDANDO MATERIAL</h4>
-            <div class="kanban-empty">Nenhuma O.S.</div>
+            <div class="kanban-empty">Carregando...</div>
           </div>
-          <div class="kanban-column">
+          <div class="kanban-column" id="col-finalizada">
             <h4>FINALIZADA</h4>
-            <div class="kanban-empty">Nenhuma O.S.</div>
+            <div class="kanban-empty">Carregando...</div>
           </div>
         </div>
       </section>
 
-      <!-- ==================== VIEW: NOVA O.S. ==================== -->
+      <!-- VIEW: NOVA O.S. -->
       <section id="view-nova-os" class="view-section">
         <h2 class="page-title">Nova Ordem de Serviço</h2>
 
@@ -584,31 +580,26 @@
           <form id="form-nova-os">
             <div class="form-grid">
               
-              <!-- 1. Nº DA O.S. WK -->
               <div class="form-group">
                 <label for="os-numero">Nº da O.S. WK *</label>
                 <input type="text" id="os-numero" class="form-control" placeholder="10 dígitos numéricos" maxlength="10" required pattern="\d{10}">
               </div>
 
-              <!-- 2. DATA DE ABERTURA -->
               <div class="form-group">
                 <label for="os-data-abertura">Data de Abertura *</label>
                 <input type="date" id="os-data-abertura" class="form-control" required>
               </div>
 
-              <!-- 3. MÁQUINA -->
               <div class="form-group">
                 <label for="os-maquina">Máquina</label>
                 <input type="text" id="os-maquina" class="form-control" placeholder="Nome da máquina">
               </div>
 
-              <!-- 4. CÓDIGO / TAG -->
               <div class="form-group">
                 <label for="os-tag">Código / TAG</label>
                 <input type="text" id="os-tag" class="form-control" placeholder="Ex: PIC-1101">
               </div>
 
-              <!-- 5. SETOR -->
               <div class="form-group">
                 <label for="os-setor">Setor *</label>
                 <select id="os-setor" class="form-control" required>
@@ -624,7 +615,6 @@
                 </select>
               </div>
 
-              <!-- 6. TIPO DE MANUTENÇÃO -->
               <div class="form-group">
                 <label for="os-tipo">Tipo de Manutenção *</label>
                 <select id="os-tipo" class="form-control" required>
@@ -635,13 +625,11 @@
                 </select>
               </div>
 
-              <!-- 7. DESCRIÇÃO DO PROBLEMA / SERVIÇO -->
               <div class="form-group full-width">
                 <label for="os-descricao">Descrição do Problema / Serviço *</label>
                 <textarea id="os-descricao" class="form-control" placeholder="Descreva detalhadamente o problema ou serviço solicitado..." required></textarea>
               </div>
 
-              <!-- 8. RESPONSÁVEL -->
               <div class="form-group">
                 <label for="os-responsavel">Responsável *</label>
                 <select id="os-responsavel" class="form-control" required>
@@ -656,13 +644,11 @@
                 </select>
               </div>
 
-              <!-- 9. PRAZO -->
               <div class="form-group">
                 <label for="os-prazo">Prazo</label>
                 <input type="date" id="os-prazo" class="form-control">
               </div>
 
-              <!-- 10. PRIORIDADE -->
               <div class="form-group full-width">
                 <label>Prioridade *</label>
                 <input type="hidden" id="os-prioridade" required>
@@ -673,7 +659,6 @@
                 </div>
               </div>
 
-              <!-- 11. OBSERVAÇÕES -->
               <div class="form-group full-width">
                 <label for="os-obs">Observações</label>
                 <textarea id="os-obs" class="form-control" placeholder="Observações adicionais (opcional)..."></textarea>
@@ -681,39 +666,38 @@
 
             </div>
 
-            <!-- BOTÕES -->
             <div class="form-actions">
               <button type="button" class="btn btn-secondary" id="btn-cancelar-os">CANCELAR</button>
-              <button type="submit" class="btn btn-success">CADASTRAR O.S.</button>
+              <button type="submit" class="btn btn-success" id="btn-salvar-os">CADASTRAR O.S.</button>
             </div>
           </form>
         </div>
       </section>
 
-      <!-- ==================== VIEW: HISTÓRICO ==================== -->
+      <!-- VIEW: HISTÓRICO -->
       <section id="view-historico" class="view-section">
         <h2 class="page-title">Histórico de O.S.</h2>
         <div class="placeholder-card">
-          <h3>Histórico</h3>
-          <p style="margin-top: 10px;">Esta seção será conectada ao banco de dados posteriormente.</p>
+          <h3>Histórico de O.S.</h3>
+          <p style="margin-top: 10px;">Em breve: consulta detalhada de todas as alterações feitas no sistema.</p>
         </div>
       </section>
 
-      <!-- ==================== VIEW: EQUIPE ==================== -->
+      <!-- VIEW: EQUIPE -->
       <section id="view-equipe" class="view-section">
         <h2 class="page-title">Equipe de Manutenção</h2>
         <div class="placeholder-card">
-          <h3>Controle de Equipe</h3>
-          <p style="margin-top: 10px;">Esta página será usada para o controle da equipe de manutenção.</p>
+          <h3>Equipe</h3>
+          <p style="margin-top: 10px;">Visualização e distribuição de tarefas para a equipe.</p>
         </div>
       </section>
 
-      <!-- ==================== VIEW: MÁQUINAS ==================== -->
+      <!-- VIEW: MÁQUINAS -->
       <section id="view-maquinas" class="view-section">
-        <h2 class="page-title">Cadastro e Controle de Máquinas</h2>
+        <h2 class="page-title">Máquinas</h2>
         <div class="placeholder-card">
           <h3>Máquinas</h3>
-          <p style="margin-top: 10px;">Esta página será utilizada para o cadastro e controle das máquinas.</p>
+          <p style="margin-top: 10px;">Cadastro e gerenciamento das máquinas da fábrica.</p>
         </div>
       </section>
 
@@ -722,6 +706,11 @@
 
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
+    // --- CONEXÃO COM O SUPABASE ---
+    const SUPABASE_URL = "https://zjrrenorlrdhuddnscdm.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_HMD1Yow_uEbi-9fy6P0ATg_BqfNstx5";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     // --- USUÁRIOS E PINS DEFINIDOS ---
     const usersDB = {
       "PCM / Administrador": "0109",
@@ -773,7 +762,6 @@
         appLayout.style.display = 'flex';
         loggedUserDisplay.textContent = currentUser;
         
-        // Inicializações
         setTodayDate();
         navigateTo('view-dashboard');
       } else {
@@ -790,7 +778,6 @@
       loginScreen.style.display = 'flex';
     });
 
-    // --- DATA ATUAL AUTOMÁTICA ---
     function setTodayDate() {
       const today = new Date().toISOString().split('T')[0];
       fieldDataAbertura.value = today;
@@ -812,24 +799,25 @@
         }
       });
 
-      // Fechar menu mobile ao clicar
       sidebar.classList.remove('open');
+
+      if (targetId === 'view-dashboard') {
+        loadDashboardData();
+      }
     }
 
     navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
-        const target = link.getAttribute('data-target');
-        navigateTo(target);
+        navigateTo(link.getAttribute('data-target'));
       });
     });
 
-    // Toggle menu mobile
     hamburgerBtn.addEventListener('click', () => {
       sidebar.classList.toggle('open');
     });
 
-    // --- MANIPULAÇÃO DE PRIORIDADE (3 BOTÕES) ---
+    // --- PRIORIDADES ---
     priorityButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         priorityButtons.forEach(b => b.classList.remove('selected'));
@@ -838,12 +826,10 @@
       });
     });
 
-    // Restrição para o campo de número WK aceitar apenas numéricos
     fieldNumeroWK.addEventListener('input', (e) => {
       e.target.value = e.target.value.replace(/\D/g, '');
     });
 
-    // --- CANCELAR FORMULÁRIO ---
     btnCancelarOS.addEventListener('click', () => {
       resetForm();
       navigateTo('view-dashboard');
@@ -856,8 +842,8 @@
       priorityButtons.forEach(b => b.classList.remove('selected'));
     }
 
-    // --- SUBMIT DO FORMULÁRIO ---
-    formNovaOS.addEventListener('submit', (e) => {
+    // --- ENVIAR PARA O SUPABASE ---
+    formNovaOS.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const numWK = fieldNumeroWK.value.trim();
@@ -871,30 +857,143 @@
         return;
       }
 
-      const setor = document.getElementById('os-setor').value;
-      const tipo = document.getElementById('os-tipo').value;
-      const prioridade = hiddenPriority.value;
-      const responsavel = document.getElementById('os-responsavel').value;
+      const submitBtn = document.getElementById('btn-salvar-os');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'SALVANDO...';
 
-      // Exibir mensagem de sucesso
-      osAlert.innerHTML = `
-        <strong>O.S. Cadastrada com Sucesso!</strong><br>
-        • Nº da O.S.: ${numWK}<br>
-        • Setor: ${setor}<br>
-        • Tipo: ${tipo}<br>
-        • Prioridade: ${prioridade}<br>
-        • Responsável: ${responsavel}
-      `;
-      osAlert.style.display = 'block';
+      const osData = {
+        os_number: numWK,
+        opening_date: fieldDataAbertura.value,
+        machine: document.getElementById('os-maquina').value.trim(),
+        tag: document.getElementById('os-tag').value.trim(),
+        sector: document.getElementById('os-setor').value,
+        maintenance_type: document.getElementById('os-tipo').value,
+        description: document.getElementById('os-descricao').value.trim(),
+        responsible: document.getElementById('os-responsavel').value,
+        due_date: document.getElementById('os-prazo').value || null,
+        priority: hiddenPriority.value,
+        status: 'O.S. ABERTA',
+        observations: document.getElementById('os-obs').value.trim()
+      };
 
-      // Limpar formulário e redirecionar
-      resetForm();
+      try {
+        const { data, error } = await supabase.from('os_orders').insert([osData]);
 
-      setTimeout(() => {
-        osAlert.style.display = 'none';
-        navigateTo('view-dashboard');
-      }, 4000);
+        if (error) {
+          if (error.code === '23505') {
+            alert('Atenção: Já existe uma O.S. cadastrada com este número WK!');
+          } else {
+            alert('Erro ao cadastrar O.S.: ' + error.message);
+          }
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'CADASTRAR O.S.';
+          return;
+        }
+
+        osAlert.innerHTML = `
+          <strong>O.S. Cadastrada no Banco de Dados!</strong><br>
+          • Nº da O.S.: ${osData.os_number}<br>
+          • Setor: ${osData.sector}<br>
+          • Tipo: ${osData.maintenance_type}<br>
+          • Prioridade: ${osData.priority}<br>
+          • Responsável: ${osData.responsible}
+        `;
+        osAlert.style.display = 'block';
+
+        resetForm();
+
+        setTimeout(() => {
+          osAlert.style.display = 'none';
+          navigateTo('view-dashboard');
+        }, 3000);
+
+      } catch (err) {
+        alert('Erro inesperado de conexão. Verifique sua rede.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'CADASTRAR O.S.';
+      }
     });
+
+    // --- CARREGAR DASHBOARD E KANBAN DO SUPABASE ---
+    async function loadDashboardData() {
+      try {
+        const { data: orders, error } = await supabase.from('os_orders').select('*');
+
+        if (error) {
+          console.error('Erro ao buscar O.S.:', error);
+          return;
+        }
+
+        let countAbertas = 0;
+        let countProducao = 0;
+        let countMaterial = 0;
+        let countFinalizadas = 0;
+        let countUrgentes = 0;
+
+        const colAberta = document.getElementById('col-aberta');
+        const colProducao = document.getElementById('col-producao');
+        const colMaterial = document.getElementById('col-material');
+        const colFinalizada = document.getElementById('col-finalizada');
+
+        colAberta.innerHTML = '<h4>O.S. ABERTA</h4>';
+        colProducao.innerHTML = '<h4>EM PRODUÇÃO</h4>';
+        colMaterial.innerHTML = '<h4>AGUARDANDO MATERIAL</h4>';
+        colFinalizada.innerHTML = '<h4>FINALIZADA</h4>';
+
+        if (!orders || orders.length === 0) {
+          colAberta.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
+          colProducao.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
+          colMaterial.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
+          colFinalizada.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
+        } else {
+          orders.forEach(os => {
+            if (os.status === 'O.S. ABERTA') countAbertas++;
+            if (os.status === 'EM PRODUÇÃO') countProducao++;
+            if (os.status === 'AGUARDANDO MATERIAL') countMaterial++;
+            if (os.status === 'FINALIZADA') countFinalizadas++;
+            if (os.priority === 'ALTA' && os.status !== 'FINALIZADA') countUrgentes++;
+
+            const cardHTML = `
+              <div class="os-card priority-${os.priority}">
+                <div class="os-card-header">
+                  <span>O.S. #${os.os_number}</span>
+                  <small style="color: #8D95A5;">${os.sector}</small>
+                </div>
+                <div class="os-card-body">
+                  <strong>Mág:</strong> ${os.machine || 'N/A'}<br>
+                  <strong>Serv:</strong> ${os.description}
+                </div>
+                <div class="os-card-footer">
+                  <span>Resp: ${os.responsible.split(' — ')[0]}</span>
+                  <span>${os.maintenance_type}</span>
+                </div>
+              </div>
+            `;
+
+            if (os.status === 'O.S. ABERTA') colAberta.innerHTML += cardHTML;
+            else if (os.status === 'EM PRODUÇÃO') colProducao.innerHTML += cardHTML;
+            else if (os.status === 'AGUARDANDO MATERIAL') colMaterial.innerHTML += cardHTML;
+            else if (os.status === 'FINALIZADA') colFinalizada.innerHTML += cardHTML;
+          });
+
+          // Caso alguma coluna tenha ficado sem cartões
+          if (colAberta.children.length === 1) colAberta.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
+          if (colProducao.children.length === 1) colProducao.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
+          if (colMaterial.children.length === 1) colMaterial.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
+          if (colFinalizada.children.length === 1) colFinalizada.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
+        }
+
+        document.getElementById('kpi-abertas').textContent = countAbertas;
+        document.getElementById('kpi-producao').textContent = countProducao;
+        document.getElementById('kpi-material').textContent = countMaterial;
+        document.getElementById('kpi-finalizadas').textContent = countFinalizadas;
+        document.getElementById('kpi-urgentes').textContent = countUrgentes;
+
+      } catch (err) {
+        console.error('Erro na requisição:', err);
+      }
+    }
   </script>
 </body>
 </html>
