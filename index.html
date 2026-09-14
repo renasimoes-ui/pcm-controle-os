@@ -1,975 +1,1625 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  >
+<title>PCM • Controle de O.S.</title>
 
-  <title>PCM • Controle de O.S.</title>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+body{
+    background:#090b0d;
+    color:#fff;
+    min-height:100vh;
+}
+
+/* =========================
+   LOGIN
+========================= */
+
+#loginScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:
+        linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.88)),
+        radial-gradient(circle at center,#25303a 0%,#080a0c 65%);
+}
+
+.login-box{
+    width:100%;
+    max-width:430px;
+    background:rgba(17,22,27,.96);
+    border:1px solid #303941;
+    border-radius:18px;
+    padding:35px;
+    box-shadow:0 20px 60px rgba(0,0,0,.65);
+}
+
+.brand{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.logo-ab{
+    font-size:42px;
+    font-weight:900;
+    letter-spacing:3px;
+}
+
+.brand small{
+    display:block;
+    color:#9da7af;
+    margin-top:5px;
+    font-size:12px;
+    letter-spacing:2px;
+}
+
+.brand h1{
+    margin-top:25px;
+    font-size:27px;
+    letter-spacing:1px;
+}
+
+.brand p{
+    color:#929ba2;
+    margin-top:8px;
+    font-size:14px;
+}
+
+.form-group{
+    margin-bottom:18px;
+}
+
+label{
+    display:block;
+    font-size:12px;
+    color:#aeb6bc;
+    margin-bottom:7px;
+}
+
+select,
+input,
+textarea{
+    width:100%;
+    background:#0c1115;
+    border:1px solid #303940;
+    color:#fff;
+    border-radius:10px;
+    padding:13px;
+    outline:none;
+}
+
+select:focus,
+input:focus,
+textarea:focus{
+    border-color:#788691;
+}
+
+textarea{
+    min-height:110px;
+    resize:vertical;
+}
+
+.btn{
+    width:100%;
+    border:0;
+    border-radius:10px;
+    padding:14px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.btn-primary{
+    background:#e4e7e9;
+    color:#101417;
+}
+
+.btn-primary:hover{
+    background:#fff;
+    transform:translateY(-1px);
+}
+
+.error{
+    display:none;
+    color:#ff7070;
+    text-align:center;
+    font-size:13px;
+    margin-top:12px;
+}
+
+/* =========================
+   APP
+========================= */
+
+#app{
+    display:none;
+    min-height:100vh;
+}
+
+.header{
+    height:70px;
+    background:#11171c;
+    border-bottom:1px solid #293138;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 25px;
+}
+
+.header-brand{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.header-logo{
+    font-size:23px;
+    font-weight:900;
+    letter-spacing:2px;
+}
+
+.header-title{
+    color:#9da7ae;
+    font-size:12px;
+    letter-spacing:1px;
+}
+
+.user-area{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.user-name{
+    font-size:13px;
+    color:#dce1e4;
+}
+
+.btn-logout{
+    background:#20282e;
+    color:#d7dde0;
+    border:1px solid #374149;
+    padding:9px 14px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.layout{
+    display:flex;
+    min-height:calc(100vh - 70px);
+}
+
+.sidebar{
+    width:240px;
+    background:#0d1216;
+    border-right:1px solid #293138;
+    padding:20px 12px;
+}
+
+.menu-title{
+    font-size:10px;
+    color:#69747c;
+    letter-spacing:2px;
+    margin:5px 12px 12px;
+}
+
+.menu-btn{
+    width:100%;
+    text-align:left;
+    background:transparent;
+    color:#aeb7bd;
+    border:0;
+    padding:13px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-bottom:4px;
+    font-size:14px;
+}
+
+.menu-btn:hover,
+.menu-btn.active{
+    background:#20282e;
+    color:#fff;
+}
+
+.main{
+    flex:1;
+    padding:28px;
+    overflow:auto;
+}
+
+/* =========================
+   TELAS
+========================= */
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.page-header h2{
+    font-size:25px;
+}
+
+.page-header p{
+    color:#78838b;
+    margin-top:5px;
+    font-size:13px;
+}
+
+.btn-new{
+    width:auto;
+    padding:12px 18px;
+    background:#e5e8ea;
+    color:#111;
+    border:0;
+    border-radius:9px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.btn-new:hover{
+    background:#fff;
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:15px;
+    margin-bottom:28px;
+}
+
+.stat{
+    background:#12181d;
+    border:1px solid #293138;
+    border-radius:12px;
+    padding:20px;
+}
+
+.stat-label{
+    color:#7e8991;
+    font-size:12px;
+}
+
+.stat-number{
+    font-size:29px;
+    font-weight:bold;
+    margin-top:9px;
+}
+
+/* =========================
+   KANBAN
+========================= */
+
+.kanban-title{
+    margin-bottom:15px;
+    font-size:17px;
+}
+
+.kanban{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+}
+
+.column{
+    background:#0f1519;
+    border:1px solid #293138;
+    border-radius:12px;
+    min-height:300px;
+    padding:14px;
+}
+
+.column-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding-bottom:12px;
+    border-bottom:1px solid #293138;
+    margin-bottom:12px;
+}
+
+.column-header span{
+    font-size:13px;
+    font-weight:bold;
+}
+
+.column-count{
+    background:#252e35;
+    padding:4px 8px;
+    border-radius:20px;
+    font-size:11px;
+    color:#b8c0c5;
+}
+
+.empty{
+    color:#59636a;
+    text-align:center;
+    padding-top:70px;
+    font-size:13px;
+}
+
+/* =========================
+   NOVA OS
+========================= */
+
+.os-form{
+    max-width:1000px;
+}
+
+.form-card{
+    background:#11171c;
+    border:1px solid #293138;
+    border-radius:14px;
+    padding:24px;
+    margin-bottom:18px;
+}
+
+.form-card h3{
+    font-size:16px;
+    margin-bottom:20px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+.os-number{
+    background:#080c0f;
+    color:#9fa9b0;
+    cursor:not-allowed;
+}
+
+.priority{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+}
+
+.priority label{
+    margin:0;
+}
+
+.priority input{
+    display:none;
+}
+
+.priority-box{
+    display:block;
+    text-align:center;
+    padding:13px;
+    border:1px solid #343e45;
+    border-radius:9px;
+    cursor:pointer;
+    color:#aeb7bd;
+}
+
+.priority input:checked + .priority-box{
+    border-color:#fff;
+    color:#fff;
+    background:#20282e;
+}
+
+.form-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+}
+
+.btn-cancel{
+    background:#20282e;
+    color:#ddd;
+    border:1px solid #374149;
+    border-radius:9px;
+    padding:13px 20px;
+    cursor:pointer;
+}
+
+.btn-save{
+    background:#e5e8ea;
+    color:#111;
+    border:0;
+    border-radius:9px;
+    padding:13px 25px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.btn-save:hover{
+    background:#fff;
+}
+
+/* =========================
+   HISTÓRICO
+========================= */
+
+.history-box{
+    background:#11171c;
+    border:1px solid #293138;
+    border-radius:14px;
+    padding:25px;
+}
+
+.history-empty{
+    text-align:center;
+    color:#68737b;
+    padding:70px 20px;
+}
+
+/* =========================
+   RESPONSIVO
+========================= */
+
+@media(max-width:1000px){
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
     }
 
-    body {
-      min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
-      background:
-        radial-gradient(circle at 25% 40%, rgba(120, 78, 38, 0.16), transparent 35%),
-        linear-gradient(135deg, #050505 0%, #101010 55%, #050505 100%);
-      color: #fff;
+    .kanban{
+        grid-template-columns:repeat(2,1fr);
     }
 
-    /* =========================
-       LOGIN
-    ========================= */
+}
 
-    #loginScreen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 25px;
-      position: relative;
-      overflow: hidden;
+@media(max-width:700px){
+
+    .header{
+        padding:0 15px;
     }
 
-    #loginScreen::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(
-          90deg,
-          rgba(0,0,0,0.95) 0%,
-          rgba(0,0,0,0.70) 48%,
-          rgba(0,0,0,0.94) 100%
-        );
-      z-index: 0;
+    .header-title{
+        display:none;
     }
 
-    .login-wrapper {
-      width: 100%;
-      max-width: 1050px;
-      min-height: 570px;
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      position: relative;
-      z-index: 1;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      overflow: hidden;
-      background: rgba(10,10,10,0.82);
-      box-shadow: 0 25px 80px rgba(0,0,0,0.65);
-      backdrop-filter: blur(12px);
+    .user-name{
+        display:none;
     }
 
-    .brand-side {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 60px;
-      background:
-        linear-gradient(
-          135deg,
-          rgba(94,61,31,0.25),
-          rgba(0,0,0,0.15)
-        );
+    .sidebar{
+        width:65px;
+        padding:15px 7px;
     }
 
-    .ab-logo {
-      width: 105px;
-      height: 105px;
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 42px;
-      font-weight: 800;
-      letter-spacing: -3px;
-      background: rgba(255,255,255,0.03);
-      margin-bottom: 30px;
+    .menu-title{
+        display:none;
     }
 
-    .brand-small {
-      font-size: 14px;
-      letter-spacing: 4px;
-      color: #aaa;
-      margin-bottom: 15px;
+    .menu-btn{
+        text-align:center;
+        font-size:0;
+        padding:14px 5px;
     }
 
-    .brand-title {
-      font-size: clamp(40px, 5vw, 70px);
-      font-weight: 800;
-      letter-spacing: -3px;
-      line-height: 0.95;
-      margin-bottom: 22px;
+    .menu-btn:first-letter{
+        font-size:18px;
     }
 
-    .brand-title span {
-      color: #c28b4b;
+    .main{
+        padding:18px;
     }
 
-    .brand-description {
-      max-width: 450px;
-      color: #9c9c9c;
-      font-size: 15px;
-      line-height: 1.7;
+    .stats{
+        grid-template-columns:1fr 1fr;
     }
 
-    .footer-text {
-      margin-top: 55px;
-      color: #666;
-      font-size: 12px;
+    .kanban{
+        grid-template-columns:1fr;
     }
 
-    .login-side {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 45px;
-      background: rgba(255,255,255,0.025);
-      border-left: 1px solid rgba(255,255,255,0.07);
+    .form-grid{
+        grid-template-columns:1fr;
     }
 
-    .login-box {
-      width: 100%;
-      max-width: 350px;
+    .full{
+        grid-column:auto;
     }
 
-    .login-box h2 {
-      font-size: 26px;
-      margin-bottom: 8px;
+    .page-header{
+        align-items:flex-start;
+        flex-direction:column;
     }
 
-    .login-subtitle {
-      color: #777;
-      font-size: 13px;
-      margin-bottom: 32px;
+    .btn-new{
+        width:100%;
     }
 
-    .field {
-      margin-bottom: 20px;
+}
+
+@media(max-width:450px){
+
+    .login-box{
+        padding:25px 20px;
     }
 
-    .field label {
-      display: block;
-      color: #aaa;
-      font-size: 12px;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .stats{
+        grid-template-columns:1fr;
     }
 
-    .field select,
-    .field input {
-      width: 100%;
-      height: 52px;
-      border-radius: 11px;
-      border: 1px solid #292929;
-      background: #111;
-      color: #fff;
-      padding: 0 15px;
-      font-size: 15px;
-      outline: none;
-      transition: 0.2s;
+    .priority{
+        grid-template-columns:1fr;
     }
 
-    .field select:focus,
-    .field input:focus {
-      border-color: #9a6b38;
-      box-shadow: 0 0 0 3px rgba(154,107,56,0.10);
-    }
-
-    .field input {
-      letter-spacing: 6px;
-    }
-
-    .field input::placeholder {
-      letter-spacing: normal;
-      color: #555;
-    }
-
-    .btn-login {
-      width: 100%;
-      height: 53px;
-      border: 0;
-      border-radius: 11px;
-      background: linear-gradient(135deg, #9b6b39, #c18a4a);
-      color: #fff;
-      font-weight: 700;
-      letter-spacing: 1px;
-      cursor: pointer;
-      font-size: 14px;
-      margin-top: 5px;
-      transition: 0.2s;
-    }
-
-    .btn-login:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.08);
-    }
-
-    .login-error {
-      display: none;
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 9px;
-      background: rgba(150,30,30,0.15);
-      border: 1px solid rgba(220,70,70,0.25);
-      color: #ef8b8b;
-      font-size: 12px;
-      text-align: center;
-    }
-
-    /* =========================
-       SISTEMA
-    ========================= */
-
-    #appScreen {
-      display: none;
-      min-height: 100vh;
-      background: #080808;
-    }
-
-    .topbar {
-      height: 72px;
-      border-bottom: 1px solid #202020;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 30px;
-      background: #0c0c0c;
-    }
-
-    .topbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .mini-logo {
-      width: 40px;
-      height: 40px;
-      border-radius: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #171717;
-      border: 1px solid #292929;
-      font-weight: 800;
-    }
-
-    .topbar-title {
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .topbar-subtitle {
-      color: #666;
-      font-size: 11px;
-      margin-top: 3px;
-    }
-
-    .user-area {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .user-name {
-      color: #bbb;
-      font-size: 13px;
-    }
-
-    .logout-btn {
-      border: 1px solid #292929;
-      background: #111;
-      color: #aaa;
-      border-radius: 8px;
-      padding: 9px 13px;
-      cursor: pointer;
-    }
-
-    .layout {
-      display: flex;
-      min-height: calc(100vh - 72px);
-    }
-
-    .sidebar {
-      width: 235px;
-      border-right: 1px solid #202020;
-      background: #0b0b0b;
-      padding: 25px 15px;
-    }
-
-    .menu-title {
-      color: #555;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin: 10px 12px;
-    }
-
-    .menu-btn {
-      width: 100%;
-      text-align: left;
-      padding: 13px 14px;
-      border: 0;
-      background: transparent;
-      color: #999;
-      border-radius: 9px;
-      cursor: pointer;
-      margin-bottom: 4px;
-      font-size: 13px;
-    }
-
-    .menu-btn:hover,
-    .menu-btn.active {
-      background: #171717;
-      color: #fff;
-    }
-
-    .main {
-      flex: 1;
-      padding: 35px;
-      overflow-x: auto;
-    }
-
-    .page-title {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .page-subtitle {
-      color: #666;
-      font-size: 13px;
-      margin-bottom: 30px;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(160px, 1fr));
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-
-    .stat-card {
-      background: #101010;
-      border: 1px solid #202020;
-      border-radius: 13px;
-      padding: 20px;
-    }
-
-    .stat-label {
-      color: #777;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .stat-number {
-      font-size: 32px;
-      font-weight: 800;
-      margin-top: 12px;
-    }
-
-    .content-card {
-      background: #101010;
-      border: 1px solid #202020;
-      border-radius: 14px;
-      padding: 25px;
-    }
-
-    .content-card h3 {
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
-
-    .kanban {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(220px, 1fr));
-      gap: 15px;
-    }
-
-    .kanban-column {
-      background: #0a0a0a;
-      border: 1px solid #1d1d1d;
-      border-radius: 12px;
-      padding: 15px;
-      min-height: 250px;
-    }
-
-    .column-title {
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 15px;
-      color: #aaa;
-    }
-
-    .empty-column {
-      color: #444;
-      font-size: 12px;
-      text-align: center;
-      padding-top: 70px;
-    }
-
-    /* =========================
-       MOBILE
-    ========================= */
-
-    @media (max-width: 800px) {
-
-      .login-wrapper {
-        grid-template-columns: 1fr;
-        min-height: auto;
-      }
-
-      .brand-side {
-        padding: 35px 30px;
-        text-align: center;
-        align-items: center;
-      }
-
-      .brand-description {
-        font-size: 13px;
-      }
-
-      .footer-text {
-        margin-top: 30px;
-      }
-
-      .login-side {
-        border-left: 0;
-        border-top: 1px solid rgba(255,255,255,0.07);
-        padding: 35px 25px;
-      }
-
-      .sidebar {
-        display: none;
-      }
-
-      .main {
-        padding: 22px 16px;
-      }
-
-      .topbar {
-        padding: 0 15px;
-      }
-
-      .user-name {
-        display: none;
-      }
-
-      .stats {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .kanban {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 430px) {
-
-      #loginScreen {
-        padding: 12px;
-      }
-
-      .brand-title {
-        font-size: 42px;
-      }
-
-      .ab-logo {
-        width: 80px;
-        height: 80px;
-        font-size: 32px;
-      }
-
-      .stats {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .stat-number {
-        font-size: 26px;
-      }
-    }
-  </style>
+}
+</style>
 </head>
 
 <body>
 
-  <!-- =========================
-       LOGIN
-  ========================= -->
+<!-- =========================
+     LOGIN
+========================= -->
 
-  <section id="loginScreen">
+<section id="loginScreen">
 
-    <div class="login-wrapper">
+    <div class="login-box">
 
-      <div class="brand-side">
+        <div class="brand">
 
-        <div class="ab-logo">
-          AB
+            <div class="logo-ab">AB</div>
+
+            <small>PCM • CONTROLE INDUSTRIAL</small>
+
+            <h1>CONTROLE DE O.S.</h1>
+
+            <p>Acesso ao sistema</p>
+
         </div>
 
-        <div class="brand-small">
-          PCM • CONTROLE INDUSTRIAL
-        </div>
+        <div class="form-group">
 
-        <div class="brand-title">
-          CONTROLE<br>
-          DE <span>O.S.</span>
-        </div>
-
-        <p class="brand-description">
-          Sistema de gerenciamento de ordens de serviço
-          para planejamento, execução e controle da manutenção industrial.
-        </p>
-
-        <div class="footer-text">
-          Juntos por um futuro melhor
-        </div>
-
-      </div>
-
-      <div class="login-side">
-
-        <div class="login-box">
-
-          <h2>Acesso ao sistema</h2>
-
-          <div class="login-subtitle">
-            Informe seu usuário e PIN para continuar.
-          </div>
-
-          <div class="field">
-
-            <label for="usuario">
-              Usuário
-            </label>
+            <label>USUÁRIO</label>
 
             <select id="usuario">
 
-              <option value="">
-                Selecione seu usuário
-              </option>
+                <option value="PCM">PCM / Administrador</option>
 
-              <option value="PCM">
-                PCM / Administrador
-              </option>
+                <option value="Adryan">Adryan</option>
+                <option value="Fabio">Fabio</option>
+                <option value="Rodrigo">Rodrigo</option>
 
-              <option value="Adryan">
-                Adryan
-              </option>
-
-              <option value="Fabio">
-                Fabio
-              </option>
-
-              <option value="Rodrigo">
-                Rodrigo
-              </option>
-
-              <option value="Leonardo">
-                Leonardo
-              </option>
-
-              <option value="Vilmar">
-                Vilmar
-              </option>
-
-              <option value="Rafael">
-                Rafael
-              </option>
-
-              <option value="Danilo">
-                Danilo
-              </option>
+                <option value="Leonardo">Leonardo</option>
+                <option value="Vilmar">Vilmar</option>
+                <option value="Rafael">Rafael</option>
+                <option value="Danilo">Danilo</option>
 
             </select>
 
-          </div>
+        </div>
 
-          <div class="field">
+        <div class="form-group">
 
-            <label for="pin">
-              PIN
-            </label>
+            <label>PIN</label>
 
             <input
-              type="password"
-              id="pin"
-              maxlength="6"
-              inputmode="numeric"
-              placeholder="Digite seu PIN"
-              autocomplete="off"
+                type="password"
+                id="pin"
+                inputmode="numeric"
+                maxlength="6"
+                placeholder="Digite seu PIN"
             >
-
-          </div>
-
-          <button
-            class="btn-login"
-            onclick="entrar()"
-          >
-            ENTRAR
-          </button>
-
-          <div
-            id="loginError"
-            class="login-error"
-          >
-            Selecione um usuário e informe o PIN.
-          </div>
 
         </div>
 
-      </div>
+        <button class="btn btn-primary" onclick="entrar()">
+            ENTRAR
+        </button>
+
+        <div id="loginError" class="error">
+            Usuário ou PIN incorreto.
+        </div>
 
     </div>
 
-  </section>
+</section>
 
 
-  <!-- =========================
-       SISTEMA
-  ========================= -->
+<!-- =========================
+     APP
+========================= -->
 
-  <section id="appScreen">
+<section id="app">
 
-    <header class="topbar">
+    <header class="header">
 
-      <div class="topbar-brand">
+        <div class="header-brand">
 
-        <div class="mini-logo">
-          AB
+            <div class="header-logo">AB</div>
+
+            <div class="header-title">
+                PCM • CONTROLE INDUSTRIAL
+            </div>
+
         </div>
 
-        <div>
-          <div class="topbar-title">
-            PCM • CONTROLE DE O.S.
-          </div>
+        <div class="user-area">
 
-          <div class="topbar-subtitle">
-            Controle de Manutenção Industrial
-          </div>
+            <span class="user-name" id="usuarioLogado">
+                PCM
+            </span>
+
+            <button class="btn-logout" onclick="sair()">
+                Sair
+            </button>
+
         </div>
-
-      </div>
-
-      <div class="user-area">
-
-        <div
-          class="user-name"
-          id="loggedUser"
-        >
-          Usuário
-        </div>
-
-        <button
-          class="logout-btn"
-          onclick="sair()"
-        >
-          SAIR
-        </button>
-
-      </div>
 
     </header>
 
 
     <div class="layout">
 
-      <aside class="sidebar">
+        <!-- MENU -->
 
-        <div class="menu-title">
-          Principal
-        </div>
+        <aside class="sidebar">
 
-        <button class="menu-btn active">
-          📊 Dashboard
-        </button>
-
-        <button class="menu-btn">
-          📝 Nova O.S.
-        </button>
-
-        <button class="menu-btn">
-          📋 O.S. em andamento
-        </button>
-
-        <button class="menu-btn">
-          ⏳ Aguardando material
-        </button>
-
-        <button class="menu-btn">
-          ✅ Finalizadas
-        </button>
-
-
-        <div class="menu-title" style="margin-top:30px;">
-          Cadastros
-        </div>
-
-        <button class="menu-btn">
-          👥 Equipe
-        </button>
-
-        <button class="menu-btn">
-          🏭 Máquinas
-        </button>
-
-
-        <div class="menu-title" style="margin-top:30px;">
-          Controle
-        </div>
-
-        <button class="menu-btn">
-          📜 Histórico
-        </button>
-
-      </aside>
-
-
-      <main class="main">
-
-        <div class="page-title">
-          Dashboard
-        </div>
-
-        <div class="page-subtitle">
-          Visão geral das ordens de serviço de manutenção.
-        </div>
-
-
-        <div class="stats">
-
-          <div class="stat-card">
-            <div class="stat-label">
-              O.S. Abertas
+            <div class="menu-title">
+                MENU
             </div>
 
-            <div class="stat-number">
-              0
-            </div>
-          </div>
+            <button
+                class="menu-btn active"
+                onclick="mostrarPagina('dashboard', this)"
+            >
+                🏠 Dashboard
+            </button>
 
+            <button
+                class="menu-btn"
+                onclick="mostrarPagina('novaOS', this)"
+            >
+                ➕ Nova O.S.
+            </button>
 
-          <div class="stat-card">
-            <div class="stat-label">
-              Em Produção
-            </div>
+            <button
+                class="menu-btn"
+                onclick="mostrarPagina('historico', this)"
+            >
+                📋 Histórico
+            </button>
 
-            <div class="stat-number">
-              0
-            </div>
-          </div>
-
-
-          <div class="stat-card">
-            <div class="stat-label">
-              Aguardando Material
-            </div>
-
-            <div class="stat-number">
-              0
-            </div>
-          </div>
-
-
-          <div class="stat-card">
-            <div class="stat-label">
-              Finalizadas
+            <div class="menu-title" style="margin-top:25px;">
+                CONTROLE
             </div>
 
-            <div class="stat-number">
-              0
-            </div>
-          </div>
+            <button
+                class="menu-btn"
+                onclick="alert('Tela de Equipe será adicionada na próxima etapa.')"
+            >
+                👥 Equipe
+            </button>
 
-        </div>
+            <button
+                class="menu-btn"
+                onclick="alert('Tela de Máquinas será adicionada na próxima etapa.')"
+            >
+                ⚙️ Máquinas
+            </button>
 
-
-        <div class="content-card">
-
-          <h3>
-            Controle das O.S.
-          </h3>
-
-          <div class="kanban">
-
-            <div class="kanban-column">
-
-              <div class="column-title">
-                O.S. ABERTA
-              </div>
-
-              <div class="empty-column">
-                Nenhuma O.S.
-              </div>
-
-            </div>
+        </aside>
 
 
-            <div class="kanban-column">
+        <!-- CONTEÚDO -->
 
-              <div class="column-title">
-                EM PRODUÇÃO
-              </div>
-
-              <div class="empty-column">
-                Nenhuma O.S.
-              </div>
-
-            </div>
+        <main class="main">
 
 
-            <div class="kanban-column">
+            <!-- =========================
+                 DASHBOARD
+            ========================= -->
 
-              <div class="column-title">
-                AGUARDANDO MATERIAL
-              </div>
+            <section id="dashboard" class="page active">
 
-              <div class="empty-column">
-                Nenhuma O.S.
-              </div>
+                <div class="page-header">
 
-            </div>
+                    <div>
+
+                        <h2>Dashboard</h2>
+
+                        <p>
+                            Controle das ordens de serviço da manutenção
+                        </p>
+
+                    </div>
+
+                    <button
+                        class="btn-new"
+                        onclick="mostrarPagina('novaOS')"
+                    >
+                        + NOVA O.S.
+                    </button>
+
+                </div>
 
 
-            <div class="kanban-column">
+                <div class="stats">
 
-              <div class="column-title">
-                FINALIZADA
-              </div>
+                    <div class="stat">
 
-              <div class="empty-column">
-                Nenhuma O.S.
-              </div>
+                        <div class="stat-label">
+                            O.S. ABERTAS
+                        </div>
 
-            </div>
+                        <div class="stat-number">
+                            0
+                        </div>
 
-          </div>
+                    </div>
 
-        </div>
+                    <div class="stat">
 
-      </main>
+                        <div class="stat-label">
+                            EM PRODUÇÃO
+                        </div>
+
+                        <div class="stat-number">
+                            0
+                        </div>
+
+                    </div>
+
+                    <div class="stat">
+
+                        <div class="stat-label">
+                            AGUARDANDO MATERIAL
+                        </div>
+
+                        <div class="stat-number">
+                            0
+                        </div>
+
+                    </div>
+
+                    <div class="stat">
+
+                        <div class="stat-label">
+                            FINALIZADAS
+                        </div>
+
+                        <div class="stat-number">
+                            0
+                        </div>
+
+                    </div>
+
+                    <div class="stat">
+
+                        <div class="stat-label">
+                            URGENTES
+                        </div>
+
+                        <div class="stat-number">
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="kanban-title">
+                    O.S. EM ANDAMENTO
+                </div>
+
+
+                <div class="kanban">
+
+                    <div class="column">
+
+                        <div class="column-header">
+
+                            <span>
+                                O.S. ABERTA
+                            </span>
+
+                            <span class="column-count">
+                                0
+                            </span>
+
+                        </div>
+
+                        <div class="empty">
+                            Nenhuma O.S.
+                        </div>
+
+                    </div>
+
+
+                    <div class="column">
+
+                        <div class="column-header">
+
+                            <span>
+                                EM PRODUÇÃO
+                            </span>
+
+                            <span class="column-count">
+                                0
+                            </span>
+
+                        </div>
+
+                        <div class="empty">
+                            Nenhuma O.S.
+                        </div>
+
+                    </div>
+
+
+                    <div class="column">
+
+                        <div class="column-header">
+
+                            <span>
+                                AGUARDANDO MATERIAL
+                            </span>
+
+                            <span class="column-count">
+                                0
+                            </span>
+
+                        </div>
+
+                        <div class="empty">
+                            Nenhuma O.S.
+                        </div>
+
+                    </div>
+
+
+                    <div class="column">
+
+                        <div class="column-header">
+
+                            <span>
+                                FINALIZADA
+                            </span>
+
+                            <span class="column-count">
+                                0
+                            </span>
+
+                        </div>
+
+                        <div class="empty">
+                            Nenhuma O.S.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 NOVA O.S.
+            ========================= -->
+
+            <section id="novaOS" class="page">
+
+                <div class="page-header">
+
+                    <div>
+
+                        <h2>Nova O.S.</h2>
+
+                        <p>
+                            Abertura de nova ordem de serviço
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form
+                    id="formOS"
+                    class="os-form"
+                    onsubmit="criarOS(event)"
+                >
+
+
+                    <div class="form-card">
+
+                        <h3>
+                            Identificação da O.S.
+                        </h3>
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+
+                                <label>
+                                    Nº DA O.S.
+                                </label>
+
+                                <input
+                                    id="numeroOS"
+                                    class="os-number"
+                                    type="text"
+                                    readonly
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    DATA DE ABERTURA
+                                </label>
+
+                                <input
+                                    id="dataAbertura"
+                                    type="date"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card">
+
+                        <h3>
+                            Equipamento
+                        </h3>
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+
+                                <label>
+                                    MÁQUINA
+                                </label>
+
+                                <input
+                                    id="maquina"
+                                    type="text"
+                                    placeholder="Ex.: Picador"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    CÓDIGO / TAG
+                                </label>
+
+                                <input
+                                    id="codigo"
+                                    type="text"
+                                    placeholder="Ex.: PIC-1101"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    SETOR
+                                </label>
+
+                                <select id="setor" required>
+
+                                    <option value="">
+                                        Selecione
+                                    </option>
+
+                                    <option>
+                                        TMM
+                                    </option>
+
+                                    <option>
+                                        Linha Schiffer
+                                    </option>
+
+                                    <option>
+                                        Mendes
+                                    </option>
+
+                                    <option>
+                                        Fábrica de Componentes
+                                    </option>
+
+                                    <option>
+                                        Outro
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    TIPO DE MANUTENÇÃO
+                                </label>
+
+                                <select id="tipo" required>
+
+                                    <option value="">
+                                        Selecione
+                                    </option>
+
+                                    <option>
+                                        Corretiva
+                                    </option>
+
+                                    <option>
+                                        Preventiva
+                                    </option>
+
+                                    <option>
+                                        Preditiva
+                                    </option>
+
+                                    <option>
+                                        Inspeção
+                                    </option>
+
+                                    <option>
+                                        Lubrificação
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card">
+
+                        <h3>
+                            Solicitação
+                        </h3>
+
+                        <div class="form-grid">
+
+                            <div class="form-group full">
+
+                                <label>
+                                    DESCRIÇÃO DO PROBLEMA / SERVIÇO
+                                </label>
+
+                                <textarea
+                                    id="descricao"
+                                    placeholder="Descreva o problema encontrado ou o serviço solicitado..."
+                                    required
+                                ></textarea>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    RESPONSÁVEL
+                                </label>
+
+                                <select id="responsavel" required>
+
+                                    <option value="">
+                                        Selecione
+                                    </option>
+
+                                    <option>
+                                        Adryan
+                                    </option>
+
+                                    <option>
+                                        Fabio
+                                    </option>
+
+                                    <option>
+                                        Rodrigo
+                                    </option>
+
+                                    <option>
+                                        Leonardo
+                                    </option>
+
+                                    <option>
+                                        Vilmar
+                                    </option>
+
+                                    <option>
+                                        Rafael
+                                    </option>
+
+                                    <option>
+                                        Danilo
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    PRAZO
+                                </label>
+
+                                <input
+                                    id="prazo"
+                                    type="date"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card">
+
+                        <h3>
+                            Prioridade
+                        </h3>
+
+                        <div class="priority">
+
+                            <label>
+
+                                <input
+                                    type="radio"
+                                    name="prioridade"
+                                    value="Alta"
+                                    required
+                                >
+
+                                <span class="priority-box">
+                                    🔴 ALTA / URGÊNCIA
+                                </span>
+
+                            </label>
+
+
+                            <label>
+
+                                <input
+                                    type="radio"
+                                    name="prioridade"
+                                    value="Média"
+                                >
+
+                                <span class="priority-box">
+                                    🟠 MÉDIA
+                                </span>
+
+                            </label>
+
+
+                            <label>
+
+                                <input
+                                    type="radio"
+                                    name="prioridade"
+                                    value="Moderada"
+                                >
+
+                                <span class="priority-box">
+                                    🟢 MODERADA
+                                </span>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card">
+
+                        <h3>
+                            Observações
+                        </h3>
+
+                        <div class="form-group">
+
+                            <textarea
+                                id="observacoes"
+                                placeholder="Informações adicionais..."
+                            ></textarea>
+
+                        </div>
+
+
+                        <div class="form-actions">
+
+                            <button
+                                type="button"
+                                class="btn-cancel"
+                                onclick="mostrarPagina('dashboard')"
+                            >
+                                CANCELAR
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="btn-save"
+                            >
+                                CRIAR O.S.
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                </form>
+
+            </section>
+
+
+            <!-- =========================
+                 HISTÓRICO
+            ========================= -->
+
+            <section id="historico" class="page">
+
+                <div class="page-header">
+
+                    <div>
+
+                        <h2>Histórico</h2>
+
+                        <p>
+                            Ordens de serviço registradas
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="history-box">
+
+                    <div class="history-empty">
+
+                        Nenhuma O.S. registrada ainda.
+
+                        <br><br>
+
+                        As ordens de serviço criadas aparecerão aqui
+                        quando conectarmos o sistema ao banco de dados.
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+        </main>
 
     </div>
 
-  </section>
+</section>
 
 
-  <script>
+<script>
 
-    /*
-      LOGIN TEMPORÁRIO
+/* =========================
+   USUÁRIOS E PIN
+========================= */
 
-      IMPORTANTE:
-      Estes PINs são apenas para teste.
-      Depois vamos retirar daqui e conectar
-      o login ao Supabase.
-    */
+const usuarios = {
 
-    const usuarios = {
+    "PCM": "0109",
 
-      "PCM": "0109",
+    "Adryan": "6101",
+    "Fabio": "6102",
+    "Rodrigo": "6103",
 
-      "Adryan": "6101",
-      "Fabio": "6102",
-      "Rodrigo": "6103",
+    "Leonardo": "6104",
+    "Vilmar": "6105",
+    "Rafael": "6106",
+    "Danilo": "6107"
 
-      "Leonardo": "6104",
-      "Vilmar": "6105",
-      "Rafael": "6106",
-      "Danilo": "6107"
-
-    };
+};
 
 
-    function entrar() {
+/* =========================
+   LOGIN
+========================= */
 
-      const usuario =
+function entrar(){
+
+    const usuario =
         document.getElementById("usuario").value;
 
-      const pin =
+    const pin =
         document.getElementById("pin").value;
 
-      const erro =
+    const erro =
         document.getElementById("loginError");
 
 
-      if (!usuario || !pin) {
+    if(
+        usuarios[usuario] &&
+        usuarios[usuario] === pin
+    ){
 
-        erro.textContent =
-          "Selecione um usuário e informe o PIN.";
+        document.getElementById("loginScreen").style.display =
+            "none";
+
+        document.getElementById("app").style.display =
+            "block";
+
+        document.getElementById("usuarioLogado").textContent =
+            usuario;
+
+        erro.style.display = "none";
+
+        prepararNovaOS();
+
+    }else{
 
         erro.style.display = "block";
-
-        return;
-      }
-
-
-      if (usuarios[usuario] !== pin) {
-
-        erro.textContent =
-          "PIN incorreto.";
-
-        erro.style.display = "block";
-
-        return;
-      }
-
-
-      erro.style.display = "none";
-
-
-      document.getElementById("loginScreen")
-        .style.display = "none";
-
-      document.getElementById("appScreen")
-        .style.display = "block";
-
-      document.getElementById("loggedUser")
-        .textContent = usuario;
 
     }
 
+}
 
-    function sair() {
 
-      document.getElementById("appScreen")
-        .style.display = "none";
+/* =========================
+   ENTER NO PIN
+========================= */
 
-      document.getElementById("loginScreen")
-        .style.display = "flex";
+document
+    .getElementById("pin")
+    .addEventListener("keydown", function(event){
 
-      document.getElementById("usuario").value = "";
+        if(event.key === "Enter"){
+            entrar();
+        }
 
-      document.getElementById("pin").value = "";
+    });
 
+
+/* =========================
+   SAIR
+========================= */
+
+function sair(){
+
+    document.getElementById("app").style.display =
+        "none";
+
+    document.getElementById("loginScreen").style.display =
+        "flex";
+
+    document.getElementById("pin").value =
+        "";
+
+}
+
+
+/* =========================
+   TROCAR PÁGINA
+========================= */
+
+function mostrarPagina(pagina, botao){
+
+    document
+        .querySelectorAll(".page")
+        .forEach(function(page){
+
+            page.classList.remove("active");
+
+        });
+
+
+    const destino =
+        document.getElementById(pagina);
+
+    if(destino){
+        destino.classList.add("active");
     }
 
 
     document
-      .getElementById("pin")
-      .addEventListener("keydown", function(event) {
+        .querySelectorAll(".menu-btn")
+        .forEach(function(btn){
 
-        if (event.key === "Enter") {
-          entrar();
-        }
+            btn.classList.remove("active");
 
-      });
+        });
 
-  </script>
+
+    if(botao){
+        botao.classList.add("active");
+    }
+
+
+    if(pagina === "novaOS"){
+        prepararNovaOS();
+    }
+
+}
+
+
+/* =========================
+   PREPARAR NOVA O.S.
+========================= */
+
+function prepararNovaOS(){
+
+    const hoje =
+        new Date().toISOString().split("T")[0];
+
+    document.getElementById("dataAbertura").value =
+        hoje;
+
+
+    /*
+       TEMPORARIAMENTE:
+       número demonstrativo.
+
+       Depois que conectarmos ao Supabase,
+       o banco vai gerar o número automaticamente
+       de forma global.
+    */
+
+    const numero =
+        localStorage.getItem("proximaOS") || "6100";
+
+    document.getElementById("numeroOS").value =
+        numero;
+
+}
+
+
+/* =========================
+   CRIAR O.S.
+========================= */
+
+function criarOS(event){
+
+    event.preventDefault();
+
+
+    const numero =
+        document.getElementById("numeroOS").value;
+
+    const maquina =
+        document.getElementById("maquina").value;
+
+    const codigo =
+        document.getElementById("codigo").value;
+
+    const setor =
+        document.getElementById("setor").value;
+
+    const tipo =
+        document.getElementById("tipo").value;
+
+    const descricao =
+        document.getElementById("descricao").value;
+
+    const responsavel =
+        document.getElementById("responsavel").value;
+
+    const prioridade =
+        document.querySelector(
+            'input[name="prioridade"]:checked'
+        ).value;
+
+
+    /*
+       Por enquanto a O.S. fica apenas
+       no navegador.
+
+       Na próxima etapa vamos salvar
+       definitivamente no Supabase.
+    */
+
+
+    alert(
+        "O.S. " +
+        numero +
+        " criada com sucesso!\n\n" +
+
+        "Máquina: " +
+        maquina +
+        "\n" +
+
+        "Código: " +
+        codigo +
+        "\n" +
+
+        "Setor: " +
+        setor +
+        "\n" +
+
+        "Tipo: " +
+        tipo +
+        "\n" +
+
+        "Responsável: " +
+        responsavel +
+        "\n" +
+
+        "Prioridade: " +
+        prioridade
+    );
+
+
+    /*
+       Próximo número temporário.
+    */
+
+    const proxima =
+        parseInt(numero) + 1;
+
+    localStorage.setItem(
+        "proximaOS",
+        proxima
+    );
+
+
+    document.getElementById("formOS").reset();
+
+    prepararNovaOS();
+
+    mostrarPagina("dashboard");
+
+}
+
+</script>
 
 </body>
 </html>
