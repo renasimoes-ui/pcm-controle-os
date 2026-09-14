@@ -15,11 +15,8 @@
 
 
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=TJbzCP6F7lvFvQxDYaXd2Jv1BiVOJ5BFMVBgKBayR85ghdkVYNb3CJcj-BJW5WcFO4f6CjSGhvUsk3w_NgREdU5pKIacTh2p-wETC5_mG1_VFMBd7fQrAUOqf-zv0hhHXe9jsVfLzx6SxEBbHcMN9avO8z35zFeJ2nq47lLNrLGL_RlCJSgaIEH7a5xwX-hyI4HfYES9o8VZuLcFYs_ghD5_HhqUQRq9-XTyotc8chPcMz18-fS4QiMFQY-JyS9z8J57wQV-1nDaVwv69e1D_3ALs6zu9b8yXPnq48F_D5XGF7wn5KNXnNT0J7lvAGOy" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=ouX3d7APvh04NMTSN_n7Ysjyv0d-Twe2Dc_HbW-IzDDAM1bQTAImN0rGcImf1kibBOUdmISmy7Q1PSZ8dhAjSp7aMUkAW1AJGUMvIsCtiJK9zGrwYJms4yNR3nFMntZeJHZhE-4NgBvrxlYReWBsAHHN6U0r-j2L_qujz7xyYnZheAWfeODgo6j5TuF8H3K-KibAHnBjtBFrqdjG6Ro2umO-1Neyzn_R62exvPBJVdYEd6U9TkVIcQhHL5nQcrTYcFNCAXUVk2pA89N576y0d9mppYa04Ijt48-HO9NYmADMZwS_Ddlkb7vXjbaYSQ6m" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -1225,6 +1222,15 @@ img,svg,video{
 </head>
 
 <body>
+
+<!-- ESTILOS CRÍTICOS: não dependem de internet nem de JavaScript -->
+<style>
+html,body{margin:0!important;min-height:100%;background:#020617!important;}
+body{font-family:Arial,sans-serif;color:#e5e7eb;overflow-x:hidden;}
+#loginScreen{display:flex!important;min-height:100vh;min-height:100dvh;align-items:center;justify-content:center;padding:16px;position:relative;}
+#loginScreen .login-card{display:block!important;position:relative;z-index:2;width:min(430px,100%);max-height:calc(100dvh - 32px);overflow:auto;}
+#app.hidden{display:none!important;}
+</style>
 
 <!-- LOGIN -->
 
@@ -5110,6 +5116,15 @@ setTimeout(()=>{
 .connection-fallback-card{width:min(430px,100%);padding:16px;border:1px solid rgba(148,163,184,.22);border-radius:16px;background:rgba(15,23,42,.97);box-shadow:0 20px 60px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:7px;font-size:13px;color:#cbd5e1;pointer-events:auto}
 .connection-fallback-card strong{color:#f8fafc;font-size:14px}.connection-fallback-card span{line-height:1.45;color:#94a3b8}
 .connection-fallback-card button{margin-top:5px;border:0;border-radius:10px;padding:11px 14px;background:#f8fafc;color:#020617;font-weight:800;cursor:pointer}
+
+/* CAMADA EXTRA DE ESTABILIDADE MOBILE */
+@media (max-width:600px){
+  html,body{width:100%;min-width:0;overflow-x:hidden;}
+  #loginScreen{width:100%;padding:12px!important;}
+  #loginScreen .login-card{width:100%!important;max-width:430px!important;}
+  .form-input,.form-select,.login-btn,button{min-height:46px;}
+  .login-btn{width:100%;} 
+}
 </style>
 </body>
 </html>
