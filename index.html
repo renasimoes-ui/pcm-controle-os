@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f172a">
 <title>PCM • Controle de O.S.</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=rUhePcUWr7BpB97KZU7kwe6DawpGksJmH_UJvr3kr4m5aTujL21WzApwCC1of7Gw_ub_09ovVaO6IRujX_kA1CzDHZqzSSJfP06u0OW1kDlEQSs0rgw77D9qmRJcfoGvtuCtFp6UiXTsgWjwRqHoqsyWOxsQzuAQb_X1RnQM9-Bqk0vZ9DjjUFP1Eq9fG43X8CYAHZ28deEvk7dCs3rb_VIktDyHCwCIbXIEwI6U2pL6ahF1y5xlJLIWt37RrizsPuOHRQz4NdAZAdVQHf2ag6yOa-SkTpw-a_FcdhAxujlXpNKWvYVsV6h61utpCG3g" charset="UTF-8"></script><script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -756,10 +756,94 @@ td{
         font-size:9px;
     }
 }
+
+/* TOASTS / NOTIFICACOES */
+#pcmToastContainer{
+    position:fixed;
+    top:22px;
+    right:22px;
+    z-index:99999;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    pointer-events:none;
+}
+
+.pcm-toast{
+    min-width:280px;
+    max-width:380px;
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding:12px 15px;
+    border:1px solid rgba(74,222,128,.28);
+    border-radius:12px;
+    background:rgba(6,24,15,.94);
+    color:#dcfce7;
+    box-shadow:0 14px 35px rgba(0,0,0,.42),0 0 20px rgba(34,197,94,.08);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    font-size:12px;
+    font-weight:700;
+    opacity:0;
+    transform:translateY(-10px) scale(.98);
+    transition:opacity .25s ease,transform .25s ease;
+}
+
+.pcm-toast.show{
+    opacity:1;
+    transform:translateY(0) scale(1);
+}
+
+.pcm-toast-icon{
+    width:25px;
+    height:25px;
+    flex:0 0 25px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:#166534;
+    color:#bbf7d0;
+    font-size:13px;
+    box-shadow:0 0 12px rgba(34,197,94,.22);
+}
+
+.pcm-toast-text{
+    line-height:1.4;
+}
+
+.pcm-toast.error{
+    border-color:rgba(248,113,113,.28);
+    background:rgba(35,10,10,.95);
+    color:#fee2e2;
+}
+
+.pcm-toast.error .pcm-toast-icon{
+    background:#991b1b;
+    color:#fecaca;
+}
+
+@media(max-width:600px){
+    #pcmToastContainer{
+        top:14px;
+        left:14px;
+        right:14px;
+    }
+
+    .pcm-toast{
+        min-width:0;
+        width:100%;
+        max-width:none;
+    }
+}
+
 </style>
 </head>
 
 <body>
+
+<div id="pcmToastContainer" aria-live="polite" aria-atomic="true"></div>
 
 <!-- LOGIN -->
 
@@ -1917,6 +2001,41 @@ function statusClass(status){
 
 
 /* =========================================================
+   NOTIFICACOES ESTETICAS
+========================================================= */
+
+function showPcmToast(message,type="success"){
+
+    const container = document.getElementById("pcmToastContainer");
+    if(!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = "pcm-toast" + (type === "error" ? " error" : "");
+
+    const icon = document.createElement("div");
+    icon.className = "pcm-toast-icon";
+    icon.textContent = type === "error" ? "!" : "✓";
+
+    const text = document.createElement("div");
+    text.className = "pcm-toast-text";
+    text.textContent = message;
+
+    toast.appendChild(icon);
+    toast.appendChild(text);
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => toast.classList.add("show"));
+    });
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(),260);
+    },3200);
+}
+
+
+/* =========================================================
    CADASTRAR O.S.
 ========================================================= */
 
@@ -1961,8 +2080,9 @@ async function createOS(){
 
     if(osNumber.length !== 10){
 
-        alert(
-            "O número da O.S. precisa ter exatamente 10 dígitos."
+        showPcmToast(
+            "O número da O.S. precisa ter exatamente 10 dígitos.",
+            "error"
         );
 
         return;
@@ -1975,8 +2095,9 @@ async function createOS(){
         !description
     ){
 
-        alert(
-            "Preencha máquina, setor, tipo de manutenção e descrição."
+        showPcmToast(
+            "Preencha máquina, setor, tipo de manutenção e descrição.",
+            "error"
         );
 
         return;
@@ -2116,10 +2237,9 @@ async function createOS(){
         }
 
 
-        alert(
-            "O.S. " +
-            osNumber +
-            " cadastrada com sucesso!"
+        showPcmToast(
+            "O.S. " + osNumber + " cadastrada com sucesso!",
+            "success"
         );
 
 
@@ -2136,9 +2256,9 @@ async function createOS(){
             error
         );
 
-        alert(
-            "Não foi possível cadastrar a O.S.\n\n" +
-            (error.message || error)
+        showPcmToast(
+            "Não foi possível cadastrar: " + (error.message || error),
+            "error"
         );
 
     }finally{
