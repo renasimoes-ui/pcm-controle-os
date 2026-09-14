@@ -34,7 +34,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 1000;
+      z-index: 10000;
     }
 
     .login-card {
@@ -711,13 +711,14 @@
     const SUPABASE_KEY = "sb_publishable_HMD1Yow_uEbi-9fy6P0ATg_BqfNstx5";
     let supabase = null;
 
-    // Inicialização do Supabase segura
-    try {
-      if (window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    function initSupabase() {
+      try {
+        if (window.supabase && !supabase) {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+      } catch (e) {
+        console.warn("Supabase ainda não carregou:", e);
       }
-    } catch (e) {
-      console.warn("Supabase ainda não carregou ou erro na conexão:", e);
     }
 
     // --- USUÁRIOS E PINS DEFINIDOS ---
@@ -767,6 +768,8 @@
       if (usersDB[selectedUser] && usersDB[selectedUser] === enteredPin) {
         currentUser = selectedUser;
         loginError.style.display = 'none';
+        
+        // Esconde a tela de login imediatamente
         loginScreen.style.display = 'none';
         appLayout.style.display = 'flex';
         loggedUserDisplay.textContent = currentUser;
@@ -886,8 +889,11 @@
       };
 
       try {
+        initSupabase();
         if (!supabase) {
-          alert('Conexão com o banco não inicializada. Verifique sua rede.');
+          alert('Sem conexão com o banco. A O.S. foi validada localmente.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'CADASTRAR O.S.';
           return;
         }
 
@@ -899,6 +905,8 @@
           } else {
             alert('Erro ao cadastrar O.S.: ' + error.message);
           }
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'CADASTRAR O.S.';
           return;
         }
 
@@ -920,15 +928,16 @@
         }, 3000);
 
       } catch (err) {
-        alert('Erro inesperado de conexão. Verifique sua rede.');
+        alert('Erro inesperado de conexão.');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'CADASTRAR O.S.';
       }
     });
 
-    // --- CARREGAR DASHBOARD E KANBAN DO SUPABASE ---
+    // --- CARREGAR DASHBOARD E KANBAN ---
     async function loadDashboardData() {
+      initSupabase();
       if (!supabase) return;
 
       try {
