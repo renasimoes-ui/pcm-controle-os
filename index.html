@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f172a">
 <title>PCM • Controle de O.S.</title>
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=tfopko_2eBwAWqVvTS2hxb7iJBpr2kMKOiFWn5qzzQs94HOPUvQZMpAYr-_YuUe1X0WQhsKaJsRr9K_yOAYPYoBP4rZkzABE1_DxP7SPPh71PkuYSHkIO_N79Z7U_dcfC59GNSGrFH1hSsRDAC8zjBmkpihI4qbBI7FhLkvhTOVeQUp5GLUtlo3nISRk7ROPCckYht6z4-1wz8dBgXHCHPm_a6egQethW-edEMziogCdF_zHT0zUW-1BqcQA2XvzmRPCGgWep3mlYRLI-RJ1l4XpA5isd1CoZa8Wb53Li5dIgg9Nd4pQAyXMyNbecqlx" charset="UTF-8"></script><script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1952,9 +1952,6 @@ async function createOS(){
     const responsible =
         document.getElementById("osResponsible").value;
 
-    const deadline =
-        document.getElementById("osDeadline").value;
-
     const description =
         document.getElementById("osDescription").value.trim();
 
@@ -2016,9 +2013,6 @@ async function createOS(){
 
         responsible:
             responsible || null,
-
-        deadline:
-            deadline || null,
 
         description: description,
 
