@@ -3,315 +3,336 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="theme-color" content="#0f172a">
 <title>PCM • Controle de O.S.</title>
 
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 *{
-    margin:0;
-    padding:0;
     box-sizing:border-box;
 }
 
 body{
-    font-family:Arial,Helvetica,sans-serif;
-    background:#0b0f14;
-    color:#fff;
-    min-height:100vh;
+    margin:0;
+    font-family:'Inter',Arial,sans-serif;
+    background:#020617;
+    color:#e5e7eb;
 }
 
-/* ================= LOGIN ================= */
+.hidden{
+    display:none!important;
+}
+
+button{
+    font-family:inherit;
+}
+
+::-webkit-scrollbar{
+    width:8px;
+}
+
+::-webkit-scrollbar-track{
+    background:#020617;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#334155;
+    border-radius:10px;
+}
+
+/* LOGIN */
 
 #loginScreen{
     min-height:100vh;
     display:flex;
     align-items:center;
     justify-content:center;
-    background:
-        linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.88)),
-        radial-gradient(circle at center,#26313b 0%,#0b0f14 65%);
-    padding:20px;
-}
-
-.login-container{
-    width:100%;
-    max-width:1050px;
-    min-height:600px;
-    display:grid;
-    grid-template-columns:1fr 420px;
-    border:1px solid #26313d;
-    border-radius:18px;
+    position:relative;
     overflow:hidden;
-    background:#10161d;
-    box-shadow:0 25px 80px rgba(0,0,0,.6);
+    background:
+        radial-gradient(circle at 20% 30%,rgba(30,41,59,.45),transparent 35%),
+        radial-gradient(circle at 80% 70%,rgba(15,23,42,.7),transparent 40%),
+        linear-gradient(135deg,#020617,#0f172a 50%,#020617);
 }
 
-.login-brand{
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    padding:60px;
+.login-bg{
+    position:absolute;
+    inset:0;
+    opacity:.13;
     background:
-        linear-gradient(rgba(5,8,11,.75),rgba(5,8,11,.9)),
+        linear-gradient(90deg,rgba(0,0,0,.9),transparent,rgba(0,0,0,.9)),
         repeating-linear-gradient(
             90deg,
-            #151c22 0,
-            #151c22 8px,
-            #10161b 8px,
-            #10161b 15px
+            #6b4423 0px,
+            #3d2616 35px,
+            #754b28 70px,
+            #321e12 110px
         );
+    filter:blur(1px);
+}
+
+.login-card{
+    position:relative;
+    z-index:2;
+    width:min(430px,92vw);
+    padding:35px;
+    border:1px solid #334155;
+    border-radius:24px;
+    background:rgba(15,23,42,.94);
+    box-shadow:0 30px 80px rgba(0,0,0,.65);
 }
 
 .ab-logo{
-    width:90px;
-    height:90px;
-    border:2px solid #d6a84f;
+    width:68px;
+    height:68px;
     border-radius:50%;
     display:flex;
     align-items:center;
     justify-content:center;
-    color:#d6a84f;
-    font-size:28px;
-    font-weight:bold;
+    margin:0 auto 18px;
+    border:2px solid #f8fafc;
+    font-weight:800;
+    font-size:21px;
+    letter-spacing:-1px;
+}
+
+.login-brand{
+    text-align:center;
     margin-bottom:30px;
 }
 
-.brand-small{
-    color:#9da8b2;
-    font-size:14px;
+.login-brand .small{
+    font-size:11px;
     letter-spacing:3px;
-    margin-bottom:15px;
+    color:#94a3b8;
+    font-weight:700;
 }
 
-.brand-title{
-    font-size:48px;
+.login-brand h1{
+    margin:8px 0 4px;
+    font-size:26px;
     font-weight:800;
-    letter-spacing:2px;
-    line-height:1.05;
-}
-
-.brand-title span{
-    color:#d6a84f;
-}
-
-.brand-description{
-    color:#87929c;
-    margin-top:22px;
-    max-width:480px;
-    line-height:1.6;
-}
-
-.login-footer{
-    margin-top:70px;
-    color:#66717b;
-    font-size:12px;
-}
-
-/* LOGIN FORM */
-
-.login-box{
-    padding:55px 40px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    background:#111820;
-}
-
-.login-box h2{
-    font-size:28px;
-    margin-bottom:8px;
-}
-
-.login-subtitle{
-    color:#7f8a94;
-    margin-bottom:35px;
-}
-
-.form-group{
-    margin-bottom:20px;
-}
-
-.form-group label{
-    display:block;
-    color:#aab4bd;
-    font-size:12px;
-    font-weight:bold;
-    margin-bottom:8px;
     letter-spacing:1px;
 }
 
-.form-control{
+.login-brand p{
+    margin:0;
+    color:#64748b;
+    font-size:12px;
+}
+
+.form-label{
+    display:block;
+    color:#94a3b8;
+    font-size:12px;
+    font-weight:600;
+    margin-bottom:7px;
+}
+
+.form-input,
+.form-select,
+.form-textarea{
     width:100%;
-    height:48px;
-    border:1px solid #2a3540;
-    border-radius:9px;
-    background:#0b1015;
-    color:#fff;
-    padding:0 14px;
+    border:1px solid #334155;
+    background:#020617;
+    color:#f8fafc;
+    border-radius:10px;
+    padding:12px 13px;
     outline:none;
 }
 
-.form-control:focus{
-    border-color:#d6a84f;
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus{
+    border-color:#64748b;
+    box-shadow:0 0 0 2px rgba(100,116,139,.15);
 }
 
-.btn-login{
+.form-textarea{
+    min-height:100px;
+    resize:vertical;
+}
+
+.login-btn{
     width:100%;
-    height:50px;
+    margin-top:20px;
+    padding:13px;
     border:0;
-    border-radius:9px;
-    background:#d6a84f;
-    color:#111;
-    font-weight:bold;
+    border-radius:10px;
+    background:#f8fafc;
+    color:#020617;
+    font-weight:800;
     cursor:pointer;
-    margin-top:10px;
 }
 
-.btn-login:hover{
-    background:#e5ba60;
+.login-btn:hover{
+    background:#cbd5e1;
 }
 
 .login-error{
-    display:none;
-    color:#ff7070;
-    background:rgba(255,0,0,.08);
-    border:1px solid rgba(255,0,0,.2);
-    border-radius:8px;
-    padding:12px;
-    margin-bottom:15px;
-    font-size:13px;
+    margin-top:12px;
+    color:#fca5a5;
+    font-size:12px;
+    text-align:center;
 }
 
-/* ================= APP ================= */
+/* APP */
 
-#appLayout{
-    display:none;
+#app{
     min-height:100vh;
 }
 
 .sidebar{
-    width:250px;
     position:fixed;
     left:0;
     top:0;
     bottom:0;
-    background:#0e141a;
-    border-right:1px solid #202a33;
-    padding:25px 15px;
-    z-index:10;
+    width:250px;
+    background:#0b1120;
+    border-right:1px solid #1e293b;
+    padding:20px 14px;
+    z-index:20;
 }
 
 .sidebar-brand{
-    padding:10px 12px 25px;
-    border-bottom:1px solid #202a33;
-    margin-bottom:20px;
+    padding:5px 10px 25px;
+    border-bottom:1px solid #1e293b;
+    margin-bottom:16px;
 }
 
 .sidebar-brand strong{
-    font-size:17px;
-}
-
-.sidebar-brand small{
     display:block;
-    color:#d6a84f;
-    margin-top:5px;
+    font-size:15px;
 }
 
-.menu-btn{
+.sidebar-brand span{
+    color:#64748b;
+    font-size:10px;
+    letter-spacing:2px;
+}
+
+.nav-btn{
     width:100%;
-    padding:13px 14px;
-    margin-bottom:7px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:11px 12px;
+    margin-bottom:5px;
     border:0;
-    border-radius:8px;
+    border-radius:9px;
     background:transparent;
-    color:#89949e;
-    text-align:left;
+    color:#94a3b8;
     cursor:pointer;
-    font-size:14px;
+    text-align:left;
+    font-size:13px;
+    font-weight:600;
 }
 
-.menu-btn:hover,
-.menu-btn.active{
-    background:#1b242d;
+.nav-btn:hover,
+.nav-btn.active{
+    background:#1e293b;
     color:#fff;
 }
 
-.menu-btn.active{
-    border-left:3px solid #d6a84f;
+.sidebar-bottom{
+    position:absolute;
+    bottom:20px;
+    left:14px;
+    right:14px;
 }
 
-.logout{
-    position:absolute;
-    left:15px;
-    right:15px;
-    bottom:20px;
-    color:#ff7777;
+.logout-btn{
+    width:100%;
+    padding:10px;
+    border:1px solid #334155;
+    background:transparent;
+    color:#94a3b8;
+    border-radius:9px;
+    cursor:pointer;
 }
 
 .main{
     margin-left:250px;
-    padding:30px;
     min-height:100vh;
+    padding:25px;
 }
 
 .topbar{
     display:flex;
-    align-items:center;
     justify-content:space-between;
-    margin-bottom:30px;
-}
-
-.topbar h1{
-    font-size:28px;
-}
-
-.user-info{
-    color:#8e99a3;
-    font-size:13px;
-}
-
-.user-info strong{
-    color:#fff;
-}
-
-/* VIEWS */
-
-.view{
-    display:none;
-}
-
-.view.active{
-    display:block;
-}
-
-/* CARDS */
-
-.stats{
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
+    align-items:center;
     gap:15px;
     margin-bottom:25px;
 }
 
-.stat{
-    background:#111820;
-    border:1px solid #202a33;
-    border-radius:12px;
-    padding:20px;
+.page-title{
+    font-size:25px;
+    font-weight:800;
 }
 
-.stat-title{
-    color:#7f8b95;
+.page-subtitle{
+    color:#64748b;
     font-size:12px;
+    margin-top:4px;
+}
+
+.user-badge{
+    border:1px solid #334155;
+    background:#0f172a;
+    padding:8px 13px;
+    border-radius:20px;
+    font-size:12px;
+}
+
+/* CARDS */
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.stat-card{
+    background:#0f172a;
+    border:1px solid #1e293b;
+    border-radius:14px;
+    padding:17px;
+}
+
+.stat-label{
+    color:#64748b;
+    font-size:10px;
     text-transform:uppercase;
+    font-weight:700;
 }
 
 .stat-value{
-    font-size:30px;
-    font-weight:bold;
-    margin-top:8px;
+    font-size:27px;
+    font-weight:800;
+    margin-top:7px;
+}
+
+/* PANELS */
+
+.panel{
+    background:#0f172a;
+    border:1px solid #1e293b;
+    border-radius:15px;
+    padding:18px;
+    margin-bottom:18px;
+}
+
+.panel-title{
+    font-size:14px;
+    font-weight:800;
+    margin-bottom:15px;
 }
 
 /* KANBAN */
@@ -319,234 +340,401 @@ body{
 .kanban{
     display:grid;
     grid-template-columns:repeat(4,1fr);
-    gap:15px;
+    gap:12px;
 }
 
 .kanban-column{
-    background:#0f151b;
-    border:1px solid #202a33;
+    background:#020617;
+    border:1px solid #1e293b;
     border-radius:12px;
+    padding:10px;
     min-height:300px;
-    overflow:hidden;
 }
 
-.column-header{
-    padding:15px;
-    border-bottom:1px solid #202a33;
-    font-size:13px;
-    font-weight:bold;
-}
-
-.column-body{
-    padding:12px;
-}
-
-.os-card{
-    background:#171f27;
-    border:1px solid #28333e;
-    border-radius:9px;
-    padding:14px;
+.kanban-header{
+    font-size:11px;
+    font-weight:800;
+    padding:9px;
+    border-radius:8px;
+    background:#1e293b;
     margin-bottom:10px;
 }
 
-.os-card-number{
-    color:#d6a84f;
-    font-weight:bold;
+.os-card{
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:9px;
+}
+
+.os-card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:7px;
+}
+
+.os-number{
+    font-weight:800;
     font-size:13px;
 }
 
-.os-card-machine{
-    font-weight:bold;
-    margin-top:7px;
-}
-
-.os-card-info{
-    color:#89949e;
-    font-size:12px;
-    margin-top:5px;
-}
-
 .priority{
-    display:inline-block;
-    margin-top:10px;
-    padding:4px 8px;
+    padding:4px 7px;
     border-radius:5px;
-    font-size:10px;
-    font-weight:bold;
+    font-size:8px;
+    font-weight:900;
 }
 
 .priority-alta{
     background:#7f1d1d;
-    color:#ffb4b4;
+    color:#fecaca;
 }
 
 .priority-media{
-    background:#78350f;
-    color:#ffd7a3;
+    background:#7c2d12;
+    color:#fed7aa;
 }
 
 .priority-moderada{
     background:#14532d;
-    color:#b8f5ca;
+    color:#bbf7d0;
+}
+
+.os-info{
+    margin-top:9px;
+    font-size:11px;
+    color:#94a3b8;
+    line-height:1.7;
+}
+
+.os-info strong{
+    color:#e2e8f0;
+}
+
+.timer{
+    margin-top:8px;
+    font-size:16px;
+    font-weight:800;
+    color:#f8fafc;
+    font-variant-numeric:tabular-nums;
+}
+
+/* BUTTONS */
+
+.action-btn{
+    width:100%;
+    padding:10px;
+    border:0;
+    border-radius:8px;
+    margin-top:7px;
+    font-size:10px;
+    font-weight:800;
+    cursor:pointer;
+}
+
+.btn-start{
+    background:#166534;
+    color:#dcfce7;
+}
+
+.btn-material{
+    background:#92400e;
+    color:#ffedd5;
+}
+
+.btn-finish{
+    background:#1d4ed8;
+    color:#dbeafe;
+}
+
+.btn-emergency{
+    background:#7f1d1d;
+    color:#fee2e2;
+    border:1px solid #991b1b;
+}
+
+.action-btn:hover{
+    filter:brightness(1.15);
+}
+
+.emergency-wrap{
+    margin-top:13px;
+    padding-top:10px;
+    border-top:1px solid #334155;
+}
+
+/* TABLE */
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:11px;
+}
+
+th{
+    text-align:left;
+    padding:10px;
+    background:#020617;
+    color:#64748b;
+    font-size:9px;
+    text-transform:uppercase;
+}
+
+td{
+    padding:11px 10px;
+    border-top:1px solid #1e293b;
+}
+
+.status{
+    display:inline-block;
+    padding:5px 8px;
+    border-radius:6px;
+    font-size:8px;
+    font-weight:800;
+}
+
+.status-aberta{
+    background:#172554;
+    color:#bfdbfe;
+}
+
+.status-producao{
+    background:#14532d;
+    color:#bbf7d0;
+}
+
+.status-material{
+    background:#78350f;
+    color:#fed7aa;
+}
+
+.status-finalizada{
+    background:#334155;
+    color:#cbd5e1;
 }
 
 /* FORM */
 
-.panel{
-    background:#111820;
-    border:1px solid #202a33;
-    border-radius:12px;
-    padding:25px;
-}
-
-.panel-title{
-    font-size:20px;
-    margin-bottom:25px;
-}
-
 .form-grid{
     display:grid;
     grid-template-columns:repeat(2,1fr);
-    gap:18px;
+    gap:14px;
 }
 
-.form-full{
+.form-group.full{
     grid-column:1/-1;
-}
-
-textarea.form-control{
-    height:110px;
-    padding-top:12px;
-    resize:vertical;
-}
-
-.btn{
-    border:0;
-    border-radius:8px;
-    padding:12px 18px;
-    cursor:pointer;
-    font-weight:bold;
-}
-
-.btn-primary{
-    background:#d6a84f;
-    color:#111;
-}
-
-.btn-secondary{
-    background:#28333e;
-    color:#fff;
-}
-
-/* PRIORIDADE */
-
-.priority-buttons{
-    display:flex;
-    gap:10px;
-}
-
-.priority-btn{
-    flex:1;
-    padding:12px;
-    border:1px solid #34404b;
-    border-radius:8px;
-    background:#151d25;
-    color:#aaa;
-    cursor:pointer;
-    font-weight:bold;
-}
-
-.priority-btn.selected.alta{
-    background:#7f1d1d;
-    border-color:#ef4444;
-    color:#fff;
-}
-
-.priority-btn.selected.media{
-    background:#78350f;
-    border-color:#f97316;
-    color:#fff;
-}
-
-.priority-btn.selected.moderada{
-    background:#14532d;
-    border-color:#22c55e;
-    color:#fff;
 }
 
 .form-actions{
     display:flex;
     justify-content:flex-end;
     gap:10px;
-    margin-top:25px;
+    margin-top:18px;
 }
 
-/* HISTORICO */
-
-.table-wrapper{
-    overflow:auto;
+.btn-primary{
+    border:0;
+    background:#f8fafc;
+    color:#020617;
+    padding:11px 17px;
+    border-radius:9px;
+    font-weight:800;
+    cursor:pointer;
 }
 
-table{
-    width:100%;
-    border-collapse:collapse;
+.btn-secondary{
+    border:1px solid #334155;
+    background:transparent;
+    color:#cbd5e1;
+    padding:11px 17px;
+    border-radius:9px;
+    cursor:pointer;
 }
 
-th,td{
-    padding:12px;
-    border-bottom:1px solid #202a33;
-    text-align:left;
-    font-size:13px;
+/* EMPLOYEE */
+
+.employee-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
 }
 
-th{
-    color:#89949e;
+.employee-title{
+    font-size:22px;
+    font-weight:800;
+}
+
+.employee-note{
+    color:#64748b;
+    font-size:12px;
+    margin-top:4px;
+}
+
+.employee-os-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:15px;
+}
+
+.employee-os{
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:15px;
+    padding:18px;
+}
+
+.employee-os .number{
+    font-size:20px;
+    font-weight:800;
+}
+
+.employee-os .machine{
+    margin-top:10px;
+    font-size:14px;
+    font-weight:700;
+}
+
+.employee-os .description{
+    margin-top:10px;
+    color:#94a3b8;
+    font-size:12px;
+    line-height:1.6;
+}
+
+.employee-actions{
+    margin-top:20px;
+}
+
+.employee-actions .action-btn{
+    padding:13px;
     font-size:11px;
+}
+
+.employee-emergency{
+    margin-top:20px;
+}
+
+/* MODAL */
+
+.modal{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.72);
+    padding:20px;
+}
+
+.modal-box{
+    width:min(520px,100%);
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 30px 80px rgba(0,0,0,.7);
+}
+
+.modal-title{
+    font-size:17px;
+    font-weight:800;
+    margin-bottom:8px;
+}
+
+.modal-description{
+    color:#64748b;
+    font-size:11px;
+    margin-bottom:17px;
+}
+
+.reason-list{
+    display:grid;
+    gap:8px;
+}
+
+.reason-btn{
+    padding:11px;
+    text-align:left;
+    border:1px solid #334155;
+    border-radius:8px;
+    background:#020617;
+    color:#cbd5e1;
+    cursor:pointer;
+    font-size:11px;
+}
+
+.reason-btn:hover{
+    background:#1e293b;
+}
+
+.modal-buttons{
+    display:flex;
+    justify-content:flex-end;
+    gap:9px;
+    margin-top:15px;
 }
 
 /* MOBILE */
 
-@media(max-width:900px){
-
-    .login-container{
-        grid-template-columns:1fr;
-        max-width:500px;
+@media(max-width:1100px){
+    .stats-grid{
+        grid-template-columns:repeat(3,1fr);
     }
 
-    .login-brand{
-        padding:35px;
-        min-height:300px;
+    .kanban{
+        grid-template-columns:repeat(2,1fr);
     }
+}
 
-    .brand-title{
-        font-size:35px;
-    }
-
-    .login-footer{
-        margin-top:30px;
-    }
-
+@media(max-width:800px){
     .sidebar{
         width:70px;
         padding:15px 8px;
     }
 
+    .sidebar-brand{
+        text-align:center;
+        padding-left:0;
+        padding-right:0;
+    }
+
     .sidebar-brand strong,
-    .sidebar-brand small,
-    .menu-btn span{
+    .sidebar-brand span,
+    .nav-btn span{
         display:none;
+    }
+
+    .nav-btn{
+        justify-content:center;
+    }
+
+    .sidebar-bottom{
+        left:8px;
+        right:8px;
     }
 
     .main{
         margin-left:70px;
-        padding:20px;
+        padding:15px;
     }
 
-    .stats{
+    .stats-grid{
         grid-template-columns:repeat(2,1fr);
     }
 
     .kanban{
+        grid-template-columns:1fr;
+    }
+
+    .employee-os-grid{
         grid-template-columns:1fr;
     }
 
@@ -555,24 +743,17 @@ th{
     }
 }
 
-@media(max-width:550px){
-
-    .login-box{
-        padding:35px 25px;
+@media(max-width:500px){
+    .stats-grid{
+        grid-template-columns:1fr 1fr;
     }
 
-    .stats{
-        grid-template-columns:1fr;
+    .page-title{
+        font-size:20px;
     }
 
-    .main{
-        padding:15px;
-    }
-
-    .topbar{
-        align-items:flex-start;
-        flex-direction:column;
-        gap:8px;
+    .user-badge{
+        font-size:9px;
     }
 }
 </style>
@@ -580,255 +761,245 @@ th{
 
 <body>
 
-<!-- ================= LOGIN ================= -->
+<!-- LOGIN -->
 
 <section id="loginScreen">
+    <div class="login-bg"></div>
 
-    <div class="login-container">
+    <div class="login-card">
+
+        <div class="ab-logo">AB</div>
 
         <div class="login-brand">
-
-            <div class="ab-logo">AB</div>
-
-            <div class="brand-small">
-                PCM • CONTROLE INDUSTRIAL
-            </div>
-
-            <div class="brand-title">
-                CONTROLE<br>
-                <span>DE O.S.</span>
-            </div>
-
-            <div class="brand-description">
-                Sistema de controle e acompanhamento
-                das ordens de serviço de manutenção.
-            </div>
-
-            <div class="login-footer">
-                Juntos por um futuro melhor
-            </div>
-
+            <div class="small">PCM • CONTROLE INDUSTRIAL</div>
+            <h1>CONTROLE DE O.S.</h1>
+            <p>Gestão de manutenção industrial</p>
         </div>
 
-        <div class="login-box">
+        <label class="form-label">USUÁRIO</label>
+        <select id="loginUser" class="form-select">
+            <option value="">Selecione o usuário</option>
+            <option value="PCM / Administrador">PCM / Administrador</option>
+            <option value="Adryan">Adryan</option>
+            <option value="Fabio">Fabio</option>
+            <option value="Rodrigo">Rodrigo</option>
+            <option value="Leonardo">Leonardo</option>
+            <option value="Vilmar">Vilmar</option>
+            <option value="Rafael">Rafael</option>
+            <option value="Danilo">Danilo</option>
+        </select>
 
-            <h2>Acesso ao sistema</h2>
+        <div style="height:15px"></div>
 
-            <div class="login-subtitle">
-                Entre com seu usuário e PIN
-            </div>
+        <label class="form-label">PIN</label>
+        <input
+            id="loginPin"
+            class="form-input"
+            type="password"
+            inputmode="numeric"
+            maxlength="4"
+            placeholder="Digite seu PIN"
+        >
 
-            <form id="loginForm">
+        <button class="login-btn" onclick="login()">
+            ENTRAR
+        </button>
 
-                <div id="loginError" class="login-error"></div>
-
-                <div class="form-group">
-
-                    <label>USUÁRIO</label>
-
-                    <select id="loginUser" class="form-control" required>
-
-                        <option value="">Selecione o usuário</option>
-
-                        <option value="PCM / Administrador">
-                            PCM / Administrador
-                        </option>
-
-                        <option value="Adryan">
-                            Adryan — Elétrica
-                        </option>
-
-                        <option value="Fabio">
-                            Fabio — Elétrica
-                        </option>
-
-                        <option value="Rodrigo">
-                            Rodrigo — Elétrica
-                        </option>
-
-                        <option value="Leonardo">
-                            Leonardo — Mecânica
-                        </option>
-
-                        <option value="Vilmar">
-                            Vilmar — Mecânica
-                        </option>
-
-                        <option value="Rafael">
-                            Rafael — Mecânica
-                        </option>
-
-                        <option value="Danilo">
-                            Danilo — Lubrificação / Mecânica
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>PIN</label>
-
-                    <input
-                        type="password"
-                        id="loginPin"
-                        class="form-control"
-                        maxlength="4"
-                        placeholder="Digite seu PIN"
-                        required
-                        inputmode="numeric"
-                        autocomplete="off"
-                    >
-
-                </div>
-
-                <button type="submit" class="btn-login">
-                    ENTRAR NO SISTEMA
-                </button>
-
-            </form>
-
+        <div id="loginError" class="login-error hidden">
+            Usuário ou PIN incorreto.
         </div>
 
     </div>
-
 </section>
 
 
-<!-- ================= SISTEMA ================= -->
+<!-- APP -->
 
-<div id="appLayout">
+<section id="app" class="hidden">
+
+    <!-- SIDEBAR -->
 
     <aside class="sidebar">
 
         <div class="sidebar-brand">
             <strong>PCM • CONTROLE</strong>
-            <small>ORDENS DE SERVIÇO</small>
+            <span>ORDENS DE SERVIÇO</span>
         </div>
 
-        <button class="menu-btn active" data-view="view-dashboard">
-            📊 <span>Dashboard</span>
-        </button>
+        <div id="adminMenu">
 
-        <button class="menu-btn" data-view="view-new-os">
-            ➕ <span>Nova O.S.</span>
-        </button>
+            <button class="nav-btn active" onclick="navigateTo('view-dashboard',this)">
+                <span>▦</span>
+                <span>Dashboard</span>
+            </button>
 
-        <button class="menu-btn" data-view="view-history">
-            📋 <span>Histórico</span>
-        </button>
+            <button class="nav-btn" onclick="navigateTo('view-new-os',this)">
+                <span>＋</span>
+                <span>Nova O.S.</span>
+            </button>
 
-        <button class="menu-btn" data-view="view-team">
-            👷 <span>Equipe</span>
-        </button>
+            <button class="nav-btn" onclick="navigateTo('view-history',this)">
+                <span>▤</span>
+                <span>Histórico</span>
+            </button>
 
-        <button class="menu-btn" data-view="view-machines">
-            ⚙️ <span>Máquinas</span>
-        </button>
+            <button class="nav-btn" onclick="navigateTo('view-team',this)">
+                <span>♙</span>
+                <span>Equipe</span>
+            </button>
 
-        <button class="menu-btn logout" id="btnLogout">
-            🚪 <span>Sair</span>
-        </button>
+            <button class="nav-btn" onclick="navigateTo('view-machines',this)">
+                <span>⚙</span>
+                <span>Máquinas</span>
+            </button>
+
+        </div>
+
+        <div id="employeeMenu" class="hidden">
+
+            <button class="nav-btn active" onclick="navigateTo('view-employee',this)">
+                <span>▦</span>
+                <span>Minhas O.S.</span>
+            </button>
+
+        </div>
+
+        <div class="sidebar-bottom">
+
+            <button class="logout-btn" onclick="logout()">
+                SAIR
+            </button>
+
+        </div>
 
     </aside>
 
 
+    <!-- MAIN -->
+
     <main class="main">
 
-        <div class="topbar">
+        <!-- DASHBOARD -->
 
-            <h1 id="pageTitle">
-                Dashboard
-            </h1>
+        <section id="view-dashboard" class="app-view">
 
-            <div class="user-info">
-                Usuário:
-                <strong id="loggedUserDisplay">-</strong>
-            </div>
-
-        </div>
-
-
-        <!-- ================= DASHBOARD ================= -->
-
-        <section id="view-dashboard" class="view active">
-
-            <div class="stats">
-
-                <div class="stat">
-                    <div class="stat-title">O.S. Abertas</div>
-                    <div class="stat-value" id="statOpen">0</div>
+            <div class="topbar">
+                <div>
+                    <div class="page-title">Dashboard</div>
+                    <div class="page-subtitle">
+                        Controle geral das ordens de serviço
+                    </div>
                 </div>
 
-                <div class="stat">
-                    <div class="stat-title">Em Produção</div>
-                    <div class="stat-value" id="statProduction">0</div>
-                </div>
-
-                <div class="stat">
-                    <div class="stat-title">Aguardando Material</div>
-                    <div class="stat-value" id="statMaterial">0</div>
-                </div>
-
-                <div class="stat">
-                    <div class="stat-title">Finalizadas</div>
-                    <div class="stat-value" id="statFinished">0</div>
-                </div>
-
-                <div class="stat">
-                    <div class="stat-title">Urgentes</div>
-                    <div class="stat-value" id="statUrgent">0</div>
-                </div>
-
+                <div id="currentUserBadge" class="user-badge"></div>
             </div>
 
 
-            <div class="kanban">
+            <div class="stats-grid">
 
-                <div class="kanban-column">
-
-                    <div class="column-header">
-                        O.S. ABERTA
-                    </div>
-
-                    <div class="column-body" id="kanbanOpen">
-                    </div>
-
+                <div class="stat-card">
+                    <div class="stat-label">O.S. abertas</div>
+                    <div id="statAbertas" class="stat-value">0</div>
                 </div>
 
-
-                <div class="kanban-column">
-
-                    <div class="column-header">
-                        EM PRODUÇÃO
-                    </div>
-
-                    <div class="column-body" id="kanbanProduction">
-                    </div>
-
+                <div class="stat-card">
+                    <div class="stat-label">Em produção</div>
+                    <div id="statProducao" class="stat-value">0</div>
                 </div>
 
-
-                <div class="kanban-column">
-
-                    <div class="column-header">
-                        AGUARDANDO MATERIAL
-                    </div>
-
-                    <div class="column-body" id="kanbanMaterial">
-                    </div>
-
+                <div class="stat-card">
+                    <div class="stat-label">Aguardando material</div>
+                    <div id="statMaterial" class="stat-value">0</div>
                 </div>
 
+                <div class="stat-card">
+                    <div class="stat-label">Finalizadas</div>
+                    <div id="statFinalizadas" class="stat-value">0</div>
+                </div>
 
-                <div class="kanban-column">
+                <div class="stat-card">
+                    <div class="stat-label">Urgentes</div>
+                    <div id="statUrgentes" class="stat-value">0</div>
+                </div>
 
-                    <div class="column-header">
-                        FINALIZADAS
+                <div class="stat-card">
+                    <div class="stat-label">Funcionários ativos</div>
+                    <div id="statAtivos" class="stat-value">0</div>
+                </div>
+
+            </div>
+
+
+            <!-- SOLICITAÇÕES DE MATERIAL -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    🔶 Solicitações de material pendentes
+                </div>
+
+                <div id="materialRequestsContainer">
+                    <div style="color:#64748b;font-size:12px">
+                        Nenhuma solicitação pendente.
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- ATIVIDADE -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    🔧 O.S. em produção
+                </div>
+
+                <div id="activeJobsContainer">
+                    <div style="color:#64748b;font-size:12px">
+                        Nenhuma O.S. em produção.
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- KANBAN -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Controle das O.S.
+                </div>
+
+                <div class="kanban">
+
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            O.S. ABERTA
+                        </div>
+                        <div id="kanbanAberta"></div>
                     </div>
 
-                    <div class="column-body" id="kanbanFinished">
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            EM PRODUÇÃO
+                        </div>
+                        <div id="kanbanProducao"></div>
+                    </div>
+
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            AGUARDANDO MATERIAL
+                        </div>
+                        <div id="kanbanMaterial"></div>
+                    </div>
+
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            FINALIZADA
+                        </div>
+                        <div id="kanbanFinalizada"></div>
                     </div>
 
                 </div>
@@ -838,329 +1009,283 @@ th{
         </section>
 
 
-        <!-- ================= NOVA OS ================= -->
+        <!-- EMPLOYEE -->
 
-        <section id="view-new-os" class="view">
+        <section id="view-employee" class="app-view hidden">
+
+            <div class="employee-header">
+
+                <div>
+                    <div class="employee-title">
+                        Minhas O.S.
+                    </div>
+
+                    <div class="employee-note">
+                        Ordens de serviço atribuídas a você
+                    </div>
+                </div>
+
+                <div id="employeeUserBadge" class="user-badge"></div>
+
+            </div>
+
+            <div id="employeeOsContainer" class="employee-os-grid"></div>
+
+        </section>
+
+
+        <!-- NOVA OS -->
+
+        <section id="view-new-os" class="app-view hidden">
+
+            <div class="topbar">
+
+                <div>
+                    <div class="page-title">
+                        Nova O.S.
+                    </div>
+
+                    <div class="page-subtitle">
+                        Cadastro da ordem de serviço recebida do WK
+                    </div>
+                </div>
+
+            </div>
+
 
             <div class="panel">
 
-                <div class="panel-title">
-                    Nova Ordem de Serviço
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Nº O.S. — WK
+                        </label>
+
+                        <input
+                            id="osNumber"
+                            class="form-input"
+                            maxlength="10"
+                            inputmode="numeric"
+                            placeholder="10 dígitos"
+                        >
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Data de abertura
+                        </label>
+
+                        <input
+                            id="osDate"
+                            class="form-input"
+                            type="date"
+                        >
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Máquina
+                        </label>
+
+                        <input
+                            id="osMachine"
+                            class="form-input"
+                            placeholder="Nome da máquina"
+                        >
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Código / TAG
+                        </label>
+
+                        <input
+                            id="osTag"
+                            class="form-input"
+                            placeholder="Ex.: PIC-1101"
+                        >
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Setor
+                        </label>
+
+                        <select id="osSector" class="form-select">
+
+                            <option value="">Selecione</option>
+
+                            <option>Serraria Mendes</option>
+                            <option>Serraria Schiffer</option>
+                            <option>Exportação</option>
+                            <option>Classificação</option>
+                            <option>Caldeira</option>
+                            <option>Secagem</option>
+                            <option>Fábrica de Componentes</option>
+                            <option>Escritório</option>
+
+                        </select>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Tipo de manutenção
+                        </label>
+
+                        <select id="osType" class="form-select">
+
+                            <option value="">Selecione</option>
+                            <option>Corretiva</option>
+                            <option>Preventiva</option>
+                            <option>Preditiva</option>
+
+                        </select>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Prioridade
+                        </label>
+
+                        <select id="osPriority" class="form-select">
+
+                            <option value="MODERADA">🟩 MODERADA</option>
+                            <option value="MÉDIA">🟧 MÉDIA</option>
+                            <option value="ALTA">🟥 ALTA</option>
+
+                        </select>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Responsável
+                        </label>
+
+                        <select id="osResponsible" class="form-select">
+
+                            <option value="">A definir pelo PCM</option>
+
+                            <option>Adryan — Elétrica</option>
+                            <option>Fabio — Elétrica</option>
+                            <option>Rodrigo — Elétrica</option>
+
+                            <option>Leonardo — Mecânica</option>
+                            <option>Vilmar — Mecânica</option>
+                            <option>Rafael — Mecânica</option>
+                            <option>Danilo — Lubrificação / Mecânica</option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Prazo
+                        </label>
+
+                        <input
+                            id="osDeadline"
+                            class="form-input"
+                            type="date"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label class="form-label">
+                            Descrição do problema / serviço
+                        </label>
+
+                        <textarea
+                            id="osDescription"
+                            class="form-textarea"
+                            placeholder="Descreva o problema ou serviço solicitado..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label class="form-label">
+                            Observações
+                        </label>
+
+                        <textarea
+                            id="osObservations"
+                            class="form-textarea"
+                            placeholder="Informações adicionais..."
+                        ></textarea>
+
+                    </div>
+
                 </div>
 
-                <form id="osForm">
 
-                    <div class="form-grid">
-
-                        <div class="form-group">
-
-                            <label>Nº DA O.S. WK *</label>
-
-                            <input
-                                type="text"
-                                id="osNumber"
-                                class="form-control"
-                                maxlength="10"
-                                inputmode="numeric"
-                                placeholder="Digite os 10 números"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label>DATA DE ABERTURA</label>
-
-                            <input
-                                type="date"
-                                id="openingDate"
-                                class="form-control"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label>MÁQUINA *</label>
-
-                            <input
-                                type="text"
-                                id="machine"
-                                class="form-control"
-                                placeholder="Nome da máquina"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label>CÓDIGO / TAG</label>
-
-                            <input
-                                type="text"
-                                id="tag"
-                                class="form-control"
-                                placeholder="Ex.: PIC-1101"
-                            >
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label>SETOR *</label>
-
-                            <select
-                                id="sector"
-                                class="form-control"
-                                required
-                            >
-
-                                <option value="">
-                                    Selecione o setor
-                                </option>
-
-                                <option>
-                                    Serraria Mendes
-                                </option>
-
-                                <option>
-                                    Serraria Schiffer
-                                </option>
-
-                                <option>
-                                    Exportação
-                                </option>
-
-                                <option>
-                                    Classificação
-                                </option>
-
-                                <option>
-                                    Caldeira
-                                </option>
-
-                                <option>
-                                    Secagem
-                                </option>
-
-                                <option>
-                                    Fábrica de Componentes
-                                </option>
-
-                                <option>
-                                    Escritório
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label>TIPO DE MANUTENÇÃO *</label>
-
-                            <select
-                                id="maintenanceType"
-                                class="form-control"
-                                required
-                            >
-
-                                <option value="">
-                                    Selecione
-                                </option>
-
-                                <option>
-                                    Corretiva
-                                </option>
-
-                                <option>
-                                    Preventiva
-                                </option>
-
-                                <option>
-                                    Preditiva
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="form-group form-full">
-
-                            <label>
-                                DESCRIÇÃO DO PROBLEMA / SERVIÇO *
-                            </label>
-
-                            <textarea
-                                id="description"
-                                class="form-control"
-                                placeholder="Descreva o problema ou serviço solicitado"
-                                required
-                            ></textarea>
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label>RESPONSÁVEL</label>
-
-                            <select
-                                id="responsible"
-                                class="form-control"
-                            >
-
-                                <option value="">
-                                    Selecione
-                                </option>
-
-                                <option>
-                                    Adryan — Elétrica
-                                </option>
-
-                                <option>
-                                    Fabio — Elétrica
-                                </option>
-
-                                <option>
-                                    Rodrigo — Elétrica
-                                </option>
-
-                                <option>
-                                    Leonardo — Mecânica
-                                </option>
-
-                                <option>
-                                    Vilmar — Mecânica
-                                </option>
-
-                                <option>
-                                    Rafael — Mecânica
-                                </option>
-
-                                <option>
-                                    Danilo — Lubrificação / Mecânica
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label>PRAZO</label>
-
-                            <input
-                                type="date"
-                                id="dueDate"
-                                class="form-control"
-                            >
-
-                        </div>
-
-
-                        <div class="form-group form-full">
-
-                            <label>PRIORIDADE *</label>
-
-                            <div class="priority-buttons">
-
-                                <button
-                                    type="button"
-                                    class="priority-btn alta"
-                                    data-priority="ALTA"
-                                >
-                                    🟥 ALTA
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="priority-btn media"
-                                    data-priority="MÉDIA"
-                                >
-                                    🟧 MÉDIA
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="priority-btn moderada"
-                                    data-priority="MODERADA"
-                                >
-                                    🟩 MODERADA
-                                </button>
-
-                            </div>
-
-                            <input
-                                type="hidden"
-                                id="priority"
-                            >
-
-                        </div>
-
-
-                        <div class="form-group form-full">
-
-                            <label>OBSERVAÇÕES</label>
-
-                            <textarea
-                                id="observations"
-                                class="form-control"
-                                placeholder="Observações adicionais"
-                            ></textarea>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-actions">
-
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            id="cancelOs"
-                        >
-                            CANCELAR
-                        </button>
-
-                        <button
-                            type="submit"
-                            class="btn btn-primary"
-                        >
-                            CADASTRAR O.S.
-                        </button>
-
-                    </div>
-
-                </form>
+                <div class="form-actions">
+
+                    <button
+                        class="btn-secondary"
+                        onclick="clearOsForm()"
+                    >
+                        LIMPAR
+                    </button>
+
+                    <button
+                        class="btn-primary"
+                        onclick="createOS()"
+                    >
+                        CADASTRAR O.S.
+                    </button>
+
+                </div>
 
             </div>
 
         </section>
 
 
-        <!-- ================= HISTÓRICO ================= -->
+        <!-- HISTÓRICO -->
 
-        <section id="view-history" class="view">
+        <section id="view-history" class="app-view hidden">
+
+            <div class="topbar">
+
+                <div>
+                    <div class="page-title">
+                        Histórico
+                    </div>
+
+                    <div class="page-subtitle">
+                        Histórico completo das ordens de serviço
+                    </div>
+                </div>
+
+                <button
+                    class="btn-secondary"
+                    onclick="loadHistory()"
+                >
+                    ATUALIZAR
+                </button>
+
+            </div>
+
 
             <div class="panel">
 
-                <div class="panel-title">
-                    Histórico de O.S.
-                </div>
-
-                <div class="table-wrapper">
+                <div class="table-wrap">
 
                     <table>
 
@@ -1173,13 +1298,44 @@ th{
                                 <th>Responsável</th>
                                 <th>Prioridade</th>
                                 <th>Status</th>
+                                <th>Tempo</th>
                             </tr>
 
                         </thead>
 
-                        <tbody id="historyBody">
+                        <tbody id="historyTable"></tbody>
 
-                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Histórico de execução
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>O.S.</th>
+                                <th>Funcionário</th>
+                                <th>Ação</th>
+                                <th>Motivo</th>
+                                <th>Duração</th>
+                                <th>Data</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="executionHistoryTable"></tbody>
 
                     </table>
 
@@ -1190,29 +1346,46 @@ th{
         </section>
 
 
-        <!-- ================= EQUIPE ================= -->
+        <!-- EQUIPE -->
 
-        <section id="view-team" class="view">
+        <section id="view-team" class="app-view hidden">
+
+            <div class="topbar">
+
+                <div>
+                    <div class="page-title">
+                        Equipe
+                    </div>
+
+                    <div class="page-subtitle">
+                        Técnicos de manutenção
+                    </div>
+                </div>
+
+            </div>
+
 
             <div class="panel">
 
-                <div class="panel-title">
-                    Equipe de Manutenção
-                </div>
+                <div class="table-wrap">
 
-                <div class="os-card">
-                    <strong>Elétrica</strong><br><br>
-                    Adryan<br>
-                    Fabio<br>
-                    Rodrigo
-                </div>
+                    <table>
 
-                <div class="os-card">
-                    <strong>Mecânica</strong><br><br>
-                    Leonardo<br>
-                    Vilmar<br>
-                    Rafael<br>
-                    Danilo — Lubrificação / Mecânica
+                        <thead>
+
+                            <tr>
+                                <th>Funcionário</th>
+                                <th>Equipe</th>
+                                <th>O.S. ativa</th>
+                                <th>Tempo atual</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="teamTable"></tbody>
+
+                    </table>
+
                 </div>
 
             </div>
@@ -1220,19 +1393,28 @@ th{
         </section>
 
 
-        <!-- ================= MAQUINAS ================= -->
+        <!-- MÁQUINAS -->
 
-        <section id="view-machines" class="view">
+        <section id="view-machines" class="app-view hidden">
+
+            <div class="topbar">
+
+                <div>
+                    <div class="page-title">
+                        Máquinas
+                    </div>
+
+                    <div class="page-subtitle">
+                        Equipamentos cadastrados nas ordens de serviço
+                    </div>
+                </div>
+
+            </div>
+
 
             <div class="panel">
 
-                <div class="panel-title">
-                    Máquinas
-                </div>
-
-                <p style="color:#89949e;">
-                    Cadastro de máquinas será integrado nesta etapa.
-                </p>
+                <div id="machinesContainer"></div>
 
             </div>
 
@@ -1240,13 +1422,144 @@ th{
 
     </main>
 
+</section>
+
+
+<!-- MODAL MATERIAL -->
+
+<div id="materialModal" class="modal hidden">
+
+    <div class="modal-box">
+
+        <div class="modal-title">
+            Requisitar material
+        </div>
+
+        <div class="modal-description">
+            Informe o motivo da parada da O.S. e solicitação de material.
+        </div>
+
+        <div class="reason-list">
+
+            <button
+                class="reason-btn"
+                onclick="selectMaterialReason('Tem que comprar material')"
+            >
+                🛒 Tem que comprar material
+            </button>
+
+            <button
+                class="reason-btn"
+                onclick="selectMaterialReason('Material não disponível no estoque')"
+            >
+                📦 Material não disponível no estoque
+            </button>
+
+            <button
+                class="reason-btn"
+                onclick="selectMaterialReason('Aguardando orçamento / cotação')"
+            >
+                💰 Aguardando orçamento / cotação
+            </button>
+
+            <button
+                class="reason-btn"
+                onclick="selectMaterialReason('Outro motivo')"
+            >
+                ✏️ Outro motivo
+            </button>
+
+        </div>
+
+        <div
+            id="otherReasonArea"
+            class="hidden"
+            style="margin-top:12px"
+        >
+
+            <textarea
+                id="otherReason"
+                class="form-textarea"
+                placeholder="Digite o motivo..."
+            ></textarea>
+
+        </div>
+
+        <div class="modal-buttons">
+
+            <button
+                class="btn-secondary"
+                onclick="closeMaterialModal()"
+            >
+                CANCELAR
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MODAL ATRIBUIR MATERIAL -->
+
+<div id="releaseModal" class="modal hidden">
+
+    <div class="modal-box">
+
+        <div class="modal-title">
+            Liberar O.S.
+        </div>
+
+        <div class="modal-description">
+            Selecione o funcionário que receberá a O.S.
+        </div>
+
+        <select
+            id="releaseEmployee"
+            class="form-select"
+        >
+
+            <option value="">Selecione o responsável</option>
+
+            <option>Adryan — Elétrica</option>
+            <option>Fabio — Elétrica</option>
+            <option>Rodrigo — Elétrica</option>
+
+            <option>Leonardo — Mecânica</option>
+            <option>Vilmar — Mecânica</option>
+            <option>Rafael — Mecânica</option>
+            <option>Danilo — Lubrificação / Mecânica</option>
+
+        </select>
+
+        <div class="modal-buttons">
+
+            <button
+                class="btn-secondary"
+                onclick="closeReleaseModal()"
+            >
+                CANCELAR
+            </button>
+
+            <button
+                class="btn-primary"
+                onclick="releaseMaterialRequest()"
+            >
+                LIBERAR O.S.
+            </button>
+
+        </div>
+
+    </div>
+
 </div>
 
 
 <script>
 
 /* =========================================================
-   SUPABASE
+   CONFIGURAÇÃO SUPABASE
 ========================================================= */
 
 const SUPABASE_URL =
@@ -1255,866 +1568,1789 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_HMD1Yow_uEbi-9fy6P0ATg_BqfNstx5";
 
-let supabaseClient = null;
-
-try {
-
-    if (
-        window.supabase &&
-        SUPABASE_URL &&
+const db =
+    window.supabase.createClient(
+        SUPABASE_URL,
         SUPABASE_KEY
-    ) {
-
-        supabaseClient =
-            window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_KEY
-            );
-
-    }
-
-} catch(error){
-
-    console.error(
-        "Erro ao iniciar Supabase:",
-        error
     );
-
-}
 
 
 /* =========================================================
-   USUÁRIOS / PIN
+   USUÁRIOS
 ========================================================= */
 
 const usersDB = {
 
-    "PCM / Administrador": "0109",
+    "PCM / Administrador":"0109",
 
-    "Adryan": "6101",
+    "Adryan":"6101",
+    "Fabio":"6102",
+    "Rodrigo":"6103",
 
-    "Fabio": "6102",
-
-    "Rodrigo": "6103",
-
-    "Leonardo": "6104",
-
-    "Vilmar": "6105",
-
-    "Rafael": "6106",
-
-    "Danilo": "6107"
+    "Leonardo":"6104",
+    "Vilmar":"6105",
+    "Rafael":"6106",
+    "Danilo":"6107"
 
 };
 
-
-/* =========================================================
-   VARIÁVEIS
-========================================================= */
+const employeeList = [
+    "Adryan",
+    "Fabio",
+    "Rodrigo",
+    "Leonardo",
+    "Vilmar",
+    "Rafael",
+    "Danilo"
+];
 
 let currentUser = null;
+let isAdmin = false;
 
+let currentMaterialOS = null;
+let currentReleaseRequest = null;
 
-/* =========================================================
-   ELEMENTOS
-========================================================= */
+let dashboardOrders = [];
 
-const loginScreen =
-    document.getElementById("loginScreen");
-
-const appLayout =
-    document.getElementById("appLayout");
-
-const loginForm =
-    document.getElementById("loginForm");
-
-const loginUser =
-    document.getElementById("loginUser");
-
-const loginPin =
-    document.getElementById("loginPin");
-
-const loginError =
-    document.getElementById("loginError");
-
-const loggedUserDisplay =
-    document.getElementById("loggedUserDisplay");
-
-const pageTitle =
-    document.getElementById("pageTitle");
-
-const btnLogout =
-    document.getElementById("btnLogout");
-
-const osForm =
-    document.getElementById("osForm");
-
-const openingDate =
-    document.getElementById("openingDate");
-
-
-/* =========================================================
-   DATA ATUAL
-========================================================= */
-
-function setTodayDate(){
-
-    const now = new Date();
-
-    const year =
-        now.getFullYear();
-
-    const month =
-        String(
-            now.getMonth() + 1
-        ).padStart(2,"0");
-
-    const day =
-        String(
-            now.getDate()
-        ).padStart(2,"0");
-
-    const today =
-        `${year}-${month}-${day}`;
-
-    openingDate.value = today;
-}
+let timerInterval = null;
 
 
 /* =========================================================
    LOGIN
 ========================================================= */
 
-loginForm.addEventListener(
-    "submit",
-    function(e){
+async function login(){
 
-        e.preventDefault();
+    const user =
+        document.getElementById("loginUser").value;
 
-        const selectedUser =
-            String(
-                loginUser.value || ""
-            ).trim();
+    const pin =
+        document.getElementById("loginPin").value
+        .replace(/\D/g,"");
 
-        const enteredPin =
-            String(
-                loginPin.value || ""
-            )
-            .replace(/\D/g,"")
-            .trim();
+    const error =
+        document.getElementById("loginError");
 
+    if(
+        !user ||
+        !usersDB[user] ||
+        usersDB[user] !== pin
+    ){
 
-        /* USUÁRIO */
+        error.classList.remove("hidden");
 
-        if(!selectedUser){
+        return;
+    }
 
-            loginError.textContent =
-                "Selecione um usuário.";
+    error.classList.add("hidden");
 
-            loginError.style.display =
-                "block";
+    currentUser = user;
 
-            return;
-        }
+    isAdmin =
+        user === "PCM / Administrador";
 
+    document
+        .getElementById("loginScreen")
+        .classList.add("hidden");
 
-        /* PIN */
+    document
+        .getElementById("app")
+        .classList.remove("hidden");
 
-        if(enteredPin.length !== 4){
+    document
+        .getElementById("currentUserBadge")
+        .textContent = currentUser;
 
-            loginError.textContent =
-                "Digite um PIN de 4 números.";
-
-            loginError.style.display =
-                "block";
-
-            loginPin.focus();
-
-            return;
-        }
+    document
+        .getElementById("employeeUserBadge")
+        .textContent = currentUser;
 
 
-        /* PIN CORRETO */
+    if(isAdmin){
 
-        const correctPin =
-            String(
-                usersDB[selectedUser] || ""
-            ).trim();
+        document
+            .getElementById("adminMenu")
+            .classList.remove("hidden");
 
+        document
+            .getElementById("employeeMenu")
+            .classList.add("hidden");
 
-        if(correctPin === enteredPin){
+        navigateTo("view-dashboard");
 
-            console.log(
-                "Login autorizado:",
-                selectedUser
-            );
+        await loadDashboardData();
 
-            currentUser =
-                selectedUser;
+    }else{
 
-            loginError.style.display =
-                "none";
+        document
+            .getElementById("adminMenu")
+            .classList.add("hidden");
 
-            loginPin.value = "";
+        document
+            .getElementById("employeeMenu")
+            .classList.remove("hidden");
 
-            loggedUserDisplay.textContent =
-                currentUser;
+        navigateTo("view-employee");
 
-
-            /* ESCONDE LOGIN */
-
-            loginScreen.style.display =
-                "none";
-
-
-            /* ABRE SISTEMA */
-
-            appLayout.style.display =
-                "block";
-
-
-            setTodayDate();
-
-            navigateTo(
-                "view-dashboard"
-            );
-
-            loadDashboardData();
-
-        }
-
-        else{
-
-            console.log(
-                "PIN incorreto para:",
-                selectedUser
-            );
-
-            loginError.textContent =
-                "PIN incorreto. Tente novamente.";
-
-            loginError.style.display =
-                "block";
-
-            loginPin.value = "";
-
-            loginPin.focus();
-
-        }
+        await loadEmployeeOrders();
 
     }
-);
 
-
-/* =========================================================
-   ENTER NO PIN
-========================================================= */
-
-loginPin.addEventListener(
-    "keydown",
-    function(e){
-
-        if(e.key === "Enter"){
-
-            e.preventDefault();
-
-            loginForm.requestSubmit();
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   SOMENTE NÚMEROS NO PIN
-========================================================= */
-
-loginPin.addEventListener(
-    "input",
-    function(){
-
-        this.value =
-            this.value
-            .replace(/\D/g,"")
-            .slice(0,4);
-
-    }
-);
+    startRefreshTimer();
+}
 
 
 /* =========================================================
    LOGOUT
 ========================================================= */
 
-btnLogout.addEventListener(
-    "click",
-    function(e){
+function logout(){
 
-        e.preventDefault();
+    currentUser = null;
+    isAdmin = false;
 
-        currentUser = null;
-
-        loginForm.reset();
-
-        loginPin.value = "";
-
-        loginError.style.display =
-            "none";
-
-        appLayout.style.display =
-            "none";
-
-        loginScreen.style.display =
-            "flex";
-
-        loginUser.focus();
-
+    if(timerInterval){
+        clearInterval(timerInterval);
+        timerInterval = null;
     }
-);
+
+    document
+        .getElementById("app")
+        .classList.add("hidden");
+
+    document
+        .getElementById("loginScreen")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("loginPin")
+        .value = "";
+
+    document
+        .getElementById("loginUser")
+        .value = "";
+
+}
 
 
 /* =========================================================
    NAVEGAÇÃO
 ========================================================= */
 
-function navigateTo(viewId){
+function navigateTo(viewId, button = null){
 
     document
-        .querySelectorAll(".view")
-        .forEach(function(view){
-
-            view.classList.remove("active");
-
+        .querySelectorAll(".app-view")
+        .forEach(view=>{
+            view.classList.add("hidden");
         });
-
 
     const target =
         document.getElementById(viewId);
 
-
     if(target){
-
-        target.classList.add("active");
-
+        target.classList.remove("hidden");
     }
 
-
     document
-        .querySelectorAll(".menu-btn")
-        .forEach(function(btn){
-
+        .querySelectorAll(".nav-btn")
+        .forEach(btn=>{
             btn.classList.remove("active");
-
         });
 
+    if(button){
+        button.classList.add("active");
+    }
 
-    const activeButton =
-        document.querySelector(
-            `[data-view="${viewId}"]`
-        );
+    if(viewId === "view-dashboard"){
+        loadDashboardData();
+    }
 
+    if(viewId === "view-employee"){
+        loadEmployeeOrders();
+    }
 
-    if(activeButton){
+    if(viewId === "view-history"){
+        loadHistory();
+    }
 
-        activeButton.classList.add(
-            "active"
-        );
+    if(viewId === "view-team"){
+        loadTeam();
+    }
 
-        const span =
-            activeButton.querySelector("span");
-
-        if(span){
-
-            pageTitle.textContent =
-                span.textContent;
-
-        }
-
+    if(viewId === "view-machines"){
+        loadMachines();
     }
 
 }
 
 
 /* =========================================================
-   BOTÕES DO MENU
+   AUXILIARES
 ========================================================= */
 
-document
-    .querySelectorAll(".menu-btn[data-view]")
-    .forEach(function(button){
+function escapeHtml(value){
 
-        button.addEventListener(
-            "click",
-            function(){
+    if(value === null || value === undefined){
+        return "";
+    }
 
-                navigateTo(
-                    this.dataset.view
-                );
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
 
-                if(
-                    this.dataset.view ===
-                    "view-dashboard"
-                ){
 
-                    loadDashboardData();
+function normalizeEmployee(name){
 
-                }
+    if(!name){
+        return "";
+    }
 
-                if(
-                    this.dataset.view ===
-                    "view-history"
-                ){
+    return String(name)
+        .split("—")[0]
+        .trim()
+        .toLowerCase();
+}
 
-                    loadHistory();
 
-                }
+function responsibleMatchesUser(responsible,user){
 
-            }
+    return normalizeEmployee(responsible)
+        === normalizeEmployee(user);
+
+}
+
+
+function formatSeconds(seconds){
+
+    seconds =
+        Math.max(
+            0,
+            parseInt(seconds || 0)
         );
 
-    });
+    const h =
+        Math.floor(seconds / 3600);
 
-
-/* =========================================================
-   NÚMERO WK
-========================================================= */
-
-document
-    .getElementById("osNumber")
-    .addEventListener(
-        "input",
-        function(){
-
-            this.value =
-                this.value
-                .replace(/\D/g,"")
-                .slice(0,10);
-
-        }
-    );
-
-
-/* =========================================================
-   PRIORIDADE
-========================================================= */
-
-document
-    .querySelectorAll(".priority-btn")
-    .forEach(function(button){
-
-        button.addEventListener(
-            "click",
-            function(){
-
-                document
-                    .querySelectorAll(
-                        ".priority-btn"
-                    )
-                    .forEach(function(btn){
-
-                        btn.classList.remove(
-                            "selected"
-                        );
-
-                    });
-
-
-                this.classList.add(
-                    "selected"
-                );
-
-
-                document.getElementById(
-                    "priority"
-                ).value =
-                    this.dataset.priority;
-
-            }
+    const m =
+        Math.floor(
+            (seconds % 3600) / 60
         );
 
-    });
+    const s =
+        seconds % 60;
 
-
-/* =========================================================
-   CANCELAR NOVA OS
-========================================================= */
-
-document
-    .getElementById("cancelOs")
-    .addEventListener(
-        "click",
-        function(){
-
-            osForm.reset();
-
-            document
-                .querySelectorAll(
-                    ".priority-btn"
-                )
-                .forEach(function(btn){
-
-                    btn.classList.remove(
-                        "selected"
-                    );
-
-                });
-
-            setTodayDate();
-
-            navigateTo(
-                "view-dashboard"
-            );
-
-        }
+    return (
+        String(h).padStart(2,"0") +
+        ":" +
+        String(m).padStart(2,"0") +
+        ":" +
+        String(s).padStart(2,"0")
     );
+}
+
+
+function getCurrentElapsed(order){
+
+    if(
+        !order.started_at ||
+        order.status !== "EM PRODUÇÃO"
+    ){
+        return 0;
+    }
+
+    const start =
+        new Date(order.started_at).getTime();
+
+    return Math.max(
+        0,
+        Math.floor(
+            (Date.now() - start) / 1000
+        )
+    );
+}
+
+
+function getTotalTime(order){
+
+    return (
+        parseInt(order.total_service_seconds || 0) +
+        getCurrentElapsed(order)
+    );
+}
+
+
+function priorityClass(priority){
+
+    if(priority === "ALTA"){
+        return "priority-alta";
+    }
+
+    if(priority === "MÉDIA"){
+        return "priority-media";
+    }
+
+    return "priority-moderada";
+}
+
+
+function statusClass(status){
+
+    if(status === "O.S. ABERTA"){
+        return "status-aberta";
+    }
+
+    if(status === "EM PRODUÇÃO"){
+        return "status-producao";
+    }
+
+    if(status === "AGUARDANDO MATERIAL"){
+        return "status-material";
+    }
+
+    return "status-finalizada";
+}
 
 
 /* =========================================================
    CADASTRAR O.S.
 ========================================================= */
 
-osForm.addEventListener(
-    "submit",
-    async function(e){
+async function createOS(){
 
-        e.preventDefault();
+    const osNumber =
+        document.getElementById("osNumber")
+        .value
+        .replace(/\D/g,"");
 
+    const osDate =
+        document.getElementById("osDate").value;
 
-        const osNumber =
-            document.getElementById(
-                "osNumber"
-            ).value.trim();
+    const machine =
+        document.getElementById("osMachine").value.trim();
 
+    const tag =
+        document.getElementById("osTag").value.trim();
 
-        const priority =
-            document.getElementById(
-                "priority"
-            ).value;
+    const sector =
+        document.getElementById("osSector").value;
 
+    const type =
+        document.getElementById("osType").value;
 
-        if(osNumber.length !== 10){
+    const priority =
+        document.getElementById("osPriority").value;
 
-            alert(
-                "O número da O.S. WK precisa ter exatamente 10 números."
-            );
+    const responsible =
+        document.getElementById("osResponsible").value;
 
-            return;
-        }
+    const deadline =
+        document.getElementById("osDeadline").value;
 
+    const description =
+        document.getElementById("osDescription").value.trim();
 
-        if(!priority){
+    const observations =
+        document.getElementById("osObservations").value.trim();
 
-            alert(
-                "Selecione a prioridade da O.S."
-            );
 
-            return;
-        }
+    if(osNumber.length !== 10){
 
+        alert(
+            "O número da O.S. precisa ter exatamente 10 dígitos."
+        );
 
-        const data = {
-
-            os_number:
-                osNumber,
-
-            opening_date:
-                document.getElementById(
-                    "openingDate"
-                ).value,
-
-            machine:
-                document.getElementById(
-                    "machine"
-                ).value.trim(),
-
-            tag:
-                document.getElementById(
-                    "tag"
-                ).value.trim(),
-
-            sector:
-                document.getElementById(
-                    "sector"
-                ).value,
-
-            maintenance_type:
-                document.getElementById(
-                    "maintenanceType"
-                ).value,
-
-            description:
-                document.getElementById(
-                    "description"
-                ).value.trim(),
-
-            responsible:
-                document.getElementById(
-                    "responsible"
-                ).value,
-
-            due_date:
-                document.getElementById(
-                    "dueDate"
-                ).value || null,
-
-            priority:
-                priority,
-
-            status:
-                "O.S. ABERTA",
-
-            observations:
-                document.getElementById(
-                    "observations"
-                ).value.trim()
-
-        };
-
-
-        /* =================================================
-           SUPABASE
-        ================================================= */
-
-        if(!supabaseClient){
-
-            alert(
-                "O sistema não conseguiu conectar ao Supabase."
-            );
-
-            console.error(
-                "Supabase não inicializado."
-            );
-
-            return;
-        }
-
-
-        try{
-
-            const result =
-                await supabaseClient
-                .from("os_orders")
-                .insert([data]);
-
-
-            if(result.error){
-
-                console.error(
-                    "Erro Supabase:",
-                    result.error
-                );
-
-
-                if(
-                    result.error.code ===
-                    "23505"
-                ){
-
-                    alert(
-                        "Essa O.S. WK já está cadastrada."
-                    );
-
-                }
-                else{
-
-                    alert(
-                        "Erro ao cadastrar O.S.:\n" +
-                        result.error.message
-                    );
-
-                }
-
-                return;
-            }
-
-
-            alert(
-                "O.S. cadastrada com sucesso!"
-            );
-
-
-            osForm.reset();
-
-            document
-                .querySelectorAll(
-                    ".priority-btn"
-                )
-                .forEach(function(btn){
-
-                    btn.classList.remove(
-                        "selected"
-                    );
-
-                });
-
-
-            setTodayDate();
-
-            navigateTo(
-                "view-dashboard"
-            );
-
-            loadDashboardData();
-
-
-        }
-        catch(error){
-
-            console.error(
-                "Erro:",
-                error
-            );
-
-            alert(
-                "Erro inesperado ao cadastrar a O.S."
-            );
-
-        }
-
+        return;
     }
-);
 
+    if(
+        !machine ||
+        !sector ||
+        !type ||
+        !description
+    ){
 
-/* =========================================================
-   DASHBOARD
-========================================================= */
-
-async function loadDashboardData(){
-
-    if(!supabaseClient){
+        alert(
+            "Preencha máquina, setor, tipo de manutenção e descrição."
+        );
 
         return;
     }
 
 
-    try{
+    const payload = {
 
-        const result =
-            await supabaseClient
+        os_number: osNumber,
+
+        opening_date:
+            osDate || new Date().toISOString().split("T")[0],
+
+        machine: machine,
+
+        tag: tag,
+
+        sector: sector,
+
+        maintenance_type: type,
+
+        priority: priority,
+
+        responsible:
+            responsible || null,
+
+        deadline:
+            deadline || null,
+
+        description: description,
+
+        observations: observations,
+
+        status: "O.S. ABERTA",
+
+        total_service_seconds: 0,
+
+        active_employee: null,
+
+        started_at: null,
+
+        paused_at: null,
+
+        finished_at: null
+
+    };
+
+
+    const {data,error} =
+        await db
+            .from("os_orders")
+            .insert(payload)
+            .select()
+            .single();
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "Erro ao cadastrar O.S.:\n" +
+            error.message
+        );
+
+        return;
+    }
+
+
+    alert(
+        "O.S. " +
+        osNumber +
+        " cadastrada com sucesso!"
+    );
+
+
+    clearOsForm();
+
+    navigateTo("view-dashboard");
+
+    await loadDashboardData();
+
+}
+
+
+function clearOsForm(){
+
+    document
+        .getElementById("osNumber").value = "";
+
+    document
+        .getElementById("osDate").value = "";
+
+    document
+        .getElementById("osMachine").value = "";
+
+    document
+        .getElementById("osTag").value = "";
+
+    document
+        .getElementById("osSector").value = "";
+
+    document
+        .getElementById("osType").value = "";
+
+    document
+        .getElementById("osPriority").value = "MODERADA";
+
+    document
+        .getElementById("osResponsible").value = "";
+
+    document
+        .getElementById("osDeadline").value = "";
+
+    document
+        .getElementById("osDescription").value = "";
+
+    document
+        .getElementById("osObservations").value = "";
+
+}
+
+
+/* =========================================================
+   CARREGAR DASHBOARD
+========================================================= */
+
+async function loadDashboardData(){
+
+    if(!isAdmin){
+        return;
+    }
+
+    const {data,error} =
+        await db
             .from("os_orders")
             .select("*")
-            .order(
-                "created_at",
-                {
-                    ascending:false
-                }
-            );
+            .order("created_at",{ascending:false});
 
 
-        if(result.error){
+    if(error){
 
-            console.error(
-                result.error
-            );
+        console.error(error);
 
+        return;
+    }
+
+
+    dashboardOrders = data || [];
+
+
+    const abertas =
+        dashboardOrders.filter(
+            o => o.status === "O.S. ABERTA"
+        ).length;
+
+    const producao =
+        dashboardOrders.filter(
+            o => o.status === "EM PRODUÇÃO"
+        ).length;
+
+    const material =
+        dashboardOrders.filter(
+            o => o.status === "AGUARDANDO MATERIAL"
+        ).length;
+
+    const finalizadas =
+        dashboardOrders.filter(
+            o => o.status === "FINALIZADA"
+        ).length;
+
+    const urgentes =
+        dashboardOrders.filter(
+            o => o.priority === "ALTA" &&
+            o.status !== "FINALIZADA"
+        ).length;
+
+    const ativos =
+        new Set(
+            dashboardOrders
+                .filter(o =>
+                    o.status === "EM PRODUÇÃO" &&
+                    o.active_employee
+                )
+                .map(o => o.active_employee)
+        ).size;
+
+
+    document.getElementById("statAbertas")
+        .textContent = abertas;
+
+    document.getElementById("statProducao")
+        .textContent = producao;
+
+    document.getElementById("statMaterial")
+        .textContent = material;
+
+    document.getElementById("statFinalizadas")
+        .textContent = finalizadas;
+
+    document.getElementById("statUrgentes")
+        .textContent = urgentes;
+
+    document.getElementById("statAtivos")
+        .textContent = ativos;
+
+
+    renderKanban();
+
+    renderActiveJobs();
+
+    await loadMaterialRequests();
+
+}
+
+
+/* =========================================================
+   KANBAN
+========================================================= */
+
+function renderKanban(){
+
+    const containers = {
+
+        "O.S. ABERTA":
+            document.getElementById("kanbanAberta"),
+
+        "EM PRODUÇÃO":
+            document.getElementById("kanbanProducao"),
+
+        "AGUARDANDO MATERIAL":
+            document.getElementById("kanbanMaterial"),
+
+        "FINALIZADA":
+            document.getElementById("kanbanFinalizada")
+
+    };
+
+
+    Object.values(containers)
+        .forEach(c=>{
+            c.innerHTML = "";
+        });
+
+
+    dashboardOrders.forEach(order=>{
+
+        const container =
+            containers[order.status];
+
+        if(!container){
             return;
         }
 
+        const card =
+            createAdminOSCard(order);
 
-        const orders =
-            result.data || [];
+        container.insertAdjacentHTML(
+            "beforeend",
+            card
+        );
 
-
-        let open = 0;
-        let production = 0;
-        let material = 0;
-        let finished = 0;
-        let urgent = 0;
-
-
-        orders.forEach(function(os){
-
-            const status =
-                String(
-                    os.status || ""
-                ).toUpperCase();
+    });
 
 
-            if(
-                status === "O.S. ABERTA"
-            ){
+    Object.values(containers)
+        .forEach(container=>{
 
-                open++;
+            if(!container.innerHTML){
 
-            }
-
-            else if(
-                status === "EM PRODUÇÃO"
-            ){
-
-                production++;
-
-            }
-
-            else if(
-                status ===
-                "AGUARDANDO MATERIAL"
-            ){
-
-                material++;
-
-            }
-
-            else if(
-                status === "FINALIZADA"
-            ){
-
-                finished++;
-
-            }
-
-
-            if(
-                String(
-                    os.priority || ""
-                ).toUpperCase() ===
-                "ALTA"
-                &&
-                status !== "FINALIZADA"
-            ){
-
-                urgent++;
+                container.innerHTML =
+                    `<div style="color:#475569;font-size:10px;padding:10px">
+                        Nenhuma O.S.
+                    </div>`;
 
             }
 
         });
 
+}
 
+
+function createAdminOSCard(order){
+
+    const total =
+        getTotalTime(order);
+
+    const responsible =
+        order.active_employee ||
+        order.responsible ||
+        "Não atribuído";
+
+
+    let actions = "";
+
+
+    if(
+        order.status === "O.S. ABERTA" &&
+        order.responsible
+    ){
+
+        actions += `
+            <button
+                class="action-btn btn-start"
+                onclick="adminStartOS(${order.id})"
+            >
+                INICIAR / LIBERAR O.S.
+            </button>
+        `;
+
+    }
+
+
+    if(order.status === "AGUARDANDO MATERIAL"){
+
+        actions += `
+            <button
+                class="action-btn btn-material"
+                onclick="openReleaseModal(${order.material_request_id || "null"},${order.id})"
+            >
+                LIBERAR APÓS MATERIAL
+            </button>
+        `;
+
+    }
+
+
+    return `
+
+        <div class="os-card">
+
+            <div class="os-card-top">
+
+                <div class="os-number">
+                    ${escapeHtml(order.os_number)}
+                </div>
+
+                <div class="priority ${priorityClass(order.priority)}">
+                    ${escapeHtml(order.priority || "MODERADA")}
+                </div>
+
+            </div>
+
+
+            <div class="os-info">
+
+                <div>
+                    <strong>Máquina:</strong>
+                    ${escapeHtml(order.machine)}
+                </div>
+
+                <div>
+                    <strong>TAG:</strong>
+                    ${escapeHtml(order.tag || "-")}
+                </div>
+
+                <div>
+                    <strong>Setor:</strong>
+                    ${escapeHtml(order.sector)}
+                </div>
+
+                <div>
+                    <strong>Responsável:</strong>
+                    ${escapeHtml(responsible)}
+                </div>
+
+                <div>
+                    <strong>Status:</strong>
+                    ${escapeHtml(order.status)}
+                </div>
+
+            </div>
+
+
+            ${
+                order.status === "EM PRODUÇÃO"
+                ?
+                `
+                <div class="timer">
+                    ⏱ ${formatSeconds(total)}
+                </div>
+                `
+                :
+                ""
+            }
+
+            ${actions}
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   INICIAR O.S. PELO ADMIN
+========================================================= */
+
+async function adminStartOS(osId){
+
+    const {data:order,error} =
+        await db
+            .from("os_orders")
+            .select("*")
+            .eq("id",osId)
+            .single();
+
+
+    if(error || !order){
+
+        alert("Não foi possível localizar a O.S.");
+
+        return;
+    }
+
+
+    if(!order.responsible){
+
+        alert(
+            "A O.S. precisa ter um responsável definido."
+        );
+
+        return;
+    }
+
+
+    const employee =
+        normalizeEmployee(order.responsible);
+
+
+    const {data:active,error:activeError} =
+        await db
+            .from("os_orders")
+            .select("id,os_number")
+            .eq("active_employee",employee)
+            .eq("status","EM PRODUÇÃO");
+
+
+    if(activeError){
+
+        console.error(activeError);
+
+        return;
+    }
+
+
+    if(active && active.length > 0){
+
+        alert(
+            employee +
+            " já possui uma O.S. em produção."
+        );
+
+        return;
+    }
+
+
+    const now =
+        new Date().toISOString();
+
+
+    const {error:updateError} =
+        await db
+            .from("os_orders")
+            .update({
+
+                status:"EM PRODUÇÃO",
+
+                started_at:now,
+
+                paused_at:null,
+
+                pause_reason:null,
+
+                active_employee:employee
+
+            })
+            .eq("id",osId);
+
+
+    if(updateError){
+
+        alert(updateError.message);
+
+        return;
+    }
+
+
+    await insertExecutionHistory({
+
+        os_id:osId,
+
+        os_number:order.os_number,
+
+        employee:employee,
+
+        action:"INICIADA",
+
+        started_at:now,
+
+        ended_at:null,
+
+        duration_seconds:0
+
+    });
+
+
+    await loadDashboardData();
+
+}
+
+
+/* =========================================================
+   EMPLOYEE — CARREGAR O.S.
+========================================================= */
+
+async function loadEmployeeOrders(){
+
+    if(!currentUser || isAdmin){
+        return;
+    }
+
+
+    const {data,error} =
+        await db
+            .from("os_orders")
+            .select("*")
+            .order("created_at",{ascending:false});
+
+
+    if(error){
+
+        console.error(error);
+
+        return;
+    }
+
+
+    const myOrders =
+        (data || []).filter(order => {
+
+            return responsibleMatchesUser(
+                order.responsible,
+                currentUser
+            );
+
+        });
+
+
+    renderEmployeeOrders(myOrders);
+
+}
+
+
+function renderEmployeeOrders(orders){
+
+    const container =
         document.getElementById(
-            "statOpen"
-        ).textContent = open;
+            "employeeOsContainer"
+        );
+
+    container.innerHTML = "";
 
 
-        document.getElementById(
-            "statProduction"
-        ).textContent = production;
+    if(!orders.length){
+
+        container.innerHTML = `
+            <div class="panel" style="grid-column:1/-1">
+                <div style="color:#64748b">
+                    Nenhuma O.S. atribuída a você.
+                </div>
+            </div>
+        `;
+
+        return;
+    }
 
 
-        document.getElementById(
-            "statMaterial"
-        ).textContent = material;
+    orders.forEach(order=>{
+
+        container.insertAdjacentHTML(
+            "beforeend",
+            createEmployeeCard(order)
+        );
+
+    });
+
+}
 
 
-        document.getElementById(
-            "statFinished"
-        ).textContent = finished;
+function createEmployeeCard(order){
+
+    const running =
+        order.status === "EM PRODUÇÃO" &&
+        normalizeEmployee(order.active_employee)
+        === normalizeEmployee(currentUser);
 
 
-        document.getElementById(
-            "statUrgent"
-        ).textContent = urgent;
+    let buttons = "";
 
 
-        renderKanban(
-            orders
+    if(order.status === "O.S. ABERTA"){
+
+        buttons += `
+            <button
+                class="action-btn btn-start"
+                onclick="startOS(${order.id})"
+            >
+                ▶ INICIAR O.S.
+            </button>
+        `;
+
+    }
+
+
+    if(running){
+
+        buttons += `
+            <button
+                class="action-btn btn-material"
+                onclick="openMaterialModal(${order.id})"
+            >
+                ⏸ PARAR / REQUISITAR MATERIAL
+            </button>
+
+            <button
+                class="action-btn btn-finish"
+                onclick="finishOS(${order.id})"
+            >
+                ✓ FINALIZAR O.S.
+            </button>
+
+            <div class="emergency-wrap">
+
+                <button
+                    class="action-btn btn-emergency"
+                    onclick="emergencyStopOS(${order.id})"
+                >
+                    ▲ PARADA IMEDIATA
+                </button>
+
+            </div>
+        `;
+
+    }
+
+
+    if(order.status === "AGUARDANDO MATERIAL"){
+
+        buttons = `
+            <div style="
+                margin-top:15px;
+                padding:10px;
+                border-radius:8px;
+                background:#451a03;
+                color:#fed7aa;
+                font-size:11px;
+            ">
+                ⏸ O.S. aguardando material.
+                <br>
+                O PCM fará a liberação.
+            </div>
+        `;
+
+    }
+
+
+    if(order.status === "FINALIZADA"){
+
+        buttons = `
+            <div style="
+                margin-top:15px;
+                padding:10px;
+                border-radius:8px;
+                background:#1e293b;
+                color:#cbd5e1;
+                font-size:11px;
+            ">
+                ✓ Serviço finalizado
+            </div>
+        `;
+
+    }
+
+
+    return `
+
+        <div class="employee-os">
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                gap:10px;
+                align-items:center;
+            ">
+
+                <div class="number">
+                    O.S. ${escapeHtml(order.os_number)}
+                </div>
+
+                <div class="priority ${priorityClass(order.priority)}">
+                    ${escapeHtml(order.priority)}
+                </div>
+
+            </div>
+
+
+            <div class="machine">
+                ${escapeHtml(order.machine)}
+            </div>
+
+
+            <div style="
+                color:#64748b;
+                font-size:10px;
+                margin-top:4px;
+            ">
+                ${escapeHtml(order.tag || "")}
+                •
+                ${escapeHtml(order.sector)}
+            </div>
+
+
+            <div class="description">
+                ${escapeHtml(order.description)}
+            </div>
+
+
+            ${
+                running
+                ?
+                `
+                <div
+                    class="timer"
+                    data-timer-id="${order.id}"
+                >
+                    ⏱ ${formatSeconds(getTotalTime(order))}
+                </div>
+                `
+                :
+                `
+                <div style="
+                    margin-top:12px;
+                    color:#64748b;
+                    font-size:10px;
+                ">
+                    Tempo acumulado:
+                    ${formatSeconds(order.total_service_seconds)}
+                </div>
+                `
+            }
+
+
+            <div class="employee-actions">
+                ${buttons}
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   INICIAR O.S. — FUNCIONÁRIO
+========================================================= */
+
+async function startOS(osId){
+
+    if(isAdmin){
+        return;
+    }
+
+
+    const {data:order,error} =
+        await db
+            .from("os_orders")
+            .select("*")
+            .eq("id",osId)
+            .single();
+
+
+    if(error || !order){
+
+        alert("O.S. não encontrada.");
+
+        return;
+    }
+
+
+    if(order.status !== "O.S. ABERTA"){
+
+        alert(
+            "Esta O.S. não está disponível para início."
+        );
+
+        return;
+    }
+
+
+    const {data:active,error:activeError} =
+        await db
+            .from("os_orders")
+            .select("id,os_number")
+            .eq("status","EM PRODUÇÃO")
+            .eq("active_employee",currentUser);
+
+
+    if(activeError){
+
+        console.error(activeError);
+
+        return;
+    }
+
+
+    if(active && active.length){
+
+        alert(
+            "Você já possui a O.S. " +
+            active[0].os_number +
+            " em produção.\n\n" +
+            "Finalize ou pare essa O.S. antes de iniciar outra."
+        );
+
+        return;
+    }
+
+
+    const now =
+        new Date().toISOString();
+
+
+    const {error:updateError} =
+        await db
+            .from("os_orders")
+            .update({
+
+                status:"EM PRODUÇÃO",
+
+                started_at:now,
+
+                paused_at:null,
+
+                pause_reason:null,
+
+                active_employee:currentUser
+
+            })
+            .eq("id",osId)
+            .eq("status","O.S. ABERTA");
+
+
+    if(updateError){
+
+        alert(
+            "Erro ao iniciar O.S.:\n" +
+            updateError.message
+        );
+
+        return;
+    }
+
+
+    await insertExecutionHistory({
+
+        os_id:osId,
+
+        os_number:order.os_number,
+
+        employee:currentUser,
+
+        action:"INICIADA",
+
+        started_at:now,
+
+        ended_at:null,
+
+        duration_seconds:0
+
+    });
+
+
+    await loadEmployeeOrders();
+
+}
+
+
+/* =========================================================
+   MATERIAL
+========================================================= */
+
+function openMaterialModal(osId){
+
+    currentMaterialOS = osId;
+
+    document
+        .getElementById("otherReasonArea")
+        .classList.add("hidden");
+
+    document
+        .getElementById("otherReason")
+        .value = "";
+
+    document
+        .getElementById("materialModal")
+        .classList.remove("hidden");
+
+}
+
+
+function closeMaterialModal(){
+
+    currentMaterialOS = null;
+
+    document
+        .getElementById("materialModal")
+        .classList.add("hidden");
+
+}
+
+
+async function selectMaterialReason(reason){
+
+    if(reason === "Outro motivo"){
+
+        document
+            .getElementById("otherReasonArea")
+            .classList.remove("hidden");
+
+        return;
+    }
+
+
+    await requestMaterial(reason);
+
+}
+
+
+async function requestMaterial(reason){
+
+    if(!currentMaterialOS){
+        return;
+    }
+
+
+    if(reason === "Outro motivo"){
+
+        reason =
+            document
+                .getElementById("otherReason")
+                .value
+                .trim();
+
+        if(!reason){
+
+            alert("Informe o motivo.");
+
+            return;
+        }
+
+    }
+
+
+    const {data:order,error} =
+        await db
+            .from("os_orders")
+            .select("*")
+            .eq("id",currentMaterialOS)
+            .single();
+
+
+    if(error || !order){
+
+        alert("O.S. não encontrada.");
+
+        return;
+    }
+
+
+    if(
+        normalizeEmployee(order.active_employee)
+        !== normalizeEmployee(currentUser)
+    ){
+
+        alert(
+            "Esta O.S. não está em produção com você."
+        );
+
+        return;
+    }
+
+
+    const now =
+        new Date().toISOString();
+
+
+    const elapsed =
+        getCurrentElapsed(order);
+
+
+    const previousTotal =
+        parseInt(
+            order.total_service_seconds || 0
+        );
+
+
+    const newTotal =
+        previousTotal + elapsed;
+
+
+    const {error:updateError} =
+        await db
+            .from("os_orders")
+            .update({
+
+                status:"AGUARDANDO MATERIAL",
+
+                paused_at:now,
+
+                started_at:null,
+
+                active_employee:null,
+
+                pause_reason:reason,
+
+                material_requested_at:now,
+
+                total_service_seconds:newTotal
+
+            })
+            .eq("id",currentMaterialOS);
+
+
+    if(updateError){
+
+        alert(
+            "Erro ao parar O.S.:\n" +
+            updateError.message
+        );
+
+        return;
+    }
+
+
+    const {error:reqError} =
+        await db
+            .from("os_material_requests")
+            .insert({
+
+                os_id:order.id,
+
+                os_number:order.os_number,
+
+                requested_by:currentUser,
+
+                reason:reason,
+
+                status:"PENDENTE",
+
+                requested_at:now
+
+            });
+
+
+    if(reqError){
+
+        console.error(reqError);
+
+        alert(
+            "A O.S. foi parada, mas houve erro ao registrar a requisição de material:\n" +
+            reqError.message
         );
 
     }
-    catch(error){
+
+
+    await insertExecutionHistory({
+
+        os_id:order.id,
+
+        os_number:order.os_number,
+
+        employee:currentUser,
+
+        action:"REQUISITOU MATERIAL",
+
+        reason:reason,
+
+        started_at:order.started_at,
+
+        ended_at:now,
+
+        duration_seconds:elapsed
+
+    });
+
+
+    closeMaterialModal();
+
+    await loadEmployeeOrders();
+
+}
+
+
+/* =========================================================
+   FINALIZAR O.S.
+========================================================= */
+
+async function finishOS(osId){
+
+    if(!currentUser || isAdmin){
+        return;
+    }
+
+
+    const confirmFinish =
+        confirm(
+            "Deseja realmente finalizar esta O.S.?"
+        );
+
+
+    if(!confirmFinish){
+        return;
+    }
+
+
+    const {data:order,error} =
+        await db
+            .from("os_orders")
+            .select("*")
+            .eq("id",osId)
+            .single();
+
+
+    if(error || !order){
+
+        alert("O.S. não encontrada.");
+
+        return;
+    }
+
+
+    if(
+        order.status !== "EM PRODUÇÃO" ||
+        normalizeEmployee(order.active_employee)
+        !== normalizeEmployee(currentUser)
+    ){
+
+        alert(
+            "Esta O.S. não está ativa com você."
+        );
+
+        return;
+    }
+
+
+    const now =
+        new Date().toISOString();
+
+
+    const elapsed =
+        getCurrentElapsed(order);
+
+
+    const newTotal =
+        parseInt(
+            order.total_service_seconds || 0
+        ) + elapsed;
+
+
+    const {error:updateError} =
+        await db
+            .from("os_orders")
+            .update({
+
+                status:"FINALIZADA",
+
+                finished_at:now,
+
+                started_at:null,
+
+                active_employee:null,
+
+                paused_at:null,
+
+                total_service_seconds:newTotal
+
+            })
+            .eq("id",osId);
+
+
+    if(updateError){
+
+        alert(
+            "Erro ao finalizar O.S.:\n" +
+            updateError.message
+        );
+
+        return;
+    }
+
+
+    await insertExecutionHistory({
+
+        os_id:order.id,
+
+        os_number:order.os_number,
+
+        employee:currentUser,
+
+        action:"FINALIZADA",
+
+        started_at:order.started_at,
+
+        ended_at:now,
+
+        duration_seconds:elapsed
+
+    });
+
+
+    await loadEmployeeOrders();
+
+}
+
+
+/* =========================================================
+   PARADA IMEDIATA
+========================================================= */
+
+async function emergencyStopOS(osId){
+
+    if(!currentUser || isAdmin){
+        return;
+    }
+
+
+    const confirmed =
+        confirm(
+            "PARADA IMEDIATA\n\n" +
+            "A O.S. será retirada da sua execução e retornará ao PCM para redistribuição.\n\n" +
+            "Deseja continuar?"
+        );
+
+
+    if(!confirmed){
+        return;
+    }
+
+
+    const {data:order,error} =
+        await db
+            .from("os_orders")
+            .select("*")
+            .eq("id",osId)
+            .single();
+
+
+    if(error || !order){
+
+        alert("O.S. não encontrada.");
+
+        return;
+    }
+
+
+    if(
+        order.status !== "EM PRODUÇÃO" ||
+        normalizeEmployee(order.active_employee)
+        !== normalizeEmployee(currentUser)
+    ){
+
+        alert(
+            "Esta O.S. não está ativa com você."
+        );
+
+        return;
+    }
+
+
+    const now =
+        new Date().toISOString();
+
+
+    const elapsed =
+        getCurrentElapsed(order);
+
+
+    const newTotal =
+        parseInt(
+            order.total_service_seconds || 0
+        ) + elapsed;
+
+
+    const {error:updateError} =
+        await db
+            .from("os_orders")
+            .update({
+
+                status:"O.S. ABERTA",
+
+                emergency_interrupted_at:now,
+
+                started_at:null,
+
+                active_employee:null,
+
+                paused_at:null,
+
+                pause_reason:"PARADA IMEDIATA",
+
+                total_service_seconds:newTotal,
+
+                responsible:null
+
+            })
+            .eq("id",osId);
+
+
+    if(updateError){
+
+        alert(
+            "Erro na parada imediata:\n" +
+            updateError.message
+        );
+
+        return;
+    }
+
+
+    await insertExecutionHistory({
+
+        os_id:order.id,
+
+        os_number:order.os_number,
+
+        employee:currentUser,
+
+        action:"PARADA IMEDIATA",
+
+        reason:"O.S. devolvida ao PCM para redistribuição.",
+
+        started_at:order.started_at,
+
+        ended_at:now,
+
+        duration_seconds:elapsed
+
+    });
+
+
+    await loadEmployeeOrders();
+
+}
+
+
+/* =========================================================
+   HISTÓRICO DE EXECUÇÃO
+========================================================= */
+
+async function insertExecutionHistory(data){
+
+    const {error} =
+        await db
+            .from("os_execution_history")
+            .insert(data);
+
+
+    if(error){
 
         console.error(
-            "Erro dashboard:",
+            "Erro no histórico de execução:",
             error
         );
 
@@ -2124,128 +3360,430 @@ async function loadDashboardData(){
 
 
 /* =========================================================
-   KANBAN
+   SOLICITAÇÕES DE MATERIAL
 ========================================================= */
 
-function renderKanban(orders){
+async function loadMaterialRequests(){
 
-    const containers = {
-
-        "O.S. ABERTA":
-            document.getElementById(
-                "kanbanOpen"
-            ),
-
-        "EM PRODUÇÃO":
-            document.getElementById(
-                "kanbanProduction"
-            ),
-
-        "AGUARDANDO MATERIAL":
-            document.getElementById(
-                "kanbanMaterial"
-            ),
-
-        "FINALIZADA":
-            document.getElementById(
-                "kanbanFinished"
-            )
-
-    };
+    if(!isAdmin){
+        return;
+    }
 
 
-    Object.values(containers)
-        .forEach(function(container){
-
-            container.innerHTML = "";
-
-        });
-
-
-    orders.forEach(function(os){
-
-        const container =
-            containers[os.status];
+    const {data,error} =
+        await db
+            .from("os_material_requests")
+            .select("*")
+            .eq("status","PENDENTE")
+            .order("requested_at",{ascending:false});
 
 
-        if(!container){
+    if(error){
 
-            return;
-        }
+        console.error(error);
 
-
-        let priorityClass =
-            "priority-moderada";
+        return;
+    }
 
 
-        if(os.priority === "ALTA"){
-
-            priorityClass =
-                "priority-alta";
-
-        }
-
-        else if(
-            os.priority === "MÉDIA"
-        ){
-
-            priorityClass =
-                "priority-media";
-
-        }
-
-
-        const card =
-            document.createElement(
-                "div"
-            );
-
-
-        card.className =
-            "os-card";
-
-
-        card.innerHTML = `
-
-            <div class="os-card-number">
-                O.S. ${escapeHtml(
-                    os.os_number || "-"
-                )}
-            </div>
-
-            <div class="os-card-machine">
-                ${escapeHtml(
-                    os.machine || "-"
-                )}
-            </div>
-
-            <div class="os-card-info">
-                ${escapeHtml(
-                    os.sector || "-"
-                )}
-            </div>
-
-            <div class="os-card-info">
-                Responsável:
-                ${escapeHtml(
-                    os.responsible || "-"
-                )}
-            </div>
-
-            <span class="priority ${priorityClass}">
-                ${escapeHtml(
-                    os.priority || "-"
-                )}
-            </span>
-
-        `;
-
-
-        container.appendChild(
-            card
+    const container =
+        document.getElementById(
+            "materialRequestsContainer"
         );
 
+
+    if(!data || !data.length){
+
+        container.innerHTML = `
+            <div style="color:#64748b;font-size:12px">
+                Nenhuma solicitação pendente.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const orderIds =
+        [...new Set(
+            data.map(item => item.os_id)
+        )];
+
+
+    const {data:orders} =
+        await db
+            .from("os_orders")
+            .select("*")
+            .in("id",orderIds);
+
+
+    const ordersMap = {};
+
+    (orders || []).forEach(order=>{
+        ordersMap[order.id] = order;
     });
+
+
+    container.innerHTML =
+        data.map(request=>{
+
+            const order =
+                ordersMap[request.os_id];
+
+            if(!order){
+                return "";
+            }
+
+
+            return `
+
+                <div style="
+                    border:1px solid #334155;
+                    border-radius:10px;
+                    padding:12px;
+                    margin-bottom:9px;
+                    background:#020617;
+                ">
+
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        gap:10px;
+                        align-items:center;
+                    ">
+
+                        <strong>
+                            O.S. ${escapeHtml(request.os_number)}
+                        </strong>
+
+                        <span class="priority priority-media">
+                            MATERIAL
+                        </span>
+
+                    </div>
+
+                    <div style="
+                        color:#94a3b8;
+                        font-size:11px;
+                        margin-top:7px;
+                    ">
+
+                        <strong style="color:#e2e8f0">
+                            Solicitado por:
+                        </strong>
+
+                        ${escapeHtml(request.requested_by)}
+
+                    </div>
+
+                    <div style="
+                        color:#94a3b8;
+                        font-size:11px;
+                        margin-top:5px;
+                    ">
+
+                        <strong style="color:#e2e8f0">
+                            Motivo:
+                        </strong>
+
+                        ${escapeHtml(request.reason)}
+
+                    </div>
+
+                    <div style="
+                        color:#64748b;
+                        font-size:10px;
+                        margin-top:6px;
+                    ">
+
+                        ${escapeHtml(order.machine)}
+                        •
+                        ${escapeHtml(order.sector)}
+
+                    </div>
+
+                    <button
+                        class="action-btn btn-start"
+                        onclick="openReleaseModal(${request.id},${order.id})"
+                    >
+                        LIBERAR / ATRIBUIR O.S.
+                    </button>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+}
+
+
+/* =========================================================
+   LIBERAR MATERIAL
+========================================================= */
+
+function openReleaseModal(requestId,osId){
+
+    currentReleaseRequest = {
+        requestId:requestId,
+        osId:osId
+    };
+
+    document
+        .getElementById("releaseEmployee")
+        .value = "";
+
+    document
+        .getElementById("releaseModal")
+        .classList.remove("hidden");
+
+}
+
+
+function closeReleaseModal(){
+
+    currentReleaseRequest = null;
+
+    document
+        .getElementById("releaseModal")
+        .classList.add("hidden");
+
+}
+
+
+async function releaseMaterialRequest(){
+
+    if(!currentReleaseRequest){
+        return;
+    }
+
+
+    const employee =
+        document
+            .getElementById("releaseEmployee")
+            .value;
+
+
+    if(!employee){
+
+        alert(
+            "Selecione o responsável."
+        );
+
+        return;
+    }
+
+
+    const osId =
+        currentReleaseRequest.osId;
+
+    const requestId =
+        currentReleaseRequest.requestId;
+
+
+    const {data:order,error} =
+        await db
+            .from("os_orders")
+            .select("*")
+            .eq("id",osId)
+            .single();
+
+
+    if(error || !order){
+
+        alert("O.S. não encontrada.");
+
+        return;
+    }
+
+
+    const now =
+        new Date().toISOString();
+
+
+    const {error:updateError} =
+        await db
+            .from("os_orders")
+            .update({
+
+                status:"O.S. ABERTA",
+
+                responsible:employee,
+
+                active_employee:null,
+
+                started_at:null,
+
+                paused_at:null,
+
+                pause_reason:null,
+
+                material_requested_at:null
+
+            })
+            .eq("id",osId);
+
+
+    if(updateError){
+
+        alert(
+            "Erro ao liberar O.S.:\n" +
+            updateError.message
+        );
+
+        return;
+    }
+
+
+    if(requestId){
+
+        const {error:reqError} =
+            await db
+                .from("os_material_requests")
+                .update({
+
+                    status:"ATENDIDA",
+
+                    resolved_by:"PCM / Administrador",
+
+                    resolved_at:now
+
+                })
+                .eq("id",requestId);
+
+
+        if(reqError){
+            console.error(reqError);
+        }
+
+    }
+
+
+    await insertExecutionHistory({
+
+        os_id:order.id,
+
+        os_number:order.os_number,
+
+        employee:"PCM / Administrador",
+
+        action:"MATERIAL LIBERADO",
+
+        reason:
+            "O.S. liberada e redistribuída para " +
+            employee,
+
+        started_at:null,
+
+        ended_at:now,
+
+        duration_seconds:0
+
+    });
+
+
+    closeReleaseModal();
+
+    await loadDashboardData();
+
+}
+
+
+/* =========================================================
+   ATIVIDADE
+========================================================= */
+
+function renderActiveJobs(){
+
+    const container =
+        document.getElementById(
+            "activeJobsContainer"
+        );
+
+
+    const active =
+        dashboardOrders.filter(
+            order =>
+                order.status === "EM PRODUÇÃO"
+        );
+
+
+    if(!active.length){
+
+        container.innerHTML = `
+            <div style="color:#64748b;font-size:12px">
+                Nenhuma O.S. em produção.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        active.map(order=>{
+
+            return `
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    gap:15px;
+                    padding:11px 0;
+                    border-bottom:1px solid #1e293b;
+                ">
+
+                    <div>
+
+                        <strong style="font-size:12px">
+                            O.S. ${escapeHtml(order.os_number)}
+                        </strong>
+
+                        <div style="
+                            color:#64748b;
+                            font-size:10px;
+                            margin-top:3px;
+                        ">
+
+                            ${escapeHtml(order.machine)}
+                            •
+                            ${escapeHtml(order.sector)}
+
+                        </div>
+
+                    </div>
+
+
+                    <div style="text-align:right">
+
+                        <div style="
+                            font-size:11px;
+                            font-weight:800;
+                        ">
+
+                            ${escapeHtml(
+                                order.active_employee ||
+                                "-"
+                            )}
+
+                        </div>
+
+                        <div class="timer">
+
+                            ${formatSeconds(
+                                getTotalTime(order)
+                            )}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join("");
 
 }
 
@@ -2256,185 +3794,494 @@ function renderKanban(orders){
 
 async function loadHistory(){
 
-    const body =
-        document.getElementById(
-            "historyBody"
-        );
+    if(!isAdmin){
+        return;
+    }
 
 
-    body.innerHTML =
-        `<tr>
-            <td colspan="6">
-                Carregando...
-            </td>
-        </tr>`;
+    const {data:orders,error} =
+        await db
+            .from("os_orders")
+            .select("*")
+            .order("created_at",{ascending:false});
 
 
-    if(!supabaseClient){
+    if(error){
+
+        console.error(error);
 
         return;
     }
 
 
-    try{
-
-        const result =
-            await supabaseClient
-            .from("os_orders")
-            .select("*")
-            .order(
-                "created_at",
-                {
-                    ascending:false
-                }
-            );
+    const table =
+        document.getElementById(
+            "historyTable"
+        );
 
 
-        if(result.error){
+    table.innerHTML =
+        (orders || []).map(order=>{
 
-            console.error(
-                result.error
-            );
+            return `
 
-            body.innerHTML =
-                `<tr>
-                    <td colspan="6">
-                        Erro ao carregar histórico.
+                <tr>
+
+                    <td>
+                        <strong>
+                            ${escapeHtml(order.os_number)}
+                        </strong>
                     </td>
-                </tr>`;
 
-            return;
-        }
-
-
-        const orders =
-            result.data || [];
-
-
-        body.innerHTML = "";
-
-
-        if(!orders.length){
-
-            body.innerHTML =
-                `<tr>
-                    <td colspan="6">
-                        Nenhuma O.S. cadastrada.
+                    <td>
+                        ${escapeHtml(order.machine)}
                     </td>
-                </tr>`;
 
-            return;
-        }
+                    <td>
+                        ${escapeHtml(order.sector)}
+                    </td>
 
+                    <td>
+                        ${escapeHtml(
+                            order.active_employee ||
+                            order.responsible ||
+                            "-"
+                        )}
+                    </td>
 
-        orders.forEach(function(os){
+                    <td>
+                        <span class="priority ${priorityClass(order.priority)}">
+                            ${escapeHtml(order.priority)}
+                        </span>
+                    </td>
 
-            const row =
-                document.createElement(
-                    "tr"
-                );
+                    <td>
+                        <span class="status ${statusClass(order.status)}">
+                            ${escapeHtml(order.status)}
+                        </span>
+                    </td>
 
+                    <td>
+                        ${formatSeconds(
+                            getTotalTime(order)
+                        )}
+                    </td>
 
-            row.innerHTML = `
-
-                <td>
-                    ${escapeHtml(
-                        os.os_number || "-"
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                        os.machine || "-"
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                        os.sector || "-"
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                        os.responsible || "-"
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                        os.priority || "-"
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                        os.status || "-"
-                    )}
-                </td>
+                </tr>
 
             `;
 
+        }).join("");
 
-            body.appendChild(
-                row
-            );
+
+    await loadExecutionHistory();
+
+}
+
+
+async function loadExecutionHistory(){
+
+    const {data,error} =
+        await db
+            .from("os_execution_history")
+            .select("*")
+            .order("created_at",{ascending:false})
+            .limit(300);
+
+
+    if(error){
+
+        console.error(error);
+
+        return;
+    }
+
+
+    const table =
+        document.getElementById(
+            "executionHistoryTable"
+        );
+
+
+    table.innerHTML =
+        (data || []).map(item=>{
+
+            return `
+
+                <tr>
+
+                    <td>
+                        ${escapeHtml(item.os_number)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(item.employee)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(item.action)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(item.reason || "-")}
+                    </td>
+
+                    <td>
+                        ${formatSeconds(
+                            item.duration_seconds
+                        )}
+                    </td>
+
+                    <td>
+                        ${item.created_at
+                            ?
+                            new Date(
+                                item.created_at
+                            ).toLocaleString("pt-BR")
+                            :
+                            "-"
+                        }
+                    </td>
+
+                </tr>
+
+            `;
+
+        }).join("");
+
+}
+
+
+/* =========================================================
+   EQUIPE
+========================================================= */
+
+async function loadTeam(){
+
+    if(!isAdmin){
+        return;
+    }
+
+
+    const {data,error} =
+        await db
+            .from("os_orders")
+            .select("*")
+            .eq("status","EM PRODUÇÃO");
+
+
+    if(error){
+
+        console.error(error);
+
+        return;
+    }
+
+
+    const table =
+        document.getElementById(
+            "teamTable"
+        );
+
+
+    table.innerHTML =
+        employeeList.map(employee=>{
+
+            const active =
+                (data || []).find(order =>
+                    normalizeEmployee(
+                        order.active_employee
+                    )
+                    ===
+                    normalizeEmployee(employee)
+                );
+
+
+            let team = "";
+
+            if(
+                ["Adryan","Fabio","Rodrigo"]
+                .includes(employee)
+            ){
+
+                team = "Elétrica";
+
+            }else if(employee === "Danilo"){
+
+                team =
+                    "Lubrificação / Mecânica";
+
+            }else{
+
+                team = "Mecânica";
+
+            }
+
+
+            return `
+
+                <tr>
+
+                    <td>
+                        <strong>
+                            ${employee}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${team}
+                    </td>
+
+                    <td>
+                        ${
+                            active
+                            ?
+                            "O.S. " +
+                            escapeHtml(
+                                active.os_number
+                            )
+                            :
+                            '<span style="color:#64748b">Livre</span>'
+                        }
+                    </td>
+
+                    <td>
+                        ${
+                            active
+                            ?
+                            formatSeconds(
+                                getTotalTime(active)
+                            )
+                            :
+                            "-"
+                        }
+                    </td>
+
+                </tr>
+
+            `;
+
+        }).join("");
+
+}
+
+
+/* =========================================================
+   MÁQUINAS
+========================================================= */
+
+async function loadMachines(){
+
+    if(!isAdmin){
+        return;
+    }
+
+
+    const {data,error} =
+        await db
+            .from("os_orders")
+            .select("machine,tag,sector")
+            .order("machine");
+
+
+    if(error){
+
+        console.error(error);
+
+        return;
+    }
+
+
+    const unique = [];
+
+    const seen = new Set();
+
+
+    (data || []).forEach(item=>{
+
+        const key =
+            (item.machine || "") +
+            "|" +
+            (item.tag || "");
+
+        if(!seen.has(key)){
+
+            seen.add(key);
+
+            unique.push(item);
+
+        }
+
+    });
+
+
+    const container =
+        document.getElementById(
+            "machinesContainer"
+        );
+
+
+    if(!unique.length){
+
+        container.innerHTML = `
+            <div style="color:#64748b">
+                Nenhuma máquina encontrada.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML = `
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Máquina</th>
+                        <th>TAG</th>
+                        <th>Setor</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${
+                        unique.map(item=>`
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        ${escapeHtml(
+                                            item.machine
+                                        )}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.tag || "-"
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.sector || "-"
+                                    )}
+                                </td>
+
+                            </tr>
+
+                        `).join("")
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   TIMER / ATUALIZAÇÃO
+========================================================= */
+
+function startRefreshTimer(){
+
+    if(timerInterval){
+        clearInterval(timerInterval);
+    }
+
+
+    timerInterval =
+        setInterval(async ()=>{
+
+            updateVisibleTimers();
+
+
+            if(isAdmin){
+
+                renderActiveJobs();
+
+            }else{
+
+                await loadEmployeeOrders();
+
+            }
+
+        },1000);
+
+}
+
+
+function updateVisibleTimers(){
+
+    document
+        .querySelectorAll("[data-timer-id]")
+        .forEach(element=>{
+
+            const id =
+                element.dataset.timerId;
+
+            const order =
+                dashboardOrders.find(
+                    o => String(o.id) === String(id)
+                );
+
+            if(order){
+
+                element.textContent =
+                    "⏱ " +
+                    formatSeconds(
+                        getTotalTime(order)
+                    );
+
+            }
 
         });
 
-    }
-    catch(error){
-
-        console.error(
-            error
-        );
-
-        body.innerHTML =
-            `<tr>
-                <td colspan="6">
-                    Erro ao carregar histórico.
-                </td>
-            </tr>`;
-
-    }
-
 }
 
 
 /* =========================================================
-   SEGURANÇA HTML
+   ENTER NO LOGIN
 ========================================================= */
 
-function escapeHtml(value){
+document
+    .getElementById("loginPin")
+    .addEventListener(
+        "keydown",
+        function(event){
 
-    return String(value)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+            if(event.key === "Enter"){
+                login();
+            }
 
-}
+        }
+    );
 
 
 /* =========================================================
-   INICIALIZAÇÃO
+   DATA PADRÃO
 ========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function(){
+document
+    .getElementById("osDate")
+    .value =
+    new Date()
+        .toISOString()
+        .split("T")[0];
 
-        setTodayDate();
-
-        loginUser.focus();
-
-        console.log(
-            "PCM • Controle de O.S. iniciado."
-        );
-
-    }
-);
 
 </script>
 
