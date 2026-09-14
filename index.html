@@ -13,13 +13,13 @@
 <title>PCM • Controle de O.S.</title>
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=bpU3p10Svt9XfOd1Dut3wwDdt0Q2OeYxu-WgRuHd9Qk9ZW47PcOAebCREpzZV-A2KuSOM5O7XrmelZFgfJdgWVEjhDroUxcqD1bDNltJ8BweO4Ias4ze2xw9EH1lRh2qJXuov5-4z6dtdXYQ8WCC868By53hRoJwsyTMCNxiKjLeCHKaS5BxH6b_s0R_4iGtGJUnhthVRbL105CKN0oblDT8guuTzj72gYQsuA2blLMaJT9wRAIwyvH2VgFRrflLjZXJLm8UAJFg4jM4Jn1en7yxH_Yoz2w6ezpadtVDNug69VVltqwo7TEr_Uu2aF-T" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=TJbzCP6F7lvFvQxDYaXd2Jv1BiVOJ5BFMVBgKBayR85ghdkVYNb3CJcj-BJW5WcFO4f6CjSGhvUsk3w_NgREdU5pKIacTh2p-wETC5_mG1_VFMBd7fQrAUOqf-zv0hhHXe9jsVfLzx6SxEBbHcMN9avO8z35zFeJ2nq47lLNrLGL_RlCJSgaIEH7a5xwX-hyI4HfYES9o8VZuLcFYs_ghD5_HhqUQRq9-XTyotc8chPcMz18-fS4QiMFQY-JyS9z8J57wQV-1nDaVwv69e1D_3ALs6zu9b8yXPnq48F_D5XGF7wn5KNXnNT0J7lvAGOy" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -1226,8 +1226,6 @@ img,svg,video{
 
 <body>
 
-<div id="pcmToastContainer" aria-live="polite" aria-atomic="true"></div>
-
 <!-- LOGIN -->
 
 <section id="loginScreen">
@@ -2035,11 +2033,52 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_HMD1Yow_uEbi-9fy6P0ATg_BqfNstx5";
 
-const db =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
+let db = null;
+let supabaseReady = false;
+
+function loadSupabaseLibrary(){
+    return new Promise((resolve)=>{
+        if(window.supabase){
+            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            supabaseReady = true;
+            resolve(true);
+            return;
+        }
+
+        const sources = [
+            "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+            "https://unpkg.com/@supabase/supabase-js@2"
+        ];
+        let index = 0;
+
+        const tryNext = ()=>{
+            if(index >= sources.length){
+                showPCMToast("Não foi possível carregar a conexão com o banco. Verifique a internet e toque em Recarregar.", "error", "Conexão indisponível");
+                resolve(false);
+                return;
+            }
+
+            const script = document.createElement("script");
+            script.src = sources[index++];
+            script.async = true;
+            script.onload = ()=>{
+                if(window.supabase){
+                    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    supabaseReady = true;
+                    resolve(true);
+                }else{
+                    tryNext();
+                }
+            };
+            script.onerror = tryNext;
+            document.head.appendChild(script);
+        };
+
+        tryNext();
+    });
+}
+
+loadSupabaseLibrary();
 
 
 /* =========================================================
@@ -2097,6 +2136,11 @@ async function login(){
 
     const error =
         document.getElementById("loginError");
+
+    if(!supabaseReady || !db){
+        showPCMToast("A conexão ainda está carregando. Aguarde alguns segundos e tente novamente.", "warning", "Conectando ao sistema");
+        return;
+    }
 
     if(
         !user ||
@@ -5050,5 +5094,22 @@ document
 
 </script>
 
+
+<script>
+setTimeout(()=>{
+    if(!supabaseReady){
+        const box=document.createElement("div");
+        box.id="connectionFallback";
+        box.innerHTML=`<div class="connection-fallback-card"><strong>Conexão demorando para carregar</strong><span>O sistema abriu, mas a conexão com o banco ainda não respondeu.</span><button type="button" onclick="location.reload()">RECARREGAR</button></div>`;
+        document.body.appendChild(box);
+    }
+}, 8000);
+</script>
+<style>
+#connectionFallback{position:fixed;left:0;right:0;bottom:18px;z-index:99998;display:flex;justify-content:center;padding:0 14px;pointer-events:none}
+.connection-fallback-card{width:min(430px,100%);padding:16px;border:1px solid rgba(148,163,184,.22);border-radius:16px;background:rgba(15,23,42,.97);box-shadow:0 20px 60px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:7px;font-size:13px;color:#cbd5e1;pointer-events:auto}
+.connection-fallback-card strong{color:#f8fafc;font-size:14px}.connection-fallback-card span{line-height:1.45;color:#94a3b8}
+.connection-fallback-card button{margin-top:5px;border:0;border-radius:10px;padding:11px 14px;background:#f8fafc;color:#020617;font-weight:800;cursor:pointer}
+</style>
 </body>
 </html>
