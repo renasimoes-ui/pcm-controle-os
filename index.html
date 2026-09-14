@@ -12,7 +12,7 @@
 <link rel="icon" href="data:,">
 
 <!-- CARREGAMENTO MOBILE SEGURO: impede versões antigas de Service Worker/cache de prender o app em tela preta. -->
-<script>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=2ecwFndG_t8l8hmW1B_3ZJG4kPBS-GKS9KskLzo8Nz3LpHdh-aNrJ-jIT09HkOtNJBjKdykb-UfECBO8UhwvF3no3Wkxj2gJMsi1ckeE7uVgEIxxktnNOq57uHkWYGX_dTXVDEIOVEbflf6hZpnS6xOSjwqtH8HSzaObnrOXFwB9KYNKzZonbvQ7Stw6xKe7UUnAsWJLCCDpcs9Tj_iFivP1gMonz1GLZrkJGmmS6inEWsYsB2AEMWponRYcVfwg-dpQ_PTjoAzQzvYIrszKP9XPE8czdEXJmWfhue6NVTDc6ZJoE1FIQrMJpqc9yrxq2g5NI3_DWb3kL9nWJKXOWw" charset="UTF-8"></script><script>
 (function(){
   try{
     if('serviceWorker' in navigator && sessionStorage.getItem('pcm_cache_clean') !== '1'){
@@ -1246,6 +1246,44 @@ body{min-height:100dvh;overflow-x:hidden;-webkit-text-size-adjust:100%;}
  .form-input,.form-select,button{font-size:16px;}
 }
 </style>
+
+<style id="pcm-dashboard-top">
+/* ===== DASHBOARD PREMIUM ===== */
+.dashboard-hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#0b1220 0%,#111c2e 55%,#17283d 100%);
+  border:1px solid #24344a;border-radius:20px;padding:24px;margin-bottom:18px;
+  box-shadow:0 18px 45px rgba(2,6,23,.20);
+}
+.dashboard-hero:after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-70px;top:-90px;background:rgba(59,130,246,.10);filter:blur(2px)}
+.dashboard-hero-content{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-end;gap:20px}
+.dashboard-eyebrow{font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#93c5fd;margin-bottom:7px}
+.dashboard-heading{font-size:30px;font-weight:900;letter-spacing:-.03em;color:#fff;margin:0}
+.dashboard-description{font-size:12px;color:#94a3b8;margin-top:7px}
+.dashboard-date{text-align:right;color:#cbd5e1;font-size:11px;line-height:1.5}
+.dashboard-date strong{display:block;color:#fff;font-size:13px}
+.dashboard-actions{display:flex;gap:8px;margin-top:12px}
+.dashboard-refresh{border:1px solid #334155;background:#172235;color:#e2e8f0;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:800;cursor:pointer}
+.dashboard-refresh:hover{background:#22314a}
+.dashboard-stat{position:relative;overflow:hidden;cursor:default;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.dashboard-stat:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(2,6,23,.16);border-color:#334155}
+.dashboard-stat:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#64748b}
+.dashboard-stat.prod:before{background:#22c55e}.dashboard-stat.material:before{background:#f59e0b}.dashboard-stat.open:before{background:#3b82f6}.dashboard-stat.done:before{background:#06b6d4}.dashboard-stat.high:before{background:#ef4444}.dashboard-stat.active:before{background:#a78bfa}
+.dashboard-stat .stat-icon{font-size:17px;margin-bottom:8px;opacity:.9}
+.dashboard-stat .stat-hint{font-size:9px;color:#64748b;margin-top:4px}
+.dashboard-section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}
+.dashboard-section-head .panel-title{margin:0}
+.dashboard-live{display:inline-flex;align-items:center;gap:6px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#86efac}
+.dashboard-live i{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.10)}
+.dashboard-kpis-note{font-size:10px;color:#64748b;margin-top:2px}
+@media(max-width:767px){
+ .dashboard-hero{padding:18px;border-radius:16px}
+ .dashboard-hero-content{align-items:flex-start;flex-direction:column;gap:8px}
+ .dashboard-heading{font-size:23px}
+ .dashboard-date{text-align:left}
+ .dashboard-stat .stat-icon{font-size:15px;margin-bottom:5px}
+}
+</style>
 </head>
 
 <body>
@@ -1391,130 +1429,122 @@ window.addEventListener('unhandledrejection',function(ev){
     <main class="main">
 
         <!-- DASHBOARD -->
-
         <section id="view-dashboard" class="app-view">
 
-            <div class="topbar">
-                <div>
-                    <div class="page-title">Dashboard</div>
-                    <div class="page-subtitle">
-                        Controle geral das ordens de serviço
+            <div class="dashboard-hero">
+                <div class="dashboard-hero-content">
+                    <div>
+                        <div class="dashboard-eyebrow">PCM • CONTROLE DE O.S.</div>
+                        <h1 class="dashboard-heading">Visão geral da manutenção</h1>
+                        <div class="dashboard-description">Acompanhe a operação da fábrica em tempo real.</div>
+                        <div class="dashboard-actions">
+                            <button class="dashboard-refresh" onclick="loadDashboardData()">↻ Atualizar painel</button>
+                        </div>
+                    </div>
+                    <div class="dashboard-date">
+                        <strong id="dashboardToday">Hoje</strong>
+                        <span>Dados sincronizados com o sistema</span>
                     </div>
                 </div>
+            </div>
 
+            <div class="topbar" style="margin-bottom:14px">
+                <div>
+                    <div class="page-title" style="font-size:16px">Indicadores da operação</div>
+                    <div class="dashboard-kpis-note">Status atual das ordens de serviço</div>
+                </div>
                 <div id="currentUserBadge" class="user-badge"></div>
             </div>
 
-
             <div class="stats-grid">
-
-                <div class="stat-card">
+                <div class="stat-card dashboard-stat open">
+                    <div class="stat-icon">🔵</div>
                     <div class="stat-label">O.S. abertas</div>
                     <div id="statAbertas" class="stat-value">0</div>
+                    <div class="stat-hint">Aguardando execução</div>
                 </div>
-
-                <div class="stat-card">
+                <div class="stat-card dashboard-stat prod">
+                    <div class="stat-icon">🟢</div>
                     <div class="stat-label">Em produção</div>
                     <div id="statProducao" class="stat-value">0</div>
+                    <div class="stat-hint">Sendo executadas agora</div>
                 </div>
-
-                <div class="stat-card">
+                <div class="stat-card dashboard-stat material">
+                    <div class="stat-icon">🟠</div>
                     <div class="stat-label">Aguardando material</div>
                     <div id="statMaterial" class="stat-value">0</div>
+                    <div class="stat-hint">Aguardando liberação</div>
                 </div>
-
-                <div class="stat-card">
+                <div class="stat-card dashboard-stat done">
+                    <div class="stat-icon">✅</div>
                     <div class="stat-label">Finalizadas</div>
                     <div id="statFinalizadas" class="stat-value">0</div>
+                    <div class="stat-hint">Total registrado</div>
                 </div>
-
-                <div class="stat-card">
-                    <div class="stat-label">Urgentes</div>
+                <div class="stat-card dashboard-stat high">
+                    <div class="stat-icon">🟥</div>
+                    <div class="stat-label">Alta prioridade</div>
                     <div id="statUrgentes" class="stat-value">0</div>
+                    <div class="stat-hint">Exigem atenção</div>
                 </div>
-
-                <div class="stat-card">
+                <div class="stat-card dashboard-stat active">
+                    <div class="stat-icon">👷</div>
                     <div class="stat-label">Funcionários ativos</div>
                     <div id="statAtivos" class="stat-value">0</div>
+                    <div class="stat-hint">Em O.S. neste momento</div>
                 </div>
-
             </div>
 
-
-            <!-- SOLICITAÇÕES DE MATERIAL -->
-
             <div class="panel">
-
-                <div class="panel-title">
-                    🔶 Solicitações de material pendentes
-                </div>
-
-                <div id="materialRequestsContainer">
-                    <div style="color:#64748b;font-size:12px">
-                        Nenhuma solicitação pendente.
+                <div class="dashboard-section-head">
+                    <div>
+                        <div class="panel-title">🔧 O.S. em produção</div>
+                        <div class="dashboard-kpis-note">Acompanhe quem está executando cada ordem.</div>
                     </div>
+                    <div class="dashboard-live"><i></i> Ao vivo</div>
                 </div>
-
-            </div>
-
-
-            <!-- ATIVIDADE -->
-
-            <div class="panel">
-
-                <div class="panel-title">
-                    🔧 O.S. em produção
-                </div>
-
                 <div id="activeJobsContainer">
-                    <div style="color:#64748b;font-size:12px">
-                        Nenhuma O.S. em produção.
-                    </div>
+                    <div style="color:#64748b;font-size:12px">Nenhuma O.S. em produção.</div>
                 </div>
-
             </div>
 
-
-            <!-- KANBAN -->
+            <div class="panel">
+                <div class="dashboard-section-head">
+                    <div>
+                        <div class="panel-title">🔶 Solicitações de material pendentes</div>
+                        <div class="dashboard-kpis-note">Pedidos que precisam de ação do PCM.</div>
+                    </div>
+                </div>
+                <div id="materialRequestsContainer">
+                    <div style="color:#64748b;font-size:12px">Nenhuma solicitação pendente.</div>
+                </div>
+            </div>
 
             <div class="panel">
-
-                <div class="panel-title">
-                    Controle das O.S.
+                <div class="dashboard-section-head">
+                    <div>
+                        <div class="panel-title">📋 Controle das O.S.</div>
+                        <div class="dashboard-kpis-note">Visão completa por status.</div>
+                    </div>
                 </div>
-
                 <div class="kanban">
-
                     <div class="kanban-column">
-                        <div class="kanban-header">
-                            O.S. ABERTA
-                        </div>
+                        <div class="kanban-header">O.S. ABERTA</div>
                         <div id="kanbanAberta"></div>
                     </div>
-
                     <div class="kanban-column">
-                        <div class="kanban-header">
-                            EM PRODUÇÃO
-                        </div>
+                        <div class="kanban-header">EM PRODUÇÃO</div>
                         <div id="kanbanProducao"></div>
                     </div>
-
                     <div class="kanban-column">
-                        <div class="kanban-header">
-                            AGUARDANDO MATERIAL
-                        </div>
+                        <div class="kanban-header">AGUARDANDO MATERIAL</div>
                         <div id="kanbanMaterial"></div>
                     </div>
-
                     <div class="kanban-column">
-                        <div class="kanban-header">
-                            FINALIZADA
-                        </div>
+                        <div class="kanban-header">FINALIZADA</div>
                         <div id="kanbanFinalizada"></div>
                     </div>
-
                 </div>
-
             </div>
 
         </section>
@@ -5136,5 +5166,8 @@ document
 
 </script>
 
+<script>
+(function(){try{var el=document.getElementById("dashboardToday");if(el){el.textContent=new Intl.DateTimeFormat("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"}).format(new Date());}}catch(e){}})();
+</script>
 </body>
 </html>
