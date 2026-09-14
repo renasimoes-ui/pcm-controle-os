@@ -11,11 +11,30 @@
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:,">
 
+<!-- CARREGAMENTO MOBILE SEGURO: impede versões antigas de Service Worker/cache de prender o app em tela preta. -->
+<script>
+(function(){
+  try{
+    if('serviceWorker' in navigator && sessionStorage.getItem('pcm_cache_clean') !== '1'){
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        if(!regs.length) return;
+        return Promise.all(regs.map(function(r){return r.unregister();})).then(function(){
+          return caches && caches.keys ? caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k);}));}) : null;
+        }).then(function(){
+          sessionStorage.setItem('pcm_cache_clean','1');
+          location.reload();
+        });
+      }).catch(function(){ try{sessionStorage.setItem('pcm_cache_clean','1');}catch(e){} });
+    }
+  }catch(e){}
+})();
+</script>
+
 <title>PCM • Controle de O.S.</title>
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=1V6qYNRenvC-pEBHLCCi4MFIxP9cMqoB9CzXBo-dzl5Pregv7mUsqsiBVCqVX7F44moBiEC9Xu2PgrKYTOH4J0KqhSewmUx2swPsiig2PD-lPVHDsv3rUivRHOs0bWKNlRqNlCuKWE1VEEfO5Eo7GkO5BsXUqr_t9c_xcFlK6LwtdfRp6IoNmm7IjDN1dyEXZnP0v-MAraRT4tElqGPMUzmaakax07pI7nl4cqw1uaXqb3T-8L7zj0F-W5YK297rNblilIC_4_G1qmvsCqRLGfKbmQdXjGPZb7NyaqrxggrYuaGnDPYjBwEM9qO4nAb6EAaSakVxR5_ZOcnBmwb5tIbx7bbDpjyOochUdIrnuHE" charset="UTF-8"></script><style>
+<style>
 *{
     box-sizing:border-box;
 }
@@ -1231,6 +1250,26 @@ body{min-height:100dvh;overflow-x:hidden;-webkit-text-size-adjust:100%;}
 
 <body>
 
+<!-- Fallback visual: se algum erro de JavaScript ocorrer no celular, nunca deixa uma tela preta sem explicação. -->
+<div id="pcmBootError" style="display:none;position:fixed;inset:0;z-index:999999;background:#020617;color:#e5e7eb;padding:28px 20px;font-family:Arial,sans-serif;align-items:center;justify-content:center;text-align:center;">
+  <div style="width:min(430px,100%);border:1px solid #334155;border-radius:18px;padding:24px;background:#0f172a;box-shadow:0 20px 60px rgba(0,0,0,.45);">
+    <div style="font-size:34px;margin-bottom:12px;">⚠️</div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:8px;">O.S. não conseguiu iniciar</div>
+    <div id="pcmBootErrorText" style="font-size:14px;line-height:1.5;color:#94a3b8;">Recarregue a página.</div>
+    <button type="button" onclick="location.reload()" style="margin-top:18px;border:0;border-radius:12px;padding:13px 20px;font-weight:800;cursor:pointer;">RECARREGAR</button>
+  </div>
+</div>
+<script>
+window.addEventListener('error',function(ev){
+  var box=document.getElementById('pcmBootError'),txt=document.getElementById('pcmBootErrorText');
+  if(box){box.style.display='flex';if(txt)txt.textContent='Erro: '+(ev.message||'falha inesperada')+' — tente RECARREGAR.';}
+});
+window.addEventListener('unhandledrejection',function(ev){
+  var box=document.getElementById('pcmBootError'),txt=document.getElementById('pcmBootErrorText');
+  if(box){box.style.display='flex';if(txt)txt.textContent='Falha de conexão/inicialização. Tente RECARREGAR.';}
+});
+</script>
+
 <div id="pcmToastContainer" aria-live="polite" aria-atomic="true"></div>
 
 <!-- LOGIN -->
@@ -2053,16 +2092,28 @@ function ensureSupabase(){
             return;
         }
         const script=document.createElement("script");
-        script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
         script.async=true;
-        script.onload=()=>{
-            try{
-                if(!window.supabase || typeof window.supabase.createClient !== "function") throw new Error("Supabase não carregou.");
-                db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-                resolve(db);
-            }catch(e){reject(e);}
+        const sources=[
+            "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+            "https://unpkg.com/@supabase/supabase-js@2"
+        ];
+        let sourceIndex=0;
+        const tryNext=()=>{
+            if(sourceIndex>=sources.length){
+                reject(new Error("Não foi possível carregar a conexão do sistema. Verifique a internet do celular."));
+                return;
+            }
+            script.src=sources[sourceIndex++];
+            script.onload=()=>{
+                try{
+                    if(!window.supabase || typeof window.supabase.createClient !== "function") throw new Error("Supabase não carregou.");
+                    db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+                    resolve(db);
+                }catch(e){tryNext();}
+            };
+            script.onerror=()=>tryNext();
         };
-        script.onerror=()=>reject(new Error("Não foi possível carregar a conexão do sistema."));
+        tryNext();
         document.head.appendChild(script);
     });
     return supabaseLoading;
