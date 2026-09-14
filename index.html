@@ -553,19 +553,19 @@
         <div class="kanban-board">
           <div class="kanban-column" id="col-aberta">
             <h4>O.S. ABERTA</h4>
-            <div class="kanban-empty">Carregando...</div>
+            <div class="kanban-empty">Nenhuma O.S.</div>
           </div>
           <div class="kanban-column" id="col-producao">
             <h4>EM PRODUÇÃO</h4>
-            <div class="kanban-empty">Carregando...</div>
+            <div class="kanban-empty">Nenhuma O.S.</div>
           </div>
           <div class="kanban-column" id="col-material">
             <h4>AGUARDANDO MATERIAL</h4>
-            <div class="kanban-empty">Carregando...</div>
+            <div class="kanban-empty">Nenhuma O.S.</div>
           </div>
           <div class="kanban-column" id="col-finalizada">
             <h4>FINALIZADA</h4>
-            <div class="kanban-empty">Carregando...</div>
+            <div class="kanban-empty">Nenhuma O.S.</div>
           </div>
         </div>
       </section>
@@ -709,7 +709,16 @@
     // --- CONEXÃO COM O SUPABASE ---
     const SUPABASE_URL = "https://zjrrenorlrdhuddnscdm.supabase.co";
     const SUPABASE_KEY = "sb_publishable_HMD1Yow_uEbi-9fy6P0ATg_BqfNstx5";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let supabase = null;
+
+    // Inicialização do Supabase segura
+    try {
+      if (window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (e) {
+      console.warn("Supabase ainda não carregou ou erro na conexão:", e);
+    }
 
     // --- USUÁRIOS E PINS DEFINIDOS ---
     const usersDB = {
@@ -753,7 +762,7 @@
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const selectedUser = loginUser.value;
-      const enteredPin = loginPin.value;
+      const enteredPin = loginPin.value.trim();
 
       if (usersDB[selectedUser] && usersDB[selectedUser] === enteredPin) {
         currentUser = selectedUser;
@@ -877,6 +886,11 @@
       };
 
       try {
+        if (!supabase) {
+          alert('Conexão com o banco não inicializada. Verifique sua rede.');
+          return;
+        }
+
         const { data, error } = await supabase.from('os_orders').insert([osData]);
 
         if (error) {
@@ -885,8 +899,6 @@
           } else {
             alert('Erro ao cadastrar O.S.: ' + error.message);
           }
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'CADASTRAR O.S.';
           return;
         }
 
@@ -917,6 +929,8 @@
 
     // --- CARREGAR DASHBOARD E KANBAN DO SUPABASE ---
     async function loadDashboardData() {
+      if (!supabase) return;
+
       try {
         const { data: orders, error } = await supabase.from('os_orders').select('*');
 
@@ -977,7 +991,6 @@
             else if (os.status === 'FINALIZADA') colFinalizada.innerHTML += cardHTML;
           });
 
-          // Caso alguma coluna tenha ficado sem cartões
           if (colAberta.children.length === 1) colAberta.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
           if (colProducao.children.length === 1) colProducao.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
           if (colMaterial.children.length === 1) colMaterial.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
