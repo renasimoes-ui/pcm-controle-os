@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0b0b">
+
+  <title>PCM • Controle de O.S.</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #080808;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* =========================
+       CONTAINER PRINCIPAL
+    ========================= */
+
+    .app {
+      width: 94%;
+      max-width: 1150px;
+      min-height: 650px;
+
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+
+      background: #111;
+
+      border: 1px solid #292929;
+      border-radius: 22px;
+
+      overflow: hidden;
+
+      box-shadow:
+        0 30px 80px rgba(0,0,0,0.65);
+    }
+
+
+    /* =========================
+       LADO DA MARCA
+    ========================= */
+
+    .brand-area {
+
+      position: relative;
+
+      padding: 60px;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      background:
+        linear-gradient(
+          rgba(0,0,0,0.70),
+          rgba(0,0,0,0.88)
+        ),
+        radial-gradient(
+          circle at 25% 40%,
+          #60401f 0%,
+          #382312 30%,
+          #17100a 55%,
+          #070707 85%
+        );
+
+      overflow: hidden;
+    }
+
+
+    /* textura decorativa */
+
+    .brand-area::before {
+
+      content: "";
+
+      position: absolute;
+
+      width: 600px;
+      height: 600px;
+
+      right: -300px;
+      top: -250px;
+
+      border-radius: 50%;
+
+      border: 1px solid rgba(255,255,255,0.04);
+
+      box-shadow:
+        0 0 0 70px rgba(255,255,255,0.015),
+        0 0 0 140px rgba(255,255,255,0.01);
+    }
+
+
+    .brand-content {
+      position: relative;
+      z-index: 2;
+    }
+
+
+    /* =========================
+       LOGO
+    ========================= */
+
+    .logo {
+
+      font-size: 42px;
+
+      font-weight: 900;
+
+      letter-spacing: 5px;
+
+      color: #fff;
+    }
+
+
+    .pcm {
+
+      margin-top: 8px;
+
+      font-size: 12px;
+
+      letter-spacing: 5px;
+
+      color: #c9a66b;
+
+      font-weight: bold;
+    }
+
+
+    /* =========================
+       TITULO
+    ========================= */
+
+    .title {
+
+      margin-top: 80px;
+
+      font-size: clamp(42px, 6vw, 76px);
+
+      line-height: 0.95;
+
+      letter-spacing: 5px;
+
+      font-weight: 800;
+    }
+
+
+    .subtitle {
+
+      margin-top: 22px;
+
+      max-width: 470px;
+
+      color: #999;
+
+      font-size: 16px;
+
+      line-height: 1.6;
+    }
+
+
+    /* =========================
+       LOGIN
+    ========================= */
+
+    .login-area {
+
+      background: #151515;
+
+      padding: 60px;
+
+      display: flex;
+
+      flex-direction: column;
+
+      justify-content: center;
+    }
+
+
+    .login-title {
+
+      font-size: 30px;
+
+      font-weight: 700;
+
+      margin-bottom: 8px;
+    }
+
+
+    .login-description {
+
+      color: #888;
+
+      font-size: 14px;
+
+      margin-bottom: 32px;
+    }
+
+
+    /* =========================
+       CAMPOS
+    ========================= */
+
+    .field {
+
+      margin-bottom: 20px;
+    }
+
+
+    .field label {
+
+      display: block;
+
+      margin-bottom: 8px;
+
+      font-size: 13px;
+
+      color: #bbb;
+    }
+
+
+    .field input {
+
+      width: 100%;
+
+      height: 50px;
+
+      padding: 0 15px;
+
+      border-radius: 10px;
+
+      border: 1px solid #333;
+
+      background: #0b0b0b;
+
+      color: #fff;
+
+      font-size: 14px;
+
+      outline: none;
+
+      transition: 0.2s;
+    }
+
+
+    .field input:focus {
+
+      border-color: #c9a66b;
+
+      box-shadow:
+        0 0 0 2px rgba(201,166,107,0.08);
+    }
+
+
+    /* =========================
+       BOTÃO
+    ========================= */
+
+    .btn-login {
+
+      width: 100%;
+
+      height: 52px;
+
+      margin-top: 8px;
+
+      border: none;
+
+      border-radius: 10px;
+
+      background: #c9a66b;
+
+      color: #111;
+
+      font-size: 14px;
+
+      font-weight: 800;
+
+      letter-spacing: 1px;
+
+      cursor: pointer;
+
+      transition: 0.2s;
+    }
+
+
+    .btn-login:hover {
+
+      background: #d8b979;
+
+      transform: translateY(-1px);
+    }
+
+
+    .btn-login:active {
+
+      transform: translateY(0);
+    }
+
+
+    /* =========================
+       RODAPÉ
+    ========================= */
+
+    .footer {
+
+      margin-top: 40px;
+
+      text-align: center;
+
+      color: #555;
+
+      font-size: 11px;
+
+      letter-spacing: 0.5px;
+    }
+
+
+    /* =========================
+       RESPONSIVO
+    ========================= */
+
+    @media (max-width: 800px) {
+
+      body {
+        align-items: stretch;
+      }
+
+      .app {
+
+        width: 100%;
+
+        min-height: 100vh;
+
+        grid-template-columns: 1fr;
+
+        border: none;
+
+        border-radius: 0;
+      }
+
+
+      .brand-area {
+
+        min-height: 43vh;
+
+        padding: 40px 30px;
+      }
+
+
+      .login-area {
+
+        padding: 40px 30px;
+      }
+
+
+      .title {
+
+        margin-top: 45px;
+
+        font-size: 48px;
+      }
+    }
+
+
+    @media (max-width: 450px) {
+
+      .brand-area {
+        min-height: 40vh;
+      }
+
+      .logo {
+        font-size: 34px;
+      }
+
+      .pcm {
+        font-size: 10px;
+        letter-spacing: 3px;
+      }
+
+      .title {
+        font-size: 40px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+      }
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+  <main class="app">
+
+
+    <!-- =========================
+         ÁREA DA MARCA
+    ========================== -->
+
+    <section class="brand-area">
+
+      <div class="brand-content">
+
+        <div class="logo">
+          AB
+        </div>
+
+        <div class="pcm">
+          PCM • CONTROLE INDUSTRIAL
+        </div>
+
+
+        <h1 class="title">
+          CONTROLE<br>
+          DE O.S.
+        </h1>
+
+
+        <p class="subtitle">
+          Gestão de ordens de serviço da manutenção fabril.
+        </p>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =========================
+         ÁREA DE LOGIN
+    ========================== -->
+
+    <section class="login-area">
+
+      <h2 class="login-title">
+        Acesso ao sistema
+      </h2>
+
+
+      <p class="login-description">
+        Entre para acompanhar e gerenciar as ordens de serviço.
+      </p>
+
+
+      <form id="loginForm">
+
+        <div class="field">
+
+          <label for="usuario">
+            Usuário
+          </label>
+
+          <input
+            id="usuario"
+            type="text"
+            placeholder="Digite seu usuário"
+            autocomplete="username"
+            required
+          >
+
+        </div>
+
+
+
+        <div class="field">
+
+          <label for="senha">
+            Senha
+          </label>
+
+          <input
+            id="senha"
+            type="password"
+            placeholder="Digite sua senha"
+            autocomplete="current-password"
+            required
+          >
+
+        </div>
+
+
+
+        <button
+          type="submit"
+          class="btn-login"
+        >
+          ENTRAR
+        </button>
+
+      </form>
+
+
+      <div class="footer">
+        Juntos por um futuro melhor
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+
+  <script>
+
+    /*
+      LOGIN TEMPORÁRIO
+
+      Nesta primeira etapa o botão apenas demonstra
+      que a tela está funcionando.
+
+      Na próxima etapa vamos substituir isso pela
+      autenticação real do SUPABASE.
+    */
+
+    document
+      .getElementById("loginForm")
+      .addEventListener("submit", function(event) {
+
+        event.preventDefault();
+
+        alert(
+          "Tela inicial funcionando!\n\n" +
+          "O login será conectado ao Supabase na próxima etapa."
+        );
+
+      });
+
+  </script>
+
+
+</body>
+</html>
