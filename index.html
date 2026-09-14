@@ -1,1021 +1,2442 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PCM • CONTROLE DE O.S.</title>
-  <!-- SDK do Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    /* ==================== RESET & BASE ==================== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PCM • Controle de O.S.</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#0b0f14;
+    color:#fff;
+    min-height:100vh;
+}
+
+/* ================= LOGIN ================= */
+
+#loginScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+        linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.88)),
+        radial-gradient(circle at center,#26313b 0%,#0b0f14 65%);
+    padding:20px;
+}
+
+.login-container{
+    width:100%;
+    max-width:1050px;
+    min-height:600px;
+    display:grid;
+    grid-template-columns:1fr 420px;
+    border:1px solid #26313d;
+    border-radius:18px;
+    overflow:hidden;
+    background:#10161d;
+    box-shadow:0 25px 80px rgba(0,0,0,.6);
+}
+
+.login-brand{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:60px;
+    background:
+        linear-gradient(rgba(5,8,11,.75),rgba(5,8,11,.9)),
+        repeating-linear-gradient(
+            90deg,
+            #151c22 0,
+            #151c22 8px,
+            #10161b 8px,
+            #10161b 15px
+        );
+}
+
+.ab-logo{
+    width:90px;
+    height:90px;
+    border:2px solid #d6a84f;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#d6a84f;
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:30px;
+}
+
+.brand-small{
+    color:#9da8b2;
+    font-size:14px;
+    letter-spacing:3px;
+    margin-bottom:15px;
+}
+
+.brand-title{
+    font-size:48px;
+    font-weight:800;
+    letter-spacing:2px;
+    line-height:1.05;
+}
+
+.brand-title span{
+    color:#d6a84f;
+}
+
+.brand-description{
+    color:#87929c;
+    margin-top:22px;
+    max-width:480px;
+    line-height:1.6;
+}
+
+.login-footer{
+    margin-top:70px;
+    color:#66717b;
+    font-size:12px;
+}
+
+/* LOGIN FORM */
+
+.login-box{
+    padding:55px 40px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    background:#111820;
+}
+
+.login-box h2{
+    font-size:28px;
+    margin-bottom:8px;
+}
+
+.login-subtitle{
+    color:#7f8a94;
+    margin-bottom:35px;
+}
+
+.form-group{
+    margin-bottom:20px;
+}
+
+.form-group label{
+    display:block;
+    color:#aab4bd;
+    font-size:12px;
+    font-weight:bold;
+    margin-bottom:8px;
+    letter-spacing:1px;
+}
+
+.form-control{
+    width:100%;
+    height:48px;
+    border:1px solid #2a3540;
+    border-radius:9px;
+    background:#0b1015;
+    color:#fff;
+    padding:0 14px;
+    outline:none;
+}
+
+.form-control:focus{
+    border-color:#d6a84f;
+}
+
+.btn-login{
+    width:100%;
+    height:50px;
+    border:0;
+    border-radius:9px;
+    background:#d6a84f;
+    color:#111;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.btn-login:hover{
+    background:#e5ba60;
+}
+
+.login-error{
+    display:none;
+    color:#ff7070;
+    background:rgba(255,0,0,.08);
+    border:1px solid rgba(255,0,0,.2);
+    border-radius:8px;
+    padding:12px;
+    margin-bottom:15px;
+    font-size:13px;
+}
+
+/* ================= APP ================= */
+
+#appLayout{
+    display:none;
+    min-height:100vh;
+}
+
+.sidebar{
+    width:250px;
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    background:#0e141a;
+    border-right:1px solid #202a33;
+    padding:25px 15px;
+    z-index:10;
+}
+
+.sidebar-brand{
+    padding:10px 12px 25px;
+    border-bottom:1px solid #202a33;
+    margin-bottom:20px;
+}
+
+.sidebar-brand strong{
+    font-size:17px;
+}
+
+.sidebar-brand small{
+    display:block;
+    color:#d6a84f;
+    margin-top:5px;
+}
+
+.menu-btn{
+    width:100%;
+    padding:13px 14px;
+    margin-bottom:7px;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:#89949e;
+    text-align:left;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.menu-btn:hover,
+.menu-btn.active{
+    background:#1b242d;
+    color:#fff;
+}
+
+.menu-btn.active{
+    border-left:3px solid #d6a84f;
+}
+
+.logout{
+    position:absolute;
+    left:15px;
+    right:15px;
+    bottom:20px;
+    color:#ff7777;
+}
+
+.main{
+    margin-left:250px;
+    padding:30px;
+    min-height:100vh;
+}
+
+.topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:30px;
+}
+
+.topbar h1{
+    font-size:28px;
+}
+
+.user-info{
+    color:#8e99a3;
+    font-size:13px;
+}
+
+.user-info strong{
+    color:#fff;
+}
+
+/* VIEWS */
+
+.view{
+    display:none;
+}
+
+.view.active{
+    display:block;
+}
+
+/* CARDS */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.stat{
+    background:#111820;
+    border:1px solid #202a33;
+    border-radius:12px;
+    padding:20px;
+}
+
+.stat-title{
+    color:#7f8b95;
+    font-size:12px;
+    text-transform:uppercase;
+}
+
+.stat-value{
+    font-size:30px;
+    font-weight:bold;
+    margin-top:8px;
+}
+
+/* KANBAN */
+
+.kanban{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+}
+
+.kanban-column{
+    background:#0f151b;
+    border:1px solid #202a33;
+    border-radius:12px;
+    min-height:300px;
+    overflow:hidden;
+}
+
+.column-header{
+    padding:15px;
+    border-bottom:1px solid #202a33;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.column-body{
+    padding:12px;
+}
+
+.os-card{
+    background:#171f27;
+    border:1px solid #28333e;
+    border-radius:9px;
+    padding:14px;
+    margin-bottom:10px;
+}
+
+.os-card-number{
+    color:#d6a84f;
+    font-weight:bold;
+    font-size:13px;
+}
+
+.os-card-machine{
+    font-weight:bold;
+    margin-top:7px;
+}
+
+.os-card-info{
+    color:#89949e;
+    font-size:12px;
+    margin-top:5px;
+}
+
+.priority{
+    display:inline-block;
+    margin-top:10px;
+    padding:4px 8px;
+    border-radius:5px;
+    font-size:10px;
+    font-weight:bold;
+}
+
+.priority-alta{
+    background:#7f1d1d;
+    color:#ffb4b4;
+}
+
+.priority-media{
+    background:#78350f;
+    color:#ffd7a3;
+}
+
+.priority-moderada{
+    background:#14532d;
+    color:#b8f5ca;
+}
+
+/* FORM */
+
+.panel{
+    background:#111820;
+    border:1px solid #202a33;
+    border-radius:12px;
+    padding:25px;
+}
+
+.panel-title{
+    font-size:20px;
+    margin-bottom:25px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+}
+
+.form-full{
+    grid-column:1/-1;
+}
+
+textarea.form-control{
+    height:110px;
+    padding-top:12px;
+    resize:vertical;
+}
+
+.btn{
+    border:0;
+    border-radius:8px;
+    padding:12px 18px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-primary{
+    background:#d6a84f;
+    color:#111;
+}
+
+.btn-secondary{
+    background:#28333e;
+    color:#fff;
+}
+
+/* PRIORIDADE */
+
+.priority-buttons{
+    display:flex;
+    gap:10px;
+}
+
+.priority-btn{
+    flex:1;
+    padding:12px;
+    border:1px solid #34404b;
+    border-radius:8px;
+    background:#151d25;
+    color:#aaa;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.priority-btn.selected.alta{
+    background:#7f1d1d;
+    border-color:#ef4444;
+    color:#fff;
+}
+
+.priority-btn.selected.media{
+    background:#78350f;
+    border-color:#f97316;
+    color:#fff;
+}
+
+.priority-btn.selected.moderada{
+    background:#14532d;
+    border-color:#22c55e;
+    color:#fff;
+}
+
+.form-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:25px;
+}
+
+/* HISTORICO */
+
+.table-wrapper{
+    overflow:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    padding:12px;
+    border-bottom:1px solid #202a33;
+    text-align:left;
+    font-size:13px;
+}
+
+th{
+    color:#89949e;
+    font-size:11px;
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+    .login-container{
+        grid-template-columns:1fr;
+        max-width:500px;
     }
 
-    body {
-      background-color: #121417;
-      color: #E1E1E6;
-      display: flex;
-      min-height: 100vh;
-      overflow-x: hidden;
+    .login-brand{
+        padding:35px;
+        min-height:300px;
     }
 
-    /* ==================== LOGIN TELA ==================== */
-    #login-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: #0D0E10;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10000;
+    .brand-title{
+        font-size:35px;
     }
 
-    .login-card {
-      background-color: #1A1D23;
-      border: 1px solid #2D323E;
-      border-radius: 8px;
-      padding: 30px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    .login-footer{
+        margin-top:30px;
     }
 
-    .login-header {
-      text-align: center;
-      margin-bottom: 25px;
+    .sidebar{
+        width:70px;
+        padding:15px 8px;
     }
 
-    .login-header h1 {
-      font-size: 1.5rem;
-      color: #FFF;
-      letter-spacing: 1px;
+    .sidebar-brand strong,
+    .sidebar-brand small,
+    .menu-btn span{
+        display:none;
     }
 
-    .login-header p {
-      color: #8D95A5;
-      font-size: 0.85rem;
-      margin-top: 5px;
+    .main{
+        margin-left:70px;
+        padding:20px;
     }
 
-    .form-group {
-      margin-bottom: 20px;
-      display: flex;
-      flex-direction: column;
+    .stats{
+        grid-template-columns:repeat(2,1fr);
     }
 
-    .form-group label {
-      font-size: 0.85rem;
-      color: #A8B0BF;
-      margin-bottom: 8px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .kanban{
+        grid-template-columns:1fr;
     }
 
-    .form-control {
-      background-color: #121417;
-      border: 1px solid #2D323E;
-      border-radius: 4px;
-      padding: 12px;
-      color: #FFF;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.2s;
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:550px){
+
+    .login-box{
+        padding:35px 25px;
     }
 
-    .form-control:focus {
-      border-color: #007ACC;
+    .stats{
+        grid-template-columns:1fr;
     }
 
-    select.form-control {
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238D95A5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      background-size: 1em;
-      padding-right: 30px;
+    .main{
+        padding:15px;
     }
 
-    select.form-control option {
-      background-color: #1A1D23;
-      color: #FFF;
+    .topbar{
+        align-items:flex-start;
+        flex-direction:column;
+        gap:8px;
     }
-
-    .btn {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 4px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      font-size: 0.95rem;
-      text-align: center;
-      display: inline-block;
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn-primary {
-      background-color: #007ACC;
-      color: #FFF;
-      width: 100%;
-    }
-
-    .btn-primary:hover {
-      background-color: #005A9E;
-    }
-
-    .error-msg {
-      color: #FF5555;
-      font-size: 0.85rem;
-      margin-top: 10px;
-      text-align: center;
-      display: none;
-    }
-
-    /* ==================== LAYOUT PRINCIPAL ==================== */
-    #app-layout {
-      display: none;
-      width: 100%;
-      min-height: 100vh;
-      flex-direction: row;
-    }
-
-    .sidebar {
-      width: 250px;
-      background-color: #1A1D23;
-      border-right: 1px solid #2D323E;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      transition: all 0.3s;
-    }
-
-    .sidebar-header {
-      padding: 20px;
-      border-bottom: 1px solid #2D323E;
-      text-align: center;
-    }
-
-    .sidebar-header h2 {
-      font-size: 1.2rem;
-      color: #FFF;
-      letter-spacing: 1px;
-    }
-
-    .sidebar-menu {
-      list-style: none;
-      padding: 20px 0;
-      flex: 1;
-    }
-
-    .sidebar-menu li {
-      margin-bottom: 5px;
-    }
-
-    .sidebar-menu a {
-      display: flex;
-      align-items: center;
-      padding: 12px 25px;
-      color: #8D95A5;
-      text-decoration: none;
-      font-weight: 500;
-      transition: background 0.2s, color 0.2s;
-    }
-
-    .sidebar-menu a:hover, .sidebar-menu a.active {
-      background-color: #252A34;
-      color: #FFF;
-      border-left: 4px solid #007ACC;
-    }
-
-    .sidebar-footer {
-      padding: 15px 20px;
-      border-top: 1px solid #2D323E;
-      font-size: 0.85rem;
-      color: #8D95A5;
-    }
-
-    .user-info {
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #FFF;
-    }
-
-    .main-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-      max-height: 100vh;
-    }
-
-    .mobile-header {
-      display: none;
-      background-color: #1A1D23;
-      padding: 15px 20px;
-      border-bottom: 1px solid #2D323E;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .hamburger {
-      background: none;
-      border: none;
-      color: #FFF;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-
-    .view-section {
-      padding: 30px;
-      display: none;
-    }
-
-    .view-section.active {
-      display: block;
-    }
-
-    .page-title {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      color: #FFF;
-      border-bottom: 1px solid #2D323E;
-      padding-bottom: 10px;
-    }
-
-    /* ==================== DASHBOARD ==================== */
-    .kpi-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-
-    .kpi-card {
-      background-color: #1A1D23;
-      border: 1px solid #2D323E;
-      border-radius: 6px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .kpi-card h3 {
-      font-size: 0.8rem;
-      color: #8D95A5;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .kpi-card .number {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #FFF;
-    }
-
-    .kpi-card.urgent .number {
-      color: #FF5555;
-    }
-
-    .kanban-board {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 15px;
-    }
-
-    .kanban-column {
-      background-color: #1A1D23;
-      border: 1px solid #2D323E;
-      border-radius: 6px;
-      padding: 15px;
-      min-height: 350px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .kanban-column h4 {
-      font-size: 0.9rem;
-      color: #A8B0BF;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #2D323E;
-    }
-
-    .kanban-empty {
-      color: #525A69;
-      font-size: 0.85rem;
-      text-align: center;
-      margin-top: 20px;
-      font-style: italic;
-    }
-
-    .os-card {
-      background-color: #121417;
-      border: 1px solid #2D323E;
-      border-left: 4px solid #007ACC;
-      border-radius: 4px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .os-card.priority-ALTA { border-left-color: #D32F2F; }
-    .os-card.priority-MÉDIA { border-left-color: #F57C00; }
-    .os-card.priority-MODERADA { border-left-color: #388E3C; }
-
-    .os-card-header {
-      display: flex;
-      justify-content: space-between;
-      font-weight: bold;
-      font-size: 0.9rem;
-      color: #FFF;
-    }
-
-    .os-card-body {
-      font-size: 0.82rem;
-      color: #A8B0BF;
-    }
-
-    .os-card-footer {
-      font-size: 0.75rem;
-      color: #8D95A5;
-      margin-top: 5px;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    /* ==================== FORMULÁRIO NOVA O.S. ==================== */
-    .form-container {
-      background-color: #1A1D23;
-      border: 1px solid #2D323E;
-      border-radius: 8px;
-      padding: 25px;
-      max-width: 900px;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-    }
-
-    .form-grid .full-width {
-      grid-column: span 2;
-    }
-
-    textarea.form-control {
-      resize: vertical;
-      min-height: 90px;
-    }
-
-    .priority-group {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn-priority {
-      flex: 1;
-      padding: 12px;
-      border: 2px solid transparent;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-      color: #FFF;
-      opacity: 0.4;
-      transition: all 0.2s;
-    }
-
-    .btn-priority.high { background-color: #D32F2F; }
-    .btn-priority.medium { background-color: #F57C00; }
-    .btn-priority.moderate { background-color: #388E3C; }
-
-    .btn-priority.selected {
-      opacity: 1;
-      border-color: #FFF;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 15px;
-      margin-top: 25px;
-      padding-top: 15px;
-      border-top: 1px solid #2D323E;
-    }
-
-    .btn-secondary {
-      background-color: #2D323E;
-      color: #FFF;
-    }
-
-    .btn-secondary:hover { background-color: #3E4554; }
-
-    .btn-success {
-      background-color: #2E7D32;
-      color: #FFF;
-    }
-
-    .btn-success:hover { background-color: #1B5E20; }
-
-    .alert-box {
-      background-color: #1B5E20;
-      color: #FFF;
-      padding: 15px;
-      border-radius: 4px;
-      margin-bottom: 20px;
-      display: none;
-    }
-
-    .placeholder-card {
-      background-color: #1A1D23;
-      border: 1px dashed #2D323E;
-      border-radius: 8px;
-      padding: 40px;
-      text-align: center;
-      color: #8D95A5;
-    }
-
-    @media (max-width: 768px) {
-      body { flex-direction: column; }
-      #app-layout { flex-direction: column; }
-      .mobile-header { display: flex; }
-      .sidebar { width: 100%; display: none; }
-      .sidebar.open { display: flex; }
-      .form-grid { grid-template-columns: 1fr; }
-      .form-grid .full-width { grid-column: span 1; }
-      .priority-group { flex-direction: row; }
-      .view-section { padding: 15px; }
-    }
-  </style>
+}
+</style>
 </head>
+
 <body>
 
-  <!-- ==================== TELA DE LOGIN ==================== -->
-  <div id="login-screen">
-    <div class="login-card">
-      <div class="login-header">
-        <h1>PCM • OS</h1>
-        <p>Controle de Ordens de Serviço</p>
-      </div>
-      <form id="login-form">
-        <div class="form-group">
-          <label for="login-user">Usuário</label>
-          <select id="login-user" class="form-control" required>
-            <option value="" disabled selected>Selecione um usuário...</option>
-            <option value="PCM / Administrador">PCM / Administrador</option>
-            <option value="Adryan">Adryan</option>
-            <option value="Fabio">Fabio</option>
-            <option value="Rodrigo">Rodrigo</option>
-            <option value="Leonardo">Leonardo</option>
-            <option value="Vilmar">Vilmar</option>
-            <option value="Rafael">Rafael</option>
-            <option value="Danilo">Danilo</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="login-pin">PIN</label>
-          <input type="password" id="login-pin" class="form-control" maxlength="4" placeholder="••••" required pattern="\d{4}" inputmode="numeric">
-        </div>
-        <button type="submit" class="btn btn-primary">ENTRAR</button>
-        <div id="login-error" class="error-msg">PIN incorreto. Tente novamente.</div>
-      </form>
-    </div>
-  </div>
+<!-- ================= LOGIN ================= -->
 
-  <!-- ==================== LAYOUT DO SISTEMA ==================== -->
-  <div id="app-layout">
-    
-    <div class="mobile-header">
-      <strong style="color: #FFF;">PCM • CONTROLE DE O.S.</strong>
-      <button class="hamburger" id="hamburger-btn">&#9776;</button>
-    </div>
+<section id="loginScreen">
 
-    <nav class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <h2>PCM • O.S.</h2>
-      </div>
-      <ul class="sidebar-menu">
-        <li><a href="#" class="nav-link active" data-target="view-dashboard">Dashboard</a></li>
-        <li><a href="#" class="nav-link" data-target="view-nova-os">Nova O.S.</a></li>
-        <li><a href="#" class="nav-link" data-target="view-historico">Histórico</a></li>
-        <li><a href="#" class="nav-link" data-target="view-equipe">Equipe</a></li>
-        <li><a href="#" class="nav-link" data-target="view-maquinas">Máquinas</a></li>
-      </ul>
-      <div class="sidebar-footer">
-        <div class="user-info" id="logged-user-display">Usuário</div>
-        <a href="#" id="btn-logout" style="color: #FF5555; text-decoration: none; font-size: 0.85rem; font-weight: 600;">Sair</a>
-      </div>
-    </nav>
+    <div class="login-container">
 
-    <main class="main-content">
+        <div class="login-brand">
 
-      <!-- VIEW: DASHBOARD -->
-      <section id="view-dashboard" class="view-section active">
-        <h2 class="page-title">Dashboard</h2>
+            <div class="ab-logo">AB</div>
 
-        <div class="kpi-container">
-          <div class="kpi-card">
-            <h3>O.S. Abertas</h3>
-            <div class="number" id="kpi-abertas">0</div>
-          </div>
-          <div class="kpi-card">
-            <h3>Em Produção</h3>
-            <div class="number" id="kpi-producao">0</div>
-          </div>
-          <div class="kpi-card">
-            <h3>Aguard. Material</h3>
-            <div class="number" id="kpi-material">0</div>
-          </div>
-          <div class="kpi-card">
-            <h3>Finalizadas</h3>
-            <div class="number" id="kpi-finalizadas">0</div>
-          </div>
-          <div class="kpi-card urgent">
-            <h3>Urgentes</h3>
-            <div class="number" id="kpi-urgentes">0</div>
-          </div>
+            <div class="brand-small">
+                PCM • CONTROLE INDUSTRIAL
+            </div>
+
+            <div class="brand-title">
+                CONTROLE<br>
+                <span>DE O.S.</span>
+            </div>
+
+            <div class="brand-description">
+                Sistema de controle e acompanhamento
+                das ordens de serviço de manutenção.
+            </div>
+
+            <div class="login-footer">
+                Juntos por um futuro melhor
+            </div>
+
         </div>
 
-        <div class="kanban-board">
-          <div class="kanban-column" id="col-aberta">
-            <h4>O.S. ABERTA</h4>
-            <div class="kanban-empty">Nenhuma O.S.</div>
-          </div>
-          <div class="kanban-column" id="col-producao">
-            <h4>EM PRODUÇÃO</h4>
-            <div class="kanban-empty">Nenhuma O.S.</div>
-          </div>
-          <div class="kanban-column" id="col-material">
-            <h4>AGUARDANDO MATERIAL</h4>
-            <div class="kanban-empty">Nenhuma O.S.</div>
-          </div>
-          <div class="kanban-column" id="col-finalizada">
-            <h4>FINALIZADA</h4>
-            <div class="kanban-empty">Nenhuma O.S.</div>
-          </div>
-        </div>
-      </section>
+        <div class="login-box">
 
-      <!-- VIEW: NOVA O.S. -->
-      <section id="view-nova-os" class="view-section">
-        <h2 class="page-title">Nova Ordem de Serviço</h2>
+            <h2>Acesso ao sistema</h2>
 
-        <div id="os-alert" class="alert-box"></div>
+            <div class="login-subtitle">
+                Entre com seu usuário e PIN
+            </div>
 
-        <div class="form-container">
-          <form id="form-nova-os">
-            <div class="form-grid">
-              
-              <div class="form-group">
-                <label for="os-numero">Nº da O.S. WK *</label>
-                <input type="text" id="os-numero" class="form-control" placeholder="10 dígitos numéricos" maxlength="10" required pattern="\d{10}">
-              </div>
+            <form id="loginForm">
 
-              <div class="form-group">
-                <label for="os-data-abertura">Data de Abertura *</label>
-                <input type="date" id="os-data-abertura" class="form-control" required>
-              </div>
+                <div id="loginError" class="login-error"></div>
 
-              <div class="form-group">
-                <label for="os-maquina">Máquina</label>
-                <input type="text" id="os-maquina" class="form-control" placeholder="Nome da máquina">
-              </div>
+                <div class="form-group">
 
-              <div class="form-group">
-                <label for="os-tag">Código / TAG</label>
-                <input type="text" id="os-tag" class="form-control" placeholder="Ex: PIC-1101">
-              </div>
+                    <label>USUÁRIO</label>
 
-              <div class="form-group">
-                <label for="os-setor">Setor *</label>
-                <select id="os-setor" class="form-control" required>
-                  <option value="" disabled selected>Selecione o setor...</option>
-                  <option value="Serraria Mendes">Serraria Mendes</option>
-                  <option value="Serraria Schiffer">Serraria Schiffer</option>
-                  <option value="Exportação">Exportação</option>
-                  <option value="Classificação">Classificação</option>
-                  <option value="Caldeira">Caldeira</option>
-                  <option value="Secagem">Secagem</option>
-                  <option value="Fábrica de Componentes">Fábrica de Componentes</option>
-                  <option value="Escritório">Escritório</option>
-                </select>
-              </div>
+                    <select id="loginUser" class="form-control" required>
 
-              <div class="form-group">
-                <label for="os-tipo">Tipo de Manutenção *</label>
-                <select id="os-tipo" class="form-control" required>
-                  <option value="" disabled selected>Selecione o tipo...</option>
-                  <option value="Corretiva">Corretiva</option>
-                  <option value="Preventiva">Preventiva</option>
-                  <option value="Preditiva">Preditiva</option>
-                </select>
-              </div>
+                        <option value="">Selecione o usuário</option>
 
-              <div class="form-group full-width">
-                <label for="os-descricao">Descrição do Problema / Serviço *</label>
-                <textarea id="os-descricao" class="form-control" placeholder="Descreva detalhadamente o problema ou serviço solicitado..." required></textarea>
-              </div>
+                        <option value="PCM / Administrador">
+                            PCM / Administrador
+                        </option>
 
-              <div class="form-group">
-                <label for="os-responsavel">Responsável *</label>
-                <select id="os-responsavel" class="form-control" required>
-                  <option value="" disabled selected>Selecione o responsável...</option>
-                  <option value="Adryan — Elétrica">Adryan — Elétrica</option>
-                  <option value="Fabio — Elétrica">Fabio — Elétrica</option>
-                  <option value="Rodrigo — Elétrica">Rodrigo — Elétrica</option>
-                  <option value="Leonardo — Mecânica">Leonardo — Mecânica</option>
-                  <option value="Vilmar — Mecânica">Vilmar — Mecânica</option>
-                  <option value="Rafael — Mecânica">Rafael — Mecânica</option>
-                  <option value="Danilo — Lubrificação / Mecânica">Danilo — Lubrificação / Mecânica</option>
-                </select>
-              </div>
+                        <option value="Adryan">
+                            Adryan — Elétrica
+                        </option>
 
-              <div class="form-group">
-                <label for="os-prazo">Prazo</label>
-                <input type="date" id="os-prazo" class="form-control">
-              </div>
+                        <option value="Fabio">
+                            Fabio — Elétrica
+                        </option>
 
-              <div class="form-group full-width">
-                <label>Prioridade *</label>
-                <input type="hidden" id="os-prioridade" required>
-                <div class="priority-group">
-                  <button type="button" class="btn-priority high" data-value="ALTA">🟥 ALTA</button>
-                  <button type="button" class="btn-priority medium" data-value="MÉDIA">🟧 MÉDIA</button>
-                  <button type="button" class="btn-priority moderate" data-value="MODERADA">🟩 MODERADA</button>
+                        <option value="Rodrigo">
+                            Rodrigo — Elétrica
+                        </option>
+
+                        <option value="Leonardo">
+                            Leonardo — Mecânica
+                        </option>
+
+                        <option value="Vilmar">
+                            Vilmar — Mecânica
+                        </option>
+
+                        <option value="Rafael">
+                            Rafael — Mecânica
+                        </option>
+
+                        <option value="Danilo">
+                            Danilo — Lubrificação / Mecânica
+                        </option>
+
+                    </select>
+
                 </div>
-              </div>
 
-              <div class="form-group full-width">
-                <label for="os-obs">Observações</label>
-                <textarea id="os-obs" class="form-control" placeholder="Observações adicionais (opcional)..."></textarea>
-              </div>
+                <div class="form-group">
+
+                    <label>PIN</label>
+
+                    <input
+                        type="password"
+                        id="loginPin"
+                        class="form-control"
+                        maxlength="4"
+                        placeholder="Digite seu PIN"
+                        required
+                        inputmode="numeric"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+                <button type="submit" class="btn-login">
+                    ENTRAR NO SISTEMA
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= SISTEMA ================= -->
+
+<div id="appLayout">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+            <strong>PCM • CONTROLE</strong>
+            <small>ORDENS DE SERVIÇO</small>
+        </div>
+
+        <button class="menu-btn active" data-view="view-dashboard">
+            📊 <span>Dashboard</span>
+        </button>
+
+        <button class="menu-btn" data-view="view-new-os">
+            ➕ <span>Nova O.S.</span>
+        </button>
+
+        <button class="menu-btn" data-view="view-history">
+            📋 <span>Histórico</span>
+        </button>
+
+        <button class="menu-btn" data-view="view-team">
+            👷 <span>Equipe</span>
+        </button>
+
+        <button class="menu-btn" data-view="view-machines">
+            ⚙️ <span>Máquinas</span>
+        </button>
+
+        <button class="menu-btn logout" id="btnLogout">
+            🚪 <span>Sair</span>
+        </button>
+
+    </aside>
+
+
+    <main class="main">
+
+        <div class="topbar">
+
+            <h1 id="pageTitle">
+                Dashboard
+            </h1>
+
+            <div class="user-info">
+                Usuário:
+                <strong id="loggedUserDisplay">-</strong>
+            </div>
+
+        </div>
+
+
+        <!-- ================= DASHBOARD ================= -->
+
+        <section id="view-dashboard" class="view active">
+
+            <div class="stats">
+
+                <div class="stat">
+                    <div class="stat-title">O.S. Abertas</div>
+                    <div class="stat-value" id="statOpen">0</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-title">Em Produção</div>
+                    <div class="stat-value" id="statProduction">0</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-title">Aguardando Material</div>
+                    <div class="stat-value" id="statMaterial">0</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-title">Finalizadas</div>
+                    <div class="stat-value" id="statFinished">0</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-title">Urgentes</div>
+                    <div class="stat-value" id="statUrgent">0</div>
+                </div>
 
             </div>
 
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" id="btn-cancelar-os">CANCELAR</button>
-              <button type="submit" class="btn btn-success" id="btn-salvar-os">CADASTRAR O.S.</button>
+
+            <div class="kanban">
+
+                <div class="kanban-column">
+
+                    <div class="column-header">
+                        O.S. ABERTA
+                    </div>
+
+                    <div class="column-body" id="kanbanOpen">
+                    </div>
+
+                </div>
+
+
+                <div class="kanban-column">
+
+                    <div class="column-header">
+                        EM PRODUÇÃO
+                    </div>
+
+                    <div class="column-body" id="kanbanProduction">
+                    </div>
+
+                </div>
+
+
+                <div class="kanban-column">
+
+                    <div class="column-header">
+                        AGUARDANDO MATERIAL
+                    </div>
+
+                    <div class="column-body" id="kanbanMaterial">
+                    </div>
+
+                </div>
+
+
+                <div class="kanban-column">
+
+                    <div class="column-header">
+                        FINALIZADAS
+                    </div>
+
+                    <div class="column-body" id="kanbanFinished">
+                    </div>
+
+                </div>
+
             </div>
-          </form>
-        </div>
-      </section>
 
-      <!-- VIEW: HISTÓRICO -->
-      <section id="view-historico" class="view-section">
-        <h2 class="page-title">Histórico de O.S.</h2>
-        <div class="placeholder-card">
-          <h3>Histórico de O.S.</h3>
-          <p style="margin-top: 10px;">Em breve: consulta detalhada de todas as alterações feitas no sistema.</p>
-        </div>
-      </section>
+        </section>
 
-      <!-- VIEW: EQUIPE -->
-      <section id="view-equipe" class="view-section">
-        <h2 class="page-title">Equipe de Manutenção</h2>
-        <div class="placeholder-card">
-          <h3>Equipe</h3>
-          <p style="margin-top: 10px;">Visualização e distribuição de tarefas para a equipe.</p>
-        </div>
-      </section>
 
-      <!-- VIEW: MÁQUINAS -->
-      <section id="view-maquinas" class="view-section">
-        <h2 class="page-title">Máquinas</h2>
-        <div class="placeholder-card">
-          <h3>Máquinas</h3>
-          <p style="margin-top: 10px;">Cadastro e gerenciamento das máquinas da fábrica.</p>
-        </div>
-      </section>
+        <!-- ================= NOVA OS ================= -->
+
+        <section id="view-new-os" class="view">
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Nova Ordem de Serviço
+                </div>
+
+                <form id="osForm">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label>Nº DA O.S. WK *</label>
+
+                            <input
+                                type="text"
+                                id="osNumber"
+                                class="form-control"
+                                maxlength="10"
+                                inputmode="numeric"
+                                placeholder="Digite os 10 números"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>DATA DE ABERTURA</label>
+
+                            <input
+                                type="date"
+                                id="openingDate"
+                                class="form-control"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>MÁQUINA *</label>
+
+                            <input
+                                type="text"
+                                id="machine"
+                                class="form-control"
+                                placeholder="Nome da máquina"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>CÓDIGO / TAG</label>
+
+                            <input
+                                type="text"
+                                id="tag"
+                                class="form-control"
+                                placeholder="Ex.: PIC-1101"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>SETOR *</label>
+
+                            <select
+                                id="sector"
+                                class="form-control"
+                                required
+                            >
+
+                                <option value="">
+                                    Selecione o setor
+                                </option>
+
+                                <option>
+                                    Serraria Mendes
+                                </option>
+
+                                <option>
+                                    Serraria Schiffer
+                                </option>
+
+                                <option>
+                                    Exportação
+                                </option>
+
+                                <option>
+                                    Classificação
+                                </option>
+
+                                <option>
+                                    Caldeira
+                                </option>
+
+                                <option>
+                                    Secagem
+                                </option>
+
+                                <option>
+                                    Fábrica de Componentes
+                                </option>
+
+                                <option>
+                                    Escritório
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>TIPO DE MANUTENÇÃO *</label>
+
+                            <select
+                                id="maintenanceType"
+                                class="form-control"
+                                required
+                            >
+
+                                <option value="">
+                                    Selecione
+                                </option>
+
+                                <option>
+                                    Corretiva
+                                </option>
+
+                                <option>
+                                    Preventiva
+                                </option>
+
+                                <option>
+                                    Preditiva
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group form-full">
+
+                            <label>
+                                DESCRIÇÃO DO PROBLEMA / SERVIÇO *
+                            </label>
+
+                            <textarea
+                                id="description"
+                                class="form-control"
+                                placeholder="Descreva o problema ou serviço solicitado"
+                                required
+                            ></textarea>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>RESPONSÁVEL</label>
+
+                            <select
+                                id="responsible"
+                                class="form-control"
+                            >
+
+                                <option value="">
+                                    Selecione
+                                </option>
+
+                                <option>
+                                    Adryan — Elétrica
+                                </option>
+
+                                <option>
+                                    Fabio — Elétrica
+                                </option>
+
+                                <option>
+                                    Rodrigo — Elétrica
+                                </option>
+
+                                <option>
+                                    Leonardo — Mecânica
+                                </option>
+
+                                <option>
+                                    Vilmar — Mecânica
+                                </option>
+
+                                <option>
+                                    Rafael — Mecânica
+                                </option>
+
+                                <option>
+                                    Danilo — Lubrificação / Mecânica
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>PRAZO</label>
+
+                            <input
+                                type="date"
+                                id="dueDate"
+                                class="form-control"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group form-full">
+
+                            <label>PRIORIDADE *</label>
+
+                            <div class="priority-buttons">
+
+                                <button
+                                    type="button"
+                                    class="priority-btn alta"
+                                    data-priority="ALTA"
+                                >
+                                    🟥 ALTA
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="priority-btn media"
+                                    data-priority="MÉDIA"
+                                >
+                                    🟧 MÉDIA
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="priority-btn moderada"
+                                    data-priority="MODERADA"
+                                >
+                                    🟩 MODERADA
+                                </button>
+
+                            </div>
+
+                            <input
+                                type="hidden"
+                                id="priority"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group form-full">
+
+                            <label>OBSERVAÇÕES</label>
+
+                            <textarea
+                                id="observations"
+                                class="form-control"
+                                placeholder="Observações adicionais"
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-actions">
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            id="cancelOs"
+                        >
+                            CANCELAR
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            CADASTRAR O.S.
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= HISTÓRICO ================= -->
+
+        <section id="view-history" class="view">
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Histórico de O.S.
+                </div>
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>O.S.</th>
+                                <th>Máquina</th>
+                                <th>Setor</th>
+                                <th>Responsável</th>
+                                <th>Prioridade</th>
+                                <th>Status</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="historyBody">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= EQUIPE ================= -->
+
+        <section id="view-team" class="view">
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Equipe de Manutenção
+                </div>
+
+                <div class="os-card">
+                    <strong>Elétrica</strong><br><br>
+                    Adryan<br>
+                    Fabio<br>
+                    Rodrigo
+                </div>
+
+                <div class="os-card">
+                    <strong>Mecânica</strong><br><br>
+                    Leonardo<br>
+                    Vilmar<br>
+                    Rafael<br>
+                    Danilo — Lubrificação / Mecânica
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= MAQUINAS ================= -->
+
+        <section id="view-machines" class="view">
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Máquinas
+                </div>
+
+                <p style="color:#89949e;">
+                    Cadastro de máquinas será integrado nesta etapa.
+                </p>
+
+            </div>
+
+        </section>
 
     </main>
-  </div>
 
-  <!-- ==================== JAVASCRIPT ==================== -->
-  <script>
-    // --- CONEXÃO COM O SUPABASE ---
-    const SUPABASE_URL = "https://zjrrenorlrdhuddnscdm.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_HMD1Yow_uEbi-9fy6P0ATg_BqfNstx5";
-    let supabase = null;
+</div>
 
-    function initSupabase() {
-      try {
-        if (window.supabase && !supabase) {
-          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        }
-      } catch (e) {
-        console.warn("Supabase ainda não carregou:", e);
-      }
+
+<script>
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+    "https://zjrrenorlrdhuddnscdm.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_HMD1Yow_uEbi-9fy6P0ATg_BqfNstx5";
+
+let supabaseClient = null;
+
+try {
+
+    if (
+        window.supabase &&
+        SUPABASE_URL &&
+        SUPABASE_KEY
+    ) {
+
+        supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_KEY
+            );
+
     }
 
-    // --- USUÁRIOS E PINS DEFINIDOS ---
-    const usersDB = {
-      "PCM / Administrador": "0109",
-      "Adryan": "6101",
-      "Fabio": "6102",
-      "Rodrigo": "6103",
-      "Leonardo": "6104",
-      "Vilmar": "6105",
-      "Rafael": "6106",
-      "Danilo": "6107"
+} catch(error){
+
+    console.error(
+        "Erro ao iniciar Supabase:",
+        error
+    );
+
+}
+
+
+/* =========================================================
+   USUÁRIOS / PIN
+========================================================= */
+
+const usersDB = {
+
+    "PCM / Administrador": "0109",
+
+    "Adryan": "6101",
+
+    "Fabio": "6102",
+
+    "Rodrigo": "6103",
+
+    "Leonardo": "6104",
+
+    "Vilmar": "6105",
+
+    "Rafael": "6106",
+
+    "Danilo": "6107"
+
+};
+
+
+/* =========================================================
+   VARIÁVEIS
+========================================================= */
+
+let currentUser = null;
+
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+const loginScreen =
+    document.getElementById("loginScreen");
+
+const appLayout =
+    document.getElementById("appLayout");
+
+const loginForm =
+    document.getElementById("loginForm");
+
+const loginUser =
+    document.getElementById("loginUser");
+
+const loginPin =
+    document.getElementById("loginPin");
+
+const loginError =
+    document.getElementById("loginError");
+
+const loggedUserDisplay =
+    document.getElementById("loggedUserDisplay");
+
+const pageTitle =
+    document.getElementById("pageTitle");
+
+const btnLogout =
+    document.getElementById("btnLogout");
+
+const osForm =
+    document.getElementById("osForm");
+
+const openingDate =
+    document.getElementById("openingDate");
+
+
+/* =========================================================
+   DATA ATUAL
+========================================================= */
+
+function setTodayDate(){
+
+    const now = new Date();
+
+    const year =
+        now.getFullYear();
+
+    const month =
+        String(
+            now.getMonth() + 1
+        ).padStart(2,"0");
+
+    const day =
+        String(
+            now.getDate()
+        ).padStart(2,"0");
+
+    const today =
+        `${year}-${month}-${day}`;
+
+    openingDate.value = today;
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+loginForm.addEventListener(
+    "submit",
+    function(e){
+
+        e.preventDefault();
+
+        const selectedUser =
+            String(
+                loginUser.value || ""
+            ).trim();
+
+        const enteredPin =
+            String(
+                loginPin.value || ""
+            )
+            .replace(/\D/g,"")
+            .trim();
+
+
+        /* USUÁRIO */
+
+        if(!selectedUser){
+
+            loginError.textContent =
+                "Selecione um usuário.";
+
+            loginError.style.display =
+                "block";
+
+            return;
+        }
+
+
+        /* PIN */
+
+        if(enteredPin.length !== 4){
+
+            loginError.textContent =
+                "Digite um PIN de 4 números.";
+
+            loginError.style.display =
+                "block";
+
+            loginPin.focus();
+
+            return;
+        }
+
+
+        /* PIN CORRETO */
+
+        const correctPin =
+            String(
+                usersDB[selectedUser] || ""
+            ).trim();
+
+
+        if(correctPin === enteredPin){
+
+            console.log(
+                "Login autorizado:",
+                selectedUser
+            );
+
+            currentUser =
+                selectedUser;
+
+            loginError.style.display =
+                "none";
+
+            loginPin.value = "";
+
+            loggedUserDisplay.textContent =
+                currentUser;
+
+
+            /* ESCONDE LOGIN */
+
+            loginScreen.style.display =
+                "none";
+
+
+            /* ABRE SISTEMA */
+
+            appLayout.style.display =
+                "block";
+
+
+            setTodayDate();
+
+            navigateTo(
+                "view-dashboard"
+            );
+
+            loadDashboardData();
+
+        }
+
+        else{
+
+            console.log(
+                "PIN incorreto para:",
+                selectedUser
+            );
+
+            loginError.textContent =
+                "PIN incorreto. Tente novamente.";
+
+            loginError.style.display =
+                "block";
+
+            loginPin.value = "";
+
+            loginPin.focus();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   ENTER NO PIN
+========================================================= */
+
+loginPin.addEventListener(
+    "keydown",
+    function(e){
+
+        if(e.key === "Enter"){
+
+            e.preventDefault();
+
+            loginForm.requestSubmit();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SOMENTE NÚMEROS NO PIN
+========================================================= */
+
+loginPin.addEventListener(
+    "input",
+    function(){
+
+        this.value =
+            this.value
+            .replace(/\D/g,"")
+            .slice(0,4);
+
+    }
+);
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+btnLogout.addEventListener(
+    "click",
+    function(e){
+
+        e.preventDefault();
+
+        currentUser = null;
+
+        loginForm.reset();
+
+        loginPin.value = "";
+
+        loginError.style.display =
+            "none";
+
+        appLayout.style.display =
+            "none";
+
+        loginScreen.style.display =
+            "flex";
+
+        loginUser.focus();
+
+    }
+);
+
+
+/* =========================================================
+   NAVEGAÇÃO
+========================================================= */
+
+function navigateTo(viewId){
+
+    document
+        .querySelectorAll(".view")
+        .forEach(function(view){
+
+            view.classList.remove("active");
+
+        });
+
+
+    const target =
+        document.getElementById(viewId);
+
+
+    if(target){
+
+        target.classList.add("active");
+
+    }
+
+
+    document
+        .querySelectorAll(".menu-btn")
+        .forEach(function(btn){
+
+            btn.classList.remove("active");
+
+        });
+
+
+    const activeButton =
+        document.querySelector(
+            `[data-view="${viewId}"]`
+        );
+
+
+    if(activeButton){
+
+        activeButton.classList.add(
+            "active"
+        );
+
+        const span =
+            activeButton.querySelector("span");
+
+        if(span){
+
+            pageTitle.textContent =
+                span.textContent;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   BOTÕES DO MENU
+========================================================= */
+
+document
+    .querySelectorAll(".menu-btn[data-view]")
+    .forEach(function(button){
+
+        button.addEventListener(
+            "click",
+            function(){
+
+                navigateTo(
+                    this.dataset.view
+                );
+
+                if(
+                    this.dataset.view ===
+                    "view-dashboard"
+                ){
+
+                    loadDashboardData();
+
+                }
+
+                if(
+                    this.dataset.view ===
+                    "view-history"
+                ){
+
+                    loadHistory();
+
+                }
+
+            }
+        );
+
+    });
+
+
+/* =========================================================
+   NÚMERO WK
+========================================================= */
+
+document
+    .getElementById("osNumber")
+    .addEventListener(
+        "input",
+        function(){
+
+            this.value =
+                this.value
+                .replace(/\D/g,"")
+                .slice(0,10);
+
+        }
+    );
+
+
+/* =========================================================
+   PRIORIDADE
+========================================================= */
+
+document
+    .querySelectorAll(".priority-btn")
+    .forEach(function(button){
+
+        button.addEventListener(
+            "click",
+            function(){
+
+                document
+                    .querySelectorAll(
+                        ".priority-btn"
+                    )
+                    .forEach(function(btn){
+
+                        btn.classList.remove(
+                            "selected"
+                        );
+
+                    });
+
+
+                this.classList.add(
+                    "selected"
+                );
+
+
+                document.getElementById(
+                    "priority"
+                ).value =
+                    this.dataset.priority;
+
+            }
+        );
+
+    });
+
+
+/* =========================================================
+   CANCELAR NOVA OS
+========================================================= */
+
+document
+    .getElementById("cancelOs")
+    .addEventListener(
+        "click",
+        function(){
+
+            osForm.reset();
+
+            document
+                .querySelectorAll(
+                    ".priority-btn"
+                )
+                .forEach(function(btn){
+
+                    btn.classList.remove(
+                        "selected"
+                    );
+
+                });
+
+            setTodayDate();
+
+            navigateTo(
+                "view-dashboard"
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   CADASTRAR O.S.
+========================================================= */
+
+osForm.addEventListener(
+    "submit",
+    async function(e){
+
+        e.preventDefault();
+
+
+        const osNumber =
+            document.getElementById(
+                "osNumber"
+            ).value.trim();
+
+
+        const priority =
+            document.getElementById(
+                "priority"
+            ).value;
+
+
+        if(osNumber.length !== 10){
+
+            alert(
+                "O número da O.S. WK precisa ter exatamente 10 números."
+            );
+
+            return;
+        }
+
+
+        if(!priority){
+
+            alert(
+                "Selecione a prioridade da O.S."
+            );
+
+            return;
+        }
+
+
+        const data = {
+
+            os_number:
+                osNumber,
+
+            opening_date:
+                document.getElementById(
+                    "openingDate"
+                ).value,
+
+            machine:
+                document.getElementById(
+                    "machine"
+                ).value.trim(),
+
+            tag:
+                document.getElementById(
+                    "tag"
+                ).value.trim(),
+
+            sector:
+                document.getElementById(
+                    "sector"
+                ).value,
+
+            maintenance_type:
+                document.getElementById(
+                    "maintenanceType"
+                ).value,
+
+            description:
+                document.getElementById(
+                    "description"
+                ).value.trim(),
+
+            responsible:
+                document.getElementById(
+                    "responsible"
+                ).value,
+
+            due_date:
+                document.getElementById(
+                    "dueDate"
+                ).value || null,
+
+            priority:
+                priority,
+
+            status:
+                "O.S. ABERTA",
+
+            observations:
+                document.getElementById(
+                    "observations"
+                ).value.trim()
+
+        };
+
+
+        /* =================================================
+           SUPABASE
+        ================================================= */
+
+        if(!supabaseClient){
+
+            alert(
+                "O sistema não conseguiu conectar ao Supabase."
+            );
+
+            console.error(
+                "Supabase não inicializado."
+            );
+
+            return;
+        }
+
+
+        try{
+
+            const result =
+                await supabaseClient
+                .from("os_orders")
+                .insert([data]);
+
+
+            if(result.error){
+
+                console.error(
+                    "Erro Supabase:",
+                    result.error
+                );
+
+
+                if(
+                    result.error.code ===
+                    "23505"
+                ){
+
+                    alert(
+                        "Essa O.S. WK já está cadastrada."
+                    );
+
+                }
+                else{
+
+                    alert(
+                        "Erro ao cadastrar O.S.:\n" +
+                        result.error.message
+                    );
+
+                }
+
+                return;
+            }
+
+
+            alert(
+                "O.S. cadastrada com sucesso!"
+            );
+
+
+            osForm.reset();
+
+            document
+                .querySelectorAll(
+                    ".priority-btn"
+                )
+                .forEach(function(btn){
+
+                    btn.classList.remove(
+                        "selected"
+                    );
+
+                });
+
+
+            setTodayDate();
+
+            navigateTo(
+                "view-dashboard"
+            );
+
+            loadDashboardData();
+
+
+        }
+        catch(error){
+
+            console.error(
+                "Erro:",
+                error
+            );
+
+            alert(
+                "Erro inesperado ao cadastrar a O.S."
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+async function loadDashboardData(){
+
+    if(!supabaseClient){
+
+        return;
+    }
+
+
+    try{
+
+        const result =
+            await supabaseClient
+            .from("os_orders")
+            .select("*")
+            .order(
+                "created_at",
+                {
+                    ascending:false
+                }
+            );
+
+
+        if(result.error){
+
+            console.error(
+                result.error
+            );
+
+            return;
+        }
+
+
+        const orders =
+            result.data || [];
+
+
+        let open = 0;
+        let production = 0;
+        let material = 0;
+        let finished = 0;
+        let urgent = 0;
+
+
+        orders.forEach(function(os){
+
+            const status =
+                String(
+                    os.status || ""
+                ).toUpperCase();
+
+
+            if(
+                status === "O.S. ABERTA"
+            ){
+
+                open++;
+
+            }
+
+            else if(
+                status === "EM PRODUÇÃO"
+            ){
+
+                production++;
+
+            }
+
+            else if(
+                status ===
+                "AGUARDANDO MATERIAL"
+            ){
+
+                material++;
+
+            }
+
+            else if(
+                status === "FINALIZADA"
+            ){
+
+                finished++;
+
+            }
+
+
+            if(
+                String(
+                    os.priority || ""
+                ).toUpperCase() ===
+                "ALTA"
+                &&
+                status !== "FINALIZADA"
+            ){
+
+                urgent++;
+
+            }
+
+        });
+
+
+        document.getElementById(
+            "statOpen"
+        ).textContent = open;
+
+
+        document.getElementById(
+            "statProduction"
+        ).textContent = production;
+
+
+        document.getElementById(
+            "statMaterial"
+        ).textContent = material;
+
+
+        document.getElementById(
+            "statFinished"
+        ).textContent = finished;
+
+
+        document.getElementById(
+            "statUrgent"
+        ).textContent = urgent;
+
+
+        renderKanban(
+            orders
+        );
+
+    }
+    catch(error){
+
+        console.error(
+            "Erro dashboard:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   KANBAN
+========================================================= */
+
+function renderKanban(orders){
+
+    const containers = {
+
+        "O.S. ABERTA":
+            document.getElementById(
+                "kanbanOpen"
+            ),
+
+        "EM PRODUÇÃO":
+            document.getElementById(
+                "kanbanProduction"
+            ),
+
+        "AGUARDANDO MATERIAL":
+            document.getElementById(
+                "kanbanMaterial"
+            ),
+
+        "FINALIZADA":
+            document.getElementById(
+                "kanbanFinished"
+            )
+
     };
 
-    let currentUser = null;
 
-    // --- ELEMENTOS DOM ---
-    const loginScreen = document.getElementById('login-screen');
-    const loginForm = document.getElementById('login-form');
-    const loginUser = document.getElementById('login-user');
-    const loginPin = document.getElementById('login-pin');
-    const loginError = document.getElementById('login-error');
+    Object.values(containers)
+        .forEach(function(container){
 
-    const appLayout = document.getElementById('app-layout');
-    const loggedUserDisplay = document.getElementById('logged-user-display');
-    const btnLogout = document.getElementById('btn-logout');
+            container.innerHTML = "";
 
-    const hamburgerBtn = document.getElementById('hamburger-btn');
-    const sidebar = document.getElementById('sidebar');
-    const navLinks = document.querySelectorAll('.nav-link');
-    const viewSections = document.querySelectorAll('.view-section');
+        });
 
-    const formNovaOS = document.getElementById('form-nova-os');
-    const fieldDataAbertura = document.getElementById('os-data-abertura');
-    const fieldNumeroWK = document.getElementById('os-numero');
-    const priorityButtons = document.querySelectorAll('.btn-priority');
-    const hiddenPriority = document.getElementById('os-prioridade');
-    const btnCancelarOS = document.getElementById('btn-cancelar-os');
-    const osAlert = document.getElementById('os-alert');
 
-    // --- AUTENTICAÇÃO ---
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const selectedUser = loginUser.value;
-      const enteredPin = loginPin.value.trim();
+    orders.forEach(function(os){
 
-      if (usersDB[selectedUser] && usersDB[selectedUser] === enteredPin) {
-        currentUser = selectedUser;
-        loginError.style.display = 'none';
-        
-        // Esconde a tela de login imediatamente
-        loginScreen.style.display = 'none';
-        appLayout.style.display = 'flex';
-        loggedUserDisplay.textContent = currentUser;
-        
-        setTodayDate();
-        navigateTo('view-dashboard');
-      } else {
-        loginError.style.display = 'block';
-      }
-    });
+        const container =
+            containers[os.status];
 
-    btnLogout.addEventListener('click', (e) => {
-      e.preventDefault();
-      currentUser = null;
-      loginForm.reset();
-      loginError.style.display = 'none';
-      appLayout.style.display = 'none';
-      loginScreen.style.display = 'flex';
-    });
 
-    function setTodayDate() {
-      const today = new Date().toISOString().split('T')[0];
-      fieldDataAbertura.value = today;
-    }
+        if(!container){
 
-    // --- NAVEGAÇÃO SPA ---
-    function navigateTo(targetId) {
-      viewSections.forEach(section => {
-        section.classList.remove('active');
-        if (section.id === targetId) {
-          section.classList.add('active');
-        }
-      });
-
-      navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('data-target') === targetId) {
-          link.classList.add('active');
-        }
-      });
-
-      sidebar.classList.remove('open');
-
-      if (targetId === 'view-dashboard') {
-        loadDashboardData();
-      }
-    }
-
-    navLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        navigateTo(link.getAttribute('data-target'));
-      });
-    });
-
-    hamburgerBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
-    });
-
-    // --- PRIORIDADES ---
-    priorityButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        priorityButtons.forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        hiddenPriority.value = btn.getAttribute('data-value');
-      });
-    });
-
-    fieldNumeroWK.addEventListener('input', (e) => {
-      e.target.value = e.target.value.replace(/\D/g, '');
-    });
-
-    btnCancelarOS.addEventListener('click', () => {
-      resetForm();
-      navigateTo('view-dashboard');
-    });
-
-    function resetForm() {
-      formNovaOS.reset();
-      setTodayDate();
-      hiddenPriority.value = '';
-      priorityButtons.forEach(b => b.classList.remove('selected'));
-    }
-
-    // --- ENVIAR PARA O SUPABASE ---
-    formNovaOS.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const numWK = fieldNumeroWK.value.trim();
-      if (numWK.length !== 10) {
-        alert('O Nº da O.S. WK deve conter exatamente 10 números.');
-        return;
-      }
-
-      if (!hiddenPriority.value) {
-        alert('Por favor, selecione uma Prioridade antes de cadastrar.');
-        return;
-      }
-
-      const submitBtn = document.getElementById('btn-salvar-os');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'SALVANDO...';
-
-      const osData = {
-        os_number: numWK,
-        opening_date: fieldDataAbertura.value,
-        machine: document.getElementById('os-maquina').value.trim(),
-        tag: document.getElementById('os-tag').value.trim(),
-        sector: document.getElementById('os-setor').value,
-        maintenance_type: document.getElementById('os-tipo').value,
-        description: document.getElementById('os-descricao').value.trim(),
-        responsible: document.getElementById('os-responsavel').value,
-        due_date: document.getElementById('os-prazo').value || null,
-        priority: hiddenPriority.value,
-        status: 'O.S. ABERTA',
-        observations: document.getElementById('os-obs').value.trim()
-      };
-
-      try {
-        initSupabase();
-        if (!supabase) {
-          alert('Sem conexão com o banco. A O.S. foi validada localmente.');
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'CADASTRAR O.S.';
-          return;
+            return;
         }
 
-        const { data, error } = await supabase.from('os_orders').insert([osData]);
 
-        if (error) {
-          if (error.code === '23505') {
-            alert('Atenção: Já existe uma O.S. cadastrada com este número WK!');
-          } else {
-            alert('Erro ao cadastrar O.S.: ' + error.message);
-          }
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'CADASTRAR O.S.';
-          return;
+        let priorityClass =
+            "priority-moderada";
+
+
+        if(os.priority === "ALTA"){
+
+            priorityClass =
+                "priority-alta";
+
         }
 
-        osAlert.innerHTML = `
-          <strong>O.S. Cadastrada no Banco de Dados!</strong><br>
-          • Nº da O.S.: ${osData.os_number}<br>
-          • Setor: ${osData.sector}<br>
-          • Tipo: ${osData.maintenance_type}<br>
-          • Prioridade: ${osData.priority}<br>
-          • Responsável: ${osData.responsible}
+        else if(
+            os.priority === "MÉDIA"
+        ){
+
+            priorityClass =
+                "priority-media";
+
+        }
+
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.className =
+            "os-card";
+
+
+        card.innerHTML = `
+
+            <div class="os-card-number">
+                O.S. ${escapeHtml(
+                    os.os_number || "-"
+                )}
+            </div>
+
+            <div class="os-card-machine">
+                ${escapeHtml(
+                    os.machine || "-"
+                )}
+            </div>
+
+            <div class="os-card-info">
+                ${escapeHtml(
+                    os.sector || "-"
+                )}
+            </div>
+
+            <div class="os-card-info">
+                Responsável:
+                ${escapeHtml(
+                    os.responsible || "-"
+                )}
+            </div>
+
+            <span class="priority ${priorityClass}">
+                ${escapeHtml(
+                    os.priority || "-"
+                )}
+            </span>
+
         `;
-        osAlert.style.display = 'block';
 
-        resetForm();
 
-        setTimeout(() => {
-          osAlert.style.display = 'none';
-          navigateTo('view-dashboard');
-        }, 3000);
+        container.appendChild(
+            card
+        );
 
-      } catch (err) {
-        alert('Erro inesperado de conexão.');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'CADASTRAR O.S.';
-      }
     });
 
-    // --- CARREGAR DASHBOARD E KANBAN ---
-    async function loadDashboardData() {
-      initSupabase();
-      if (!supabase) return;
+}
 
-      try {
-        const { data: orders, error } = await supabase.from('os_orders').select('*');
 
-        if (error) {
-          console.error('Erro ao buscar O.S.:', error);
-          return;
+/* =========================================================
+   HISTÓRICO
+========================================================= */
+
+async function loadHistory(){
+
+    const body =
+        document.getElementById(
+            "historyBody"
+        );
+
+
+    body.innerHTML =
+        `<tr>
+            <td colspan="6">
+                Carregando...
+            </td>
+        </tr>`;
+
+
+    if(!supabaseClient){
+
+        return;
+    }
+
+
+    try{
+
+        const result =
+            await supabaseClient
+            .from("os_orders")
+            .select("*")
+            .order(
+                "created_at",
+                {
+                    ascending:false
+                }
+            );
+
+
+        if(result.error){
+
+            console.error(
+                result.error
+            );
+
+            body.innerHTML =
+                `<tr>
+                    <td colspan="6">
+                        Erro ao carregar histórico.
+                    </td>
+                </tr>`;
+
+            return;
         }
 
-        let countAbertas = 0;
-        let countProducao = 0;
-        let countMaterial = 0;
-        let countFinalizadas = 0;
-        let countUrgentes = 0;
 
-        const colAberta = document.getElementById('col-aberta');
-        const colProducao = document.getElementById('col-producao');
-        const colMaterial = document.getElementById('col-material');
-        const colFinalizada = document.getElementById('col-finalizada');
+        const orders =
+            result.data || [];
 
-        colAberta.innerHTML = '<h4>O.S. ABERTA</h4>';
-        colProducao.innerHTML = '<h4>EM PRODUÇÃO</h4>';
-        colMaterial.innerHTML = '<h4>AGUARDANDO MATERIAL</h4>';
-        colFinalizada.innerHTML = '<h4>FINALIZADA</h4>';
 
-        if (!orders || orders.length === 0) {
-          colAberta.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
-          colProducao.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
-          colMaterial.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
-          colFinalizada.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
-        } else {
-          orders.forEach(os => {
-            if (os.status === 'O.S. ABERTA') countAbertas++;
-            if (os.status === 'EM PRODUÇÃO') countProducao++;
-            if (os.status === 'AGUARDANDO MATERIAL') countMaterial++;
-            if (os.status === 'FINALIZADA') countFinalizadas++;
-            if (os.priority === 'ALTA' && os.status !== 'FINALIZADA') countUrgentes++;
+        body.innerHTML = "";
 
-            const cardHTML = `
-              <div class="os-card priority-${os.priority}">
-                <div class="os-card-header">
-                  <span>O.S. #${os.os_number}</span>
-                  <small style="color: #8D95A5;">${os.sector}</small>
-                </div>
-                <div class="os-card-body">
-                  <strong>Mág:</strong> ${os.machine || 'N/A'}<br>
-                  <strong>Serv:</strong> ${os.description}
-                </div>
-                <div class="os-card-footer">
-                  <span>Resp: ${os.responsible.split(' — ')[0]}</span>
-                  <span>${os.maintenance_type}</span>
-                </div>
-              </div>
+
+        if(!orders.length){
+
+            body.innerHTML =
+                `<tr>
+                    <td colspan="6">
+                        Nenhuma O.S. cadastrada.
+                    </td>
+                </tr>`;
+
+            return;
+        }
+
+
+        orders.forEach(function(os){
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${escapeHtml(
+                        os.os_number || "-"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        os.machine || "-"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        os.sector || "-"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        os.responsible || "-"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        os.priority || "-"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        os.status || "-"
+                    )}
+                </td>
+
             `;
 
-            if (os.status === 'O.S. ABERTA') colAberta.innerHTML += cardHTML;
-            else if (os.status === 'EM PRODUÇÃO') colProducao.innerHTML += cardHTML;
-            else if (os.status === 'AGUARDANDO MATERIAL') colMaterial.innerHTML += cardHTML;
-            else if (os.status === 'FINALIZADA') colFinalizada.innerHTML += cardHTML;
-          });
 
-          if (colAberta.children.length === 1) colAberta.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
-          if (colProducao.children.length === 1) colProducao.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
-          if (colMaterial.children.length === 1) colMaterial.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
-          if (colFinalizada.children.length === 1) colFinalizada.innerHTML += '<div class="kanban-empty">Nenhuma O.S.</div>';
-        }
+            body.appendChild(
+                row
+            );
 
-        document.getElementById('kpi-abertas').textContent = countAbertas;
-        document.getElementById('kpi-producao').textContent = countProducao;
-        document.getElementById('kpi-material').textContent = countMaterial;
-        document.getElementById('kpi-finalizadas').textContent = countFinalizadas;
-        document.getElementById('kpi-urgentes').textContent = countUrgentes;
+        });
 
-      } catch (err) {
-        console.error('Erro na requisição:', err);
-      }
     }
-  </script>
+    catch(error){
+
+        console.error(
+            error
+        );
+
+        body.innerHTML =
+            `<tr>
+                <td colspan="6">
+                    Erro ao carregar histórico.
+                </td>
+            </tr>`;
+
+    }
+
+}
+
+
+/* =========================================================
+   SEGURANÇA HTML
+========================================================= */
+
+function escapeHtml(value){
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        setTodayDate();
+
+        loginUser.focus();
+
+        console.log(
+            "PCM • Controle de O.S. iniciado."
+        );
+
+    }
+);
+
+</script>
+
 </body>
 </html>
