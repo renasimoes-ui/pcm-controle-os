@@ -13,9 +13,20 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:,">
+<!-- SUPABASE: carregamento antecipado para evitar tela preta em celulares -->
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=GNHNKbQ5u9KiRofofWhsWjk688ZUw0D7Id4vxBdRkCZnISETdjQBHHrSyR2kiRuEfwAa97v9LwEveDsP8dgfcC9wtCcU73epPpMFsJCx0TOEQzEGqfpwUEW3zQwe7Tt1fpzzL2_Opxr31Zz7Fup-koxYH9NSV_bEqeP6vP0peglrH3UxL5VX_5KgkDKBmuSu2KIJSmuQlksGJN_PSckm4avfAMY4OjmDO8J3c0L0cvWb1JUcvKkaX5YVqLRa5SAtRjAkJWzmwOvcT25yi0XdMOAXIjGVlhrz_NDyiEdDM_7BjfZxVFvi2JnkretLAEPr" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  if(!window.supabase || typeof window.supabase.createClient !== "function"){
+    var s=document.createElement("script");
+    s.src="https://unpkg.com/@supabase/supabase-js@2";
+    document.head.appendChild(s);
+  }
+})();
+</script>
 
 <!-- PROTEÇÃO CONTRA CACHE/SERVICE WORKER ANTIGO -->
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=PfwyY1A0V62zYEjty2dadMxDNQwefNoWEbkW5kXLj5mdnLHUTgqNMs6v1SU3k_cf5RYZC3Fp-fKE8_7vM67s-HJHFwFj_BDdV9n5psxoK5CZ-dLAIP7mU7spT446Dh65GuCz91bU7GYD3RCv5S4W1VdmQfbQuRUYjcqn5DC9y8GMRIPIzGQbNXKEQkuc23BLX8tRW-wCco-cSDcNds98hit7q0UVln3ZIg3Puq_Jcde6I9NduHGTPHaKCwKafsNeHhmW02xPNavpddDvS72bXgQjOIx3tgAFb1SapY3VOS3MzRGa8V2tYriMpbmHh0j7XDKC8kRdeABE6VuPxFIS848c12Lcck_xtT48bef3mU4" charset="UTF-8"></script><script>
+<script>
 (function(){
   try{
     if('serviceWorker' in navigator){
@@ -2176,8 +2187,6 @@ window.addEventListener('unhandledrejection',function(ev){
         </div>
 
     </div>
-
-</div>
 
 
 <script>
