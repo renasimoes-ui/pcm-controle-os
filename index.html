@@ -18,7 +18,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=5NhEjeL-OlbeA7QlPiC7Z5ppu6Bp94E9du3KiolcGQiceUupy6sKGOOIjprEByc47eJplDyDSituaob21Q4EODil3hJZVEtxUeV3MK9fwHIuYJqjrRBGT6y_RHqlLvSoKA6WzSbsUpwbTJtjMbERC5VZ-JeVENf2qH62wNEXEWizxsc6AF3L0wKNNjFbLr-4Pg1V2E_YBe3jdDM0IuTc4cQO-gYNq0LFrKsUPvslu3RZW53L4UvBA0lKnAEREtUncf-SRXOmXm4cl64yrbjW3Fj3O6fdJY4qiUO391ax31MbFz97YuukfNPqGg4kJnKaPnuojB_xrP5UgZxzwu8DNQ" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=Gonz1YjLFtv1bZpNwz4yDg2aqa81pffYXf54NvZL4notel1SKqVxl_vOhJ9Dzns5nVVGl_xPqP91xNm79otwJcwvJXW37lXoMbcXa0VgKtOvnno_L3XorCsUAcYVClEzsirlAMKp_S9a4ZX5ralm3rdpz89Fc-_TTRAGQn8j6OcMySOvmDn802layyOcC4xeIM5N9wZu_u6uh_KbhhvE_i-TMCbXKkLj0IDa4nKNtawhbMuA2P9EQjMDpAipYFgVxJSUb4iv3abueYCHJRGxhy_Ot8mLVnJbd076Sx92IlXJh72rv-3rPTprCroGsBi1fhVtow2pdgAj-di_ceU1SQ" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -4828,7 +4828,143 @@ async function exportHistoryPDF(){
         if(!popup){showPCMToast("O navegador bloqueou a janela do PDF. Permita pop-ups para este site.","warning");return;}
         const orderRows=orders.map(o=>`<tr><td>${escapeHtml(o.os_number)}</td><td>${escapeHtml(o.machine)}</td><td>${escapeHtml(o.tag||"-")}</td><td>${escapeHtml(o.sector||"-")}</td><td>${escapeHtml(o.responsible||"-")}</td><td>${escapeHtml(o.status||"-")}</td><td>${escapeHtml(formatSeconds(getTotalTime(o)))}</td></tr>`).join("");
         const execRows=execution.map(e=>`<tr><td>${escapeHtml(e.os_number||"-")}</td><td>${escapeHtml(e.employee||"-")}</td><td>${escapeHtml(e.action||"-")}</td><td>${escapeHtml(e.reason||"-")}</td><td>${escapeHtml(formatSeconds(e.duration_seconds||0))}</td><td>${escapeHtml(historyDate(e.created_at))}</td></tr>`).join("");
-        popup.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Histórico PCM</title><style>body{font-family:Arial,sans-serif;color:#111827;padding:24px;font-size:11px}h1{font-size:20px;margin:0 0 4px}h2{font-size:14px;margin:24px 0 8px}p{color:#475569;margin:0 0 18px}table{width:100%;border-collapse:collapse;margin-bottom:18px}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left;vertical-align:top}th{background:#e2e8f0;font-weight:700}@media print{body{padding:10mm}h2{break-after:avoid}table{break-inside:auto}tr{break-inside:avoid}}</style></head><body><h1>PCM • CONTROLE DE O.S.</h1><p>Histórico de ordens de serviço — gerado em ${escapeHtml(new Date().toLocaleString("pt-BR"))}</p><h2>Ordens de serviço</h2><table><thead><tr><th>O.S.</th><th>Máquina</th><th>TAG</th><th>Setor</th><th>Responsável</th><th>Status</th><th>Tempo</th></tr></thead><tbody>${orderRows||'<tr><td colspan="7">Nenhuma O.S.</td></tr>'}</tbody></table><h2>Histórico de execução</h2><table><thead><tr><th>O.S.</th><th>Funcionário</th><th>Ação</th><th>Motivo</th><th>Duração</th><th>Data</th></tr></thead><tbody>${execRows||'<tr><td colspan="6">Nenhum registro.</td></tr>'}</tbody></table><script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script></body></html>`);
+        popup.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Histórico PCM</title><style>body{font-family:Arial,sans-serif;color:#111827;padding:24px;font-size:11px}h1{font-size:20px;margin:0 0 4px}h2{font-size:14px;margin:24px 0 8px}p{color:#475569;margin:0 0 18px}table{width:100%;border-collapse:collapse;margin-bottom:18px}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left;vertical-align:top}th{background:#e2e8f0;font-weight:700}@media print{body{padding:10mm}h2{break-after:avoid}table{break-inside:auto}tr{break-inside:avoid}}</style></head><body><h1>PCM • CONTROLE DE O.S.</h1><p>Histórico de ordens de serviço — gerado em ${escapeHtml(new Date().toLocaleString("pt-BR"))}</p><h2>Ordens de serviço</h2><table><thead><tr><th>O.S.</th><th>Máquina</th><th>TAG</th><th>Setor</th><th>Responsável</th><th>Status</th><th>Tempo</th></tr></thead><tbody>${orderRows||'<tr><td colspan="7">Nenhuma O.S.</td></tr>'}</tbody></table><h2>Histórico de execução</h2><table><thead><tr><th>O.S.</th><th>Funcionário</th><th>Ação</th><th>Motivo</th><th>Duração</th><th>Data</th></tr></thead><tbody>${execRows||'<tr><td colspan="6">Nenhum registro.</td></tr>'}</tbody></table><script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script><!-- PCM USER BOARD + PRIORITY SORT V3 -->
+<style>
+/* ===== DASHBOARD POR RESPONSÁVEL ===== */
+.pcm-users-panel{margin-top:18px}
+.pcm-users-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:14px}
+.pcm-users-title{font-size:16px;font-weight:900;color:#f8fafc;letter-spacing:.2px}
+.pcm-users-sub{font-size:11px;color:#64748b;margin-top:4px}
+.pcm-user-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px;align-items:start}
+.pcm-user-column{min-width:0;border:1px solid #1e293b;background:linear-gradient(180deg,#0b1425,#07101e);border-radius:14px;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.16)}
+.pcm-user-column-head{padding:12px 13px;border-bottom:1px solid #1e293b;background:#0d1729;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pcm-user-name{font-size:12px;font-weight:900;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcm-user-count{font-size:10px;font-weight:900;color:#94a3b8;background:#111c30;border:1px solid #26344a;border-radius:999px;padding:4px 7px;white-space:nowrap}
+.pcm-user-list{padding:9px;display:flex;flex-direction:column;gap:8px;max-height:520px;overflow:auto}
+.pcm-mini-os{border:1px solid #22304a;background:#0a1220;border-radius:10px;padding:10px;cursor:default}
+.pcm-mini-os.is-high{border-color:#7f1d1d;box-shadow:inset 3px 0 0 #ef4444}
+.pcm-mini-top{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:7px}
+.pcm-mini-number{font-size:11px;font-weight:900;color:#f8fafc}
+.pcm-mini-priority{font-size:8px;font-weight:900;border-radius:5px;padding:3px 5px;background:#172033;color:#cbd5e1}
+.pcm-mini-priority.high{background:#451a1a;color:#fecaca}
+.pcm-mini-info{font-size:9px;line-height:1.55;color:#94a3b8}
+.pcm-mini-status{margin-top:7px;font-size:8px;font-weight:900;color:#cbd5e1;text-transform:uppercase}
+.pcm-mini-actions{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.pcm-mini-actions button{min-height:30px!important;padding:5px 6px!important;font-size:8px!important}
+.pcm-user-empty{padding:18px 8px;text-align:center;color:#475569;font-size:10px}
+/* ===== KANBAN COMPACTO ===== */
+#view-dashboard .kanban{grid-template-columns:repeat(5,minmax(235px,1fr));overflow-x:auto;align-items:start}
+#view-dashboard .kanban-column{min-width:235px;max-height:620px;overflow:hidden}
+#view-dashboard .kanban-column>div[id]{max-height:560px;overflow-y:auto;padding-right:3px}
+/* ===== PRIORIDADE VISUAL ===== */
+#view-dashboard .priority-alta{box-shadow:0 0 0 1px rgba(239,68,68,.18),inset 3px 0 0 #ef4444}
+@media(max-width:900px){
+  .pcm-user-board{display:flex;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:6px}
+  .pcm-user-column{flex:0 0 min(82vw,300px);scroll-snap-align:start}
+  .pcm-user-list{max-height:460px}
+  #view-dashboard .kanban{display:flex;overflow-x:auto;gap:10px;padding-bottom:7px}
+  #view-dashboard .kanban-column{flex:0 0 82vw;max-width:330px}
+}
+</style>
+<script>
+(function(){
+  'use strict';
+  const priorityRank=p=>{
+    p=String(p||'').toUpperCase();
+    if(p==='ALTA') return 0;
+    if(p==='MÉDIA'||p==='MEDIA'||p==='MODERADA') return 1;
+    if(p==='BAIXA') return 2;
+    return 1;
+  };
+  const statusRank=s=>({"EM PRODUÇÃO":0,"PAUSADA":1,"AGUARDANDO MATERIAL":2,"O.S. ABERTA":3,"FINALIZADA - AGUARDANDO PCM":4,"FINALIZADA - OBSERVAÇÃO":5,"FINALIZADA":6}[s]??7);
+  const sortOS=(a,b)=>priorityRank(a.priority)-priorityRank(b.priority)||statusRank(a.status)-statusRank(b.status)||String(a.os_number||'').localeCompare(String(b.os_number||''),undefined,{numeric:true});
+
+  function getResponsibleName(o){return String(o.active_employee||o.responsible||'Não atribuído').trim()||'Não atribuído'}
+
+  function miniCard(o){
+    const high=priorityRank(o.priority)===0;
+    const p=String(o.priority||'MODERADA').toUpperCase();
+    const actions=[];
+    if(o.status==='PAUSADA' && typeof window.adminResumePausedOS==='function') actions.push("<button class=\"action-btn btn-start\" onclick=\"adminResumePausedOS("+Number(o.id)+")\">RETOMAR</button>");
+    if(o.status==='AGUARDANDO MATERIAL' && typeof window.openReleaseModal==='function') actions.push("<button class=\"action-btn btn-material\" onclick=\"openReleaseModal("+(o.material_request_id||'null')+","+Number(o.id)+")\">MATERIAL</button>");
+    if(typeof window.showPauseHistory==='function') actions.push("<button class=\"action-btn btn-material\" onclick=\"showPauseHistory("+Number(o.id)+")\">PAUSAS</button>");
+    return '<div class="pcm-mini-os '+(high?'is-high':'')+'">'+
+      '<div class="pcm-mini-top"><div class="pcm-mini-number">O.S. '+escapeHtml(o.os_number||'-')+'</div><span class="pcm-mini-priority '+(high?'high':'')+'">'+escapeHtml(p)+'</span></div>'+      '<div class="pcm-mini-info"><b>Máquina:</b> '+escapeHtml(o.machine||'-')+'<br><b>TAG:</b> '+escapeHtml(o.tag||'-')+'<br><b>Setor:</b> '+escapeHtml(o.sector||'-')+'</div>'+      '<div class="pcm-mini-status">'+escapeHtml(o.status||'-')+'</div>'+      (actions.length?'<div class="pcm-mini-actions">'+actions.join('')+'</div>':'')+      '</div>';
+  }
+
+  function renderUserBoard(source){
+    const host=document.getElementById('pcmUserBoard'); if(!host)return;
+    const orders=(source||[]).slice().sort(sortOS);
+    const groups=new Map();
+    // Usa os funcionários cadastrados quando disponíveis, garantindo um espaço mesmo sem O.S.
+    if(typeof usersRows!=='undefined' && Array.isArray(usersRows)){
+      usersRows.filter(u=>u.active!==false && String(u.role||'').toLowerCase()!=='admin' && u.name).forEach(u=>groups.set(String(u.name),[]));
+    }
+    orders.forEach(o=>{const name=getResponsibleName(o);if(!groups.has(name))groups.set(name,[]);groups.get(name).push(o)});
+    if(!groups.size){host.innerHTML='<div class="pcm-user-empty">Nenhum funcionário encontrado.</div>';return}
+    const entries=[...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
+    host.innerHTML=entries.map(function(entry){
+      const name=entry[0], list=entry[1];
+      return '<div class="pcm-user-column">'+
+        '<div class="pcm-user-column-head"><div class="pcm-user-name">👷 '+escapeHtml(name)+'</div><div class="pcm-user-count">'+list.length+' O.S.</div></div>'+
+        '<div class="pcm-user-list">'+(list.length?list.map(miniCard).join(''):'<div class="pcm-user-empty">Nenhuma O.S. atribuída</div>')+'</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  function addUserBoard(){
+    const dash=document.getElementById('view-dashboard'); if(!dash||document.getElementById('pcmUserBoardPanel'))return;
+    const panels=dash.querySelectorAll('.panel');
+    const anchor=[...panels].find(p=>p.querySelector('#activeJobsContainer')) || panels[panels.length-1];
+    if(!anchor)return;
+    const panel=document.createElement('div');panel.id='pcmUserBoardPanel';panel.className='panel pcm-users-panel';
+    panel.innerHTML='<div class="pcm-users-head"><div><div class="pcm-users-title">👷 O.S. por funcionário</div><div class="pcm-users-sub">Cada funcionário possui seu próprio espaço. As O.S. de prioridade <b>ALTA</b> permanecem sempre no topo.</div></div><div class="dashboard-live"><i></i> Atualizado</div></div><div id="pcmUserBoard" class="pcm-user-board"></div>';
+    anchor.insertAdjacentElement('afterend',panel);
+  }
+
+  function refreshBoard(){
+    addUserBoard();
+    renderUserBoard(window.dashboardOrders||[]);
+  }
+
+  // Ordenação de prioridade no Kanban atual.
+  const oldFiltered=window.renderFilteredKanban;
+  window.renderFilteredKanban=function(){
+    if(typeof oldFiltered==='function')oldFiltered();
+    const q=(document.getElementById('pcmDashFilter')?.value||'').toLowerCase().trim();
+    const status=document.querySelector('[data-pcm-status].active')?.dataset.pcmStatus||'TODAS';
+    const filtered=(window.dashboardOrders||[]).filter(o=>{
+      const text=[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.description,o.pause_reason].join(' ').toLowerCase();
+      return (!q||text.includes(q))&&(status==='TODAS'||o.status===status);
+    }).sort(sortOS);
+    refreshBoard();
+    renderUserBoard(filtered);
+    // Reordena os cartões dentro de cada coluna do Kanban para garantir ALTA no topo.
+    const ids=['kanbanAberta','kanbanProducao','kanbanPausada','kanbanMaterial','kanbanFinalizada'];
+    ids.forEach(id=>{const c=document.getElementById(id);if(!c)return;const cards=[...c.children];cards.sort((a,b)=>{const an=a.querySelector('.os-number')?.textContent||'';const bn=b.querySelector('.os-number')?.textContent||'';const ao=filtered.find(x=>String(x.os_number)===an);const bo=filtered.find(x=>String(x.os_number)===bn);return ao&&bo?sortOS(ao,bo):0});cards.forEach(x=>c.appendChild(x));});
+  };
+
+  // Funcionário: prioridade ALTA primeiro também em Minhas O.S.
+  const oldEmp=window.renderEmployeeOrders;
+  if(typeof oldEmp==='function'){
+    window.renderEmployeeOrders=function(orders){
+      const sorted=(Array.isArray(orders)?orders.slice():[]).sort(sortOS);
+      return oldEmp(sorted);
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(refreshBoard,400));
+  const oldLoadUsers=window.loadUsers;
+  if(typeof oldLoadUsers==='function'){
+    window.loadUsers=async function(){const r=await oldLoadUsers.apply(this,arguments);if(document.getElementById('view-dashboard')&&!document.getElementById('view-dashboard').classList.contains('hidden'))setTimeout(refreshBoard,100);return r;};
+  }
+  const oldLoadDash=window.loadDashboardData;
+  if(typeof oldLoadDash==='function'){
+    window.loadDashboardData=async function(){const r=await oldLoadDash.apply(this,arguments);setTimeout(refreshBoard,80);return r;};
+  }
+})();
+</script>
+</body></html>`);
         popup.document.close();
         showPCMToast("PDF preparado. Na tela de impressão, escolha Salvar como PDF.","success");
     }catch(e){console.error(e);showPCMToast("Não foi possível gerar o PDF.","error");}
