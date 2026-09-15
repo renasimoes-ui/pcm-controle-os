@@ -1229,6 +1229,167 @@ body{min-height:100dvh;overflow-x:hidden;-webkit-text-size-adjust:100%;}
  .login-card{width:calc(100vw - 28px);max-width:430px;padding:26px 20px;}
  .form-input,.form-select,button{font-size:16px;}
 }
+
+/* =========================================================
+   PCM PRO V2 — VISUAL / MOBILE / FACTORY UX
+   Mantém a estrutura e o banco existentes.
+========================================================= */
+:root{
+  --pcm-bg:#030712;
+  --pcm-panel:rgba(15,23,42,.82);
+  --pcm-panel-2:rgba(17,24,39,.92);
+  --pcm-border:rgba(148,163,184,.13);
+  --pcm-border-strong:rgba(148,163,184,.22);
+  --pcm-text:#f8fafc;
+  --pcm-muted:#94a3b8;
+  --pcm-soft:#64748b;
+  --pcm-accent:#38bdf8;
+  --pcm-green:#22c55e;
+  --pcm-orange:#f59e0b;
+  --pcm-red:#ef4444;
+}
+html,body{background:var(--pcm-bg)!important;}
+body{
+  background:
+    radial-gradient(900px 500px at 85% -10%,rgba(56,189,248,.10),transparent 55%),
+    radial-gradient(700px 450px at 5% 20%,rgba(59,130,246,.07),transparent 55%),
+    #030712!important;
+}
+.sidebar{
+  width:268px!important;
+  background:linear-gradient(180deg,rgba(8,15,30,.97),rgba(3,7,18,.98))!important;
+  border-right:1px solid var(--pcm-border)!important;
+  box-shadow:18px 0 55px rgba(0,0,0,.20);
+  backdrop-filter:blur(18px);
+}
+.sidebar-brand{
+  padding:10px 12px 24px!important;
+  border-bottom-color:var(--pcm-border)!important;
+}
+.sidebar-brand strong{font-size:16px!important;letter-spacing:.3px;}
+.sidebar-brand span{color:#38bdf8!important;}
+.nav-btn{
+  min-height:44px!important;
+  border:1px solid transparent!important;
+  transition:.18s ease!important;
+}
+.nav-btn:hover{transform:translateX(2px);background:rgba(30,41,59,.72)!important;}
+.nav-btn.active{
+  background:linear-gradient(90deg,rgba(56,189,248,.13),rgba(30,41,59,.72))!important;
+  border-color:rgba(56,189,248,.18)!important;
+  box-shadow:inset 3px 0 0 #38bdf8,0 8px 25px rgba(0,0,0,.12);
+}
+.main{margin-left:268px!important;padding:26px 28px 40px!important;}
+.topbar{margin-bottom:22px!important;}
+.page-title{letter-spacing:-.5px;}
+.user-badge{
+  border-color:var(--pcm-border-strong)!important;
+  background:rgba(15,23,42,.72)!important;
+  box-shadow:0 8px 25px rgba(0,0,0,.16);
+}
+.panel,.stat-card,.employee-os,.os-card,.user-form-card,.dashboard-hero{
+  background:linear-gradient(145deg,rgba(15,23,42,.90),rgba(8,15,30,.88))!important;
+  border-color:var(--pcm-border)!important;
+  box-shadow:0 18px 45px rgba(0,0,0,.16);
+  backdrop-filter:blur(14px);
+}
+.panel{border-radius:18px!important;}
+.stat-card{
+  position:relative;overflow:hidden;border-radius:17px!important;min-height:126px;
+}
+.stat-card:after{
+  content:"";position:absolute;inset:auto -25px -35px auto;width:110px;height:110px;border-radius:50%;
+  background:rgba(56,189,248,.07);filter:blur(4px);
+}
+.stat-value{font-size:30px!important;letter-spacing:-1px;}
+.kanban-column{
+  background:rgba(2,6,23,.62)!important;
+  border-color:var(--pcm-border)!important;
+  border-radius:15px!important;
+}
+.kanban-header{
+  border:1px solid var(--pcm-border)!important;
+  background:rgba(30,41,59,.72)!important;
+  letter-spacing:.3px;
+}
+.os-card,.employee-os{border-radius:15px!important;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;}
+.os-card:hover,.employee-os:hover{transform:translateY(-2px);border-color:rgba(56,189,248,.25)!important;box-shadow:0 15px 30px rgba(0,0,0,.22);}
+.action-btn,.btn-primary,.btn-secondary,.dashboard-refresh,.reason-btn{min-height:44px!important;border-radius:11px!important;}
+.btn-primary{box-shadow:0 8px 22px rgba(255,255,255,.08);}
+.btn-start,.btn-material,.btn-finish,.btn-emergency{font-size:11px!important;letter-spacing:.25px;}
+.form-input,.form-select,.form-textarea{
+  background:rgba(2,6,23,.72)!important;border-color:var(--pcm-border-strong)!important;border-radius:12px!important;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:rgba(56,189,248,.65)!important;box-shadow:0 0 0 3px rgba(56,189,248,.10)!important;}
+.table-wrap{border:1px solid var(--pcm-border);border-radius:14px;overflow:auto;background:rgba(2,6,23,.25);}
+table{min-width:720px;}
+th{background:rgba(2,6,23,.86)!important;position:sticky;top:0;z-index:1;}
+.dashboard-hero{border-radius:22px!important;overflow:hidden;position:relative;}
+.dashboard-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(56,189,248,.08),transparent 45%);pointer-events:none;}
+.dashboard-heading{letter-spacing:-1px!important;}
+.dashboard-live{border:1px solid rgba(34,197,94,.20)!important;background:rgba(34,197,94,.07)!important;}
+.dashboard-live i{box-shadow:0 0 12px rgba(34,197,94,.7)!important;}
+#pcmMobileNav{display:none;}
+.pcm-connection-pill{
+  position:fixed;right:24px;bottom:22px;z-index:900;
+  display:flex;align-items:center;gap:7px;padding:8px 11px;border-radius:999px;
+  background:rgba(2,6,23,.80);border:1px solid var(--pcm-border);backdrop-filter:blur(12px);
+  color:#94a3b8;font-size:10px;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.25);
+}
+.pcm-connection-pill i{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px rgba(34,197,94,.7);}
+.pcm-connection-pill.offline i{background:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.7);}
+.pcm-quickbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;}
+.pcm-filter{
+  flex:1 1 240px;min-width:0;padding:11px 13px;border-radius:11px;border:1px solid var(--pcm-border-strong);
+  background:rgba(2,6,23,.62);color:#f8fafc;outline:none;font-size:14px;
+}
+.pcm-filter:focus{border-color:rgba(56,189,248,.55);}
+.pcm-chip{
+  border:1px solid var(--pcm-border);background:rgba(15,23,42,.72);color:#94a3b8;border-radius:999px;padding:8px 11px;font-size:10px;font-weight:800;cursor:pointer;
+}
+.pcm-chip.active{color:#e0f2fe;border-color:rgba(56,189,248,.32);background:rgba(14,116,144,.16);}
+.pcm-empty{padding:25px 12px;text-align:center;color:#64748b;font-size:12px;}
+.pcm-kpi-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.pcm-mini{padding:13px;border:1px solid var(--pcm-border);border-radius:13px;background:rgba(2,6,23,.35);}
+.pcm-mini strong{display:block;font-size:18px;margin-top:3px;}.pcm-mini span{font-size:9px;color:#64748b;text-transform:uppercase;font-weight:800;}
+@media(max-width:1100px){.main{margin-left:78px!important;width:calc(100% - 78px)!important}.sidebar{width:78px!important}.sidebar-brand strong,.sidebar-brand span,.nav-btn span{display:none}.nav-btn{justify-content:center}.sidebar-brand{text-align:center}.stats-grid{grid-template-columns:repeat(3,1fr)!important}.kanban{grid-template-columns:repeat(2,1fr)!important}}
+@media(max-width:800px){
+  body{padding-bottom:76px!important;}
+  .sidebar{display:none!important;}
+  .main{margin-left:0!important;width:100%!important;padding:14px 12px 90px!important;}
+  .topbar{align-items:flex-start!important;gap:10px!important;}
+  .page-title{font-size:20px!important;}
+  .page-subtitle{font-size:11px!important;}
+  .user-badge{max-width:48vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .dashboard-hero{padding:18px!important;}
+  .stats-grid{grid-template-columns:repeat(2,1fr)!important;gap:9px!important;}
+  .stat-card{min-height:112px!important;padding:13px!important;}
+  .stat-value{font-size:25px!important;}
+  .kanban{grid-template-columns:1fr!important;gap:10px!important;}
+  .kanban-column{min-height:160px!important;}
+  .form-grid{grid-template-columns:1fr!important;}
+  .employee-os-grid{grid-template-columns:1fr!important;}
+  .employee-header{align-items:flex-start!important;gap:10px;}
+  .employee-title{font-size:20px!important;}
+  .panel{padding:14px!important;border-radius:15px!important;}
+  .history-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;}
+  .history-actions button{width:100%;}
+  .pcm-kpi-mini{grid-template-columns:1fr 1fr 1fr;gap:7px;}
+  .pcm-mini{padding:10px 8px;}.pcm-mini strong{font-size:16px;}.pcm-mini span{font-size:8px;}
+  #pcmMobileNav{
+    position:fixed;left:10px;right:10px;bottom:10px;height:62px;z-index:5000;display:flex!important;
+    align-items:center;justify-content:space-around;gap:4px;padding:7px;
+    background:rgba(7,12,25,.94);border:1px solid rgba(148,163,184,.16);border-radius:18px;
+    box-shadow:0 18px 50px rgba(0,0,0,.45);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  }
+  #pcmMobileNav button{flex:1;height:48px;border:0;border-radius:12px;background:transparent;color:#64748b;font-size:9px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;}
+  #pcmMobileNav button.active{background:rgba(56,189,248,.10);color:#e0f2fe;}
+  #pcmMobileNav .mi{font-size:18px;line-height:1;}
+  .pcm-connection-pill{right:14px;bottom:82px;font-size:9px;}
+  .login-card{width:min(430px,94vw)!important;padding:24px!important;border-radius:20px!important;}
+}
+@media(max-width:430px){.stats-grid{grid-template-columns:1fr 1fr!important}.stat-label{font-size:9px!important}.stat-hint{font-size:9px!important}.pcm-kpi-mini{grid-template-columns:1fr 1fr 1fr!important}.dashboard-actions{width:100%}.dashboard-refresh{width:100%;}.topbar .btn-primary{padding:10px 12px;font-size:10px;}}
+
 </style>
 
 <style id="pcm-dashboard-top">
@@ -2704,6 +2865,8 @@ async function createOS(){
         opening_date:
             osDate || new Date().toISOString().split("T")[0],
 
+        deadline: (document.getElementById("osDeadline")?.value || null),
+
         machine: machine,
 
         tag: tag,
@@ -2861,7 +3024,7 @@ function clearOsForm(){
         .getElementById("osNumber").value = "";
 
     document
-        .getElementById("osDate").value = "";
+        .getElementById("osDate").value = new Date().toISOString().split("T")[0];
 
     document
         .getElementById("osMachine").value = "";
@@ -5462,5 +5625,324 @@ document
 <script>
 (function(){try{var el=document.getElementById("dashboardToday");if(el){el.textContent=new Intl.DateTimeFormat("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"}).format(new Date());}}catch(e){}})();
 </script>
+
+<script>
+/* =========================================================
+   PCM PRO V2 — UX enhancements without DB/schema changes
+========================================================= */
+(function(){
+  const safe=(v)=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+  function addMobileNav(){
+    if(document.getElementById('pcmMobileNav')) return;
+    const nav=document.createElement('div');
+    nav.id='pcmMobileNav';
+    nav.innerHTML=`
+      <button data-view="view-dashboard" onclick="pcmMobileGo('view-dashboard',this)"><span class="mi">⌂</span>PAINEL</button>
+      <button data-view="view-new-os" onclick="pcmMobileGo('view-new-os',this)"><span class="mi">＋</span>NOVA O.S.</button>
+      <button data-view="view-team" onclick="pcmMobileGo('view-team',this)"><span class="mi">◉</span>EQUIPE</button>
+      <button data-view="view-history" onclick="pcmMobileGo('view-history',this)"><span class="mi">☷</span>HISTÓRICO</button>
+      <button data-view="view-employee" onclick="pcmMobileGo('view-employee',this)"><span class="mi">⚙</span>MINHAS</button>`;
+    document.body.appendChild(nav);
+  }
+  window.pcmMobileGo=function(view,btn){
+    if(typeof navigateTo==='function') navigateTo(view,btn);
+    document.querySelectorAll('#pcmMobileNav button').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+  };
+
+  function addConnection(){
+    if(document.getElementById('pcmConnection')) return;
+    const p=document.createElement('div');p.id='pcmConnection';p.className='pcm-connection-pill';
+    p.innerHTML='<i></i><span>ONLINE</span>';document.body.appendChild(p);
+    const update=()=>{const off=!navigator.onLine;p.classList.toggle('offline',off);p.querySelector('span').textContent=off?'SEM INTERNET':'ONLINE';};
+    window.addEventListener('online',update);window.addEventListener('offline',update);update();
+  }
+
+  function addDashboardFilter(){
+    const kan=document.querySelector('#view-dashboard .kanban');
+    if(!kan || document.getElementById('pcmDashFilter')) return;
+    const bar=document.createElement('div');bar.className='pcm-quickbar';bar.innerHTML=`
+      <input id="pcmDashFilter" class="pcm-filter" placeholder="Pesquisar O.S., máquina, TAG, setor ou responsável..." autocomplete="off">
+      <button class="pcm-chip active" data-pcm-status="TODAS">TODAS</button>
+      <button class="pcm-chip" data-pcm-status="O.S. ABERTA">ABERTAS</button>
+      <button class="pcm-chip" data-pcm-status="EM PRODUÇÃO">PRODUÇÃO</button>
+      <button class="pcm-chip" data-pcm-status="AGUARDANDO MATERIAL">MATERIAL</button>`;
+    kan.parentNode.insertBefore(bar,kan);
+    bar.querySelector('#pcmDashFilter').addEventListener('input',()=>renderFilteredKanban());
+    bar.querySelectorAll('[data-pcm-status]').forEach(b=>b.addEventListener('click',()=>{
+      bar.querySelectorAll('[data-pcm-status]').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderFilteredKanban();
+    }));
+  }
+  function renderFilteredKanban(){
+    if(typeof dashboardOrders==='undefined') return;
+    const q=(document.getElementById('pcmDashFilter')?.value||'').toLowerCase().trim();
+    const status=document.querySelector('[data-pcm-status].active')?.dataset.pcmStatus||'TODAS';
+    const original=dashboardOrders;
+    const filtered=original.filter(o=>{
+      const text=[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.description].join(' ').toLowerCase();
+      return (!q||text.includes(q))&&(status==='TODAS'||o.status===status);
+    });
+    const containers={"O.S. ABERTA":document.getElementById('kanbanAberta'),"EM PRODUÇÃO":document.getElementById('kanbanProducao'),"AGUARDANDO MATERIAL":document.getElementById('kanbanMaterial'),"FINALIZADA":document.getElementById('kanbanFinalizada')};
+    Object.values(containers).forEach(c=>{if(c)c.innerHTML='';});
+    filtered.forEach(o=>{const c=containers[o.status];if(c)c.insertAdjacentHTML('beforeend',typeof createAdminOSCard==='function'?createAdminOSCard(o):'');});
+    Object.entries(containers).forEach(([st,c])=>{if(c&&!c.innerHTML)c.innerHTML=`<div class="pcm-empty">Nenhuma O.S. encontrada</div>`;});
+  }
+  window.renderFilteredKanban=renderFilteredKanban;
+
+  function addEmployeeFilter(){
+    const host=document.getElementById('employeeOsContainer');
+    if(!host||document.getElementById('pcmEmployeeFilter')) return;
+    const parent=host.parentNode;const bar=document.createElement('div');bar.className='pcm-quickbar';
+    bar.innerHTML=`<input id="pcmEmployeeFilter" class="pcm-filter" placeholder="Pesquisar minhas O.S..." autocomplete="off">
+      <button class="pcm-chip active" data-emp-filter="TODAS">TODAS</button><button class="pcm-chip" data-emp-filter="ATIVAS">ATIVAS</button><button class="pcm-chip" data-emp-filter="FINALIZADAS">FINALIZADAS</button>`;
+    parent.insertBefore(bar,host);bar.querySelector('#pcmEmployeeFilter').addEventListener('input',filterEmployeeCards);
+    bar.querySelectorAll('[data-emp-filter]').forEach(b=>b.addEventListener('click',()=>{bar.querySelectorAll('[data-emp-filter]').forEach(x=>x.classList.remove('active'));b.classList.add('active');filterEmployeeCards();}));
+  }
+  function filterEmployeeCards(){
+    const q=(document.getElementById('pcmEmployeeFilter')?.value||'').toLowerCase().trim();
+    const f=document.querySelector('[data-emp-filter].active')?.dataset.empFilter||'TODAS';
+    document.querySelectorAll('#employeeOsContainer .employee-os').forEach(card=>{
+      const text=card.textContent.toLowerCase();
+      const done=text.includes('serviço finalizado');
+      card.style.display=((!q||text.includes(q))&&(f==='TODAS'||(f==='FINALIZADAS'&&done)||(f==='ATIVAS'&&!done)))?'':'none';
+    });
+  }
+
+  function addHistoryFilter(){
+    const table=document.getElementById('historyTable');
+    if(!table||document.getElementById('pcmHistoryFilter')) return;
+    const panel=table.closest('.panel');if(!panel)return;
+    const bar=document.createElement('div');bar.className='pcm-quickbar';bar.innerHTML='<input id="pcmHistoryFilter" class="pcm-filter" placeholder="Pesquisar no histórico por O.S., máquina, funcionário ou ação..." autocomplete="off">';
+    panel.insertBefore(bar,panel.querySelector('.table-wrap'));bar.querySelector('input').addEventListener('input',()=>{
+      const q=bar.querySelector('input').value.toLowerCase().trim();table.querySelectorAll('tr').forEach((r,i)=>{if(i===0)return;r.style.display=!q||r.textContent.toLowerCase().includes(q)?'':'none';});
+    });
+  }
+
+  const originalRenderKanban=window.renderKanban;
+  window.renderKanban=function(){
+    if(typeof originalRenderKanban==='function') originalRenderKanban();
+    addDashboardFilter();
+    if(document.getElementById('pcmDashFilter')) renderFilteredKanban();
+  };
+
+  const originalRenderEmployeeOrders=window.renderEmployeeOrders;
+  window.renderEmployeeOrders=function(orders){
+    if(typeof originalRenderEmployeeOrders==='function') originalRenderEmployeeOrders(orders);
+    addEmployeeFilter();
+    filterEmployeeCards();
+  };
+
+  const originalLoadHistory=window.loadHistory;
+  window.loadHistory=async function(){
+    const r=typeof originalLoadHistory==='function'?await originalLoadHistory():null;
+    addHistoryFilter();return r;
+  };
+
+  // Corrige o nome usado nas exportações antigas sem alterar a lógica existente.
+  if(typeof window.showPcmToast==='function' && typeof window.showPCMToast!=='function') window.showPCMToast=window.showPcmToast;
+
+  function activateMobile(view){document.querySelectorAll('#pcmMobileNav button').forEach(b=>b.classList.toggle('active',b.dataset.view===view));}
+  const originalNavigate=window.navigateTo;
+  window.navigateTo=function(view,btn){
+    if(typeof originalNavigate==='function') originalNavigate(view,btn);
+    activateMobile(view);
+    if(view==='view-dashboard'){setTimeout(addDashboardFilter,50);}
+    if(view==='view-employee'){setTimeout(addEmployeeFilter,50);}
+    if(view==='view-history'){setTimeout(addHistoryFilter,50);}
+  };
+
+  // Atualização automática somente enquanto o usuário está no painel/execução.
+  let refreshTimer=null;
+  function startAutoRefresh(){
+    clearInterval(refreshTimer);
+    refreshTimer=setInterval(()=>{
+      if(document.hidden||!navigator.onLine)return;
+      try{
+        if(typeof isAdmin!=='undefined' && isAdmin && typeof loadDashboardData==='function') loadDashboardData();
+        else if(typeof loadEmployeeOrders==='function') loadEmployeeOrders();
+      }catch(e){console.warn('Auto refresh:',e);}
+    },30000);
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    addMobileNav();addConnection();startAutoRefresh();
+    setTimeout(()=>{addDashboardFilter();addEmployeeFilter();addHistoryFilter();},400);
+  });
+})();
+</script>
+
+
+<style id="pcmFactoryProStyle">
+/* =========================================================
+   PCM CONTROLE DE O.S. — FACTORY PRO V3
+   Camada visual e funcional sem alteração de schema.
+========================================================= */
+:root{
+  --fp-bg:#07111f;--fp-panel:rgba(12,24,41,.82);--fp-line:rgba(148,163,184,.13);
+  --fp-text:#eef4fb;--fp-muted:#8ea0b7;--fp-accent:#60a5fa;--fp-good:#34d399;
+  --fp-warn:#fbbf24;--fp-danger:#fb7185;--fp-shadow:0 22px 70px rgba(0,0,0,.28)
+}
+.fp-panel{background:linear-gradient(180deg,rgba(17,31,52,.86),rgba(8,18,32,.86));border:1px solid var(--fp-line);border-radius:20px;box-shadow:var(--fp-shadow);padding:18px;margin:14px 0}
+.fp-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.fp-title{font-size:15px;font-weight:900;color:var(--fp-text)}.fp-sub{font-size:11px;color:var(--fp-muted);margin-top:3px}
+.fp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.fp-mini{padding:14px;border:1px solid var(--fp-line);border-radius:16px;background:rgba(255,255,255,.025)}.fp-mini b{display:block;font-size:24px;line-height:1.1}.fp-mini span{display:block;color:var(--fp-muted);font-size:10px;margin-top:6px;text-transform:uppercase;letter-spacing:.06em}.fp-mini.danger b{color:var(--fp-danger)}.fp-mini.warn b{color:var(--fp-warn)}.fp-mini.good b{color:var(--fp-good)}
+.fp-actions{display:flex;gap:8px;flex-wrap:wrap}.fp-btn{border:1px solid var(--fp-line);background:rgba(255,255,255,.045);color:var(--fp-text);border-radius:11px;padding:10px 13px;font-weight:800;cursor:pointer}.fp-btn:hover{background:rgba(255,255,255,.09)}.fp-btn.primary{background:rgba(96,165,250,.14);border-color:rgba(96,165,250,.35)}
+.fp-table{width:100%;border-collapse:collapse;font-size:11px}.fp-table th,.fp-table td{padding:11px 9px;border-bottom:1px solid var(--fp-line);text-align:left;vertical-align:middle}.fp-table th{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--fp-muted)}.fp-table-wrap{overflow:auto;border:1px solid var(--fp-line);border-radius:14px}.fp-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:9px;font-weight:900;border:1px solid var(--fp-line);white-space:nowrap}.fp-badge.overdue{color:#fecaca;background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25)}.fp-badge.today{color:#fde68a;background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.25)}.fp-badge.ok{color:#bbf7d0;background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2)}
+.fp-modal{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.7);backdrop-filter:blur(7px);display:none;align-items:center;justify-content:center;padding:16px}.fp-modal.show{display:flex}.fp-dialog{width:min(760px,100%);max-height:min(88vh,900px);overflow:auto;background:#0b1728;border:1px solid rgba(148,163,184,.18);border-radius:22px;box-shadow:0 30px 100px rgba(0,0,0,.55);padding:20px}.fp-dialog-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px}.fp-close{width:38px;height:38px;border-radius:11px;border:1px solid var(--fp-line);background:rgba(255,255,255,.04);color:#fff;font-size:20px;cursor:pointer}.fp-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.fp-detail{padding:12px;border:1px solid var(--fp-line);border-radius:13px;background:rgba(255,255,255,.025)}.fp-detail small{display:block;color:var(--fp-muted);font-size:9px;text-transform:uppercase;margin-bottom:4px}.fp-detail strong{font-size:12px;color:#f8fafc}.fp-timeline{margin-top:14px}.fp-event{position:relative;padding:10px 10px 10px 20px;border-left:2px solid rgba(96,165,250,.25);margin-left:7px}.fp-event:before{content:"";position:absolute;left:-6px;top:13px;width:9px;height:9px;border-radius:50%;background:#60a5fa;box-shadow:0 0 0 4px rgba(96,165,250,.08)}.fp-event b{font-size:11px}.fp-event div{font-size:10px;color:var(--fp-muted);margin-top:3px}.fp-empty{padding:18px;text-align:center;color:#718096;font-size:11px;border:1px dashed var(--fp-line);border-radius:14px}
+.fp-search-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.fp-search{flex:1;min-width:190px;border:1px solid var(--fp-line);background:rgba(255,255,255,.035);color:#fff;border-radius:11px;padding:11px 12px;outline:none}.fp-select{border:1px solid var(--fp-line);background:#0b1728;color:#fff;border-radius:11px;padding:10px 12px}
+.fp-hero-note{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--fp-muted)}.fp-dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 5px rgba(52,211,153,.08)}
+@media(max-width:850px){.fp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fp-detail-grid{grid-template-columns:1fr}.fp-panel{padding:14px;border-radius:16px}}
+@media(max-width:560px){.fp-grid{grid-template-columns:1fr 1fr;gap:8px}.fp-mini{padding:11px}.fp-mini b{font-size:20px}.fp-actions .fp-btn{flex:1}.fp-table{min-width:680px}.fp-dialog{padding:15px;border-radius:18px}.fp-modal{padding:9px}}
+</style>
+
+<script>
+/* =========================================================
+   PCM FACTORY PRO V3 — somente HTML/JS, sem recriar banco.
+========================================================= */
+(function(){
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const safeDate=v=>{if(!v)return null;const d=new Date(v);return isNaN(d)?null:d};
+  const todayStart=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+  const fmtDate=v=>{const d=safeDate(v);return d?d.toLocaleDateString('pt-BR'): '-'};
+  const fmtDateTime=v=>{const d=safeDate(v);return d?d.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'-'};
+  const orderStatus=o=>String(o?.status||'');
+  const isOpen=o=>orderStatus(o)!=='FINALIZADA';
+  const isOverdue=o=>{if(!o?.deadline||!isOpen(o))return false;const d=safeDate(o.deadline);if(!d)return false;d.setHours(23,59,59,999);return d<new Date()};
+  const isDueToday=o=>{if(!o?.deadline||!isOpen(o))return false;const d=safeDate(o.deadline);if(!d)return false;return d.toDateString()===new Date().toDateString()};
+  const avgTime=arr=>{const vals=(arr||[]).map(o=>Number(o.total_service_seconds||0)).filter(v=>v>0);return vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):0};
+  const secFmt=s=>typeof formatSeconds==='function'?formatSeconds(Math.max(0,Math.round(Number(s)||0))):`${Math.floor((s||0)/3600)}h`;
+
+  function ensureModal(){
+    if(document.getElementById('fpOrderModal'))return;
+    const m=document.createElement('div');m.id='fpOrderModal';m.className='fp-modal';m.innerHTML=`<div class="fp-dialog"><div class="fp-dialog-head"><div><div class="fp-title" id="fpModalTitle">Detalhes da O.S.</div><div class="fp-sub" id="fpModalSub"></div></div><button class="fp-close" onclick="fpCloseModal()">×</button></div><div id="fpModalBody"></div></div>`;document.body.appendChild(m);
+    m.addEventListener('click',e=>{if(e.target===m)fpCloseModal()});
+  }
+  window.fpCloseModal=()=>document.getElementById('fpOrderModal')?.classList.remove('show');
+
+  window.fpShowOrder=async function(id){
+    ensureModal();const m=document.getElementById('fpOrderModal'),body=document.getElementById('fpModalBody');
+    let order=(typeof dashboardOrders!=='undefined'?(dashboardOrders||[]).find(o=>String(o.id)===String(id)):null);
+    if(!order){const r=await db.from('os_orders').select('*').eq('id',id).single();order=r.data;if(r.error){showPCMToast?.('Não foi possível carregar a O.S.','error');return}}
+    document.getElementById('fpModalTitle').textContent=`O.S. ${order.os_number||'-'}`;document.getElementById('fpModalSub').textContent=`${order.machine||'-'} • ${order.tag||'Sem TAG'}`;
+    body.innerHTML=`<div class="fp-detail-grid">
+      <div class="fp-detail"><small>Status</small><strong>${esc(order.status||'-')}</strong></div><div class="fp-detail"><small>Prioridade</small><strong>${esc(order.priority||'-')}</strong></div>
+      <div class="fp-detail"><small>Setor</small><strong>${esc(order.sector||'-')}</strong></div><div class="fp-detail"><small>Tipo</small><strong>${esc(order.maintenance_type||'-')}</strong></div>
+      <div class="fp-detail"><small>Responsável</small><strong>${esc(order.active_employee||order.responsible||'Não definido')}</strong></div><div class="fp-detail"><small>Prazo</small><strong>${fmtDate(order.deadline)} ${isOverdue(order)?'• ATRASADA':isDueToday(order)?'• HOJE':''}</strong></div>
+      <div class="fp-detail"><small>Abertura</small><strong>${fmtDate(order.opening_date||order.created_at)}</strong></div><div class="fp-detail"><small>Tempo total</small><strong>${secFmt(typeof getTotalTime==='function'?getTotalTime(order):order.total_service_seconds)}</strong></div>
+      <div class="fp-detail" style="grid-column:1/-1"><small>Descrição</small><strong>${esc(order.description||'-')}</strong></div>
+      <div class="fp-detail" style="grid-column:1/-1"><small>Observações</small><strong>${esc(order.observations||'-')}</strong></div>
+    </div><div class="fp-timeline"><div class="fp-title" style="margin-bottom:8px">Linha do tempo</div><div id="fpTimeline" class="fp-empty">Carregando histórico...</div></div>`;
+    m.classList.add('show');
+    try{
+      const r=await db.from('os_execution_history').select('*').eq('os_id',id).order('started_at',{ascending:true});
+      const events=r.data||[];const tl=document.getElementById('fpTimeline');
+      if(!events.length){tl.innerHTML='<div class="fp-empty">Nenhum evento de execução registrado.</div>';return}
+      tl.innerHTML=events.map(e=>`<div class="fp-event"><b>${esc(e.action||'EVENTO')}</b><div>${esc(e.employee||'-')} • ${fmtDateTime(e.started_at||e.created_at)}${e.ended_at?' → '+fmtDateTime(e.ended_at):''}${e.duration_seconds?' • '+secFmt(e.duration_seconds):''}</div></div>`).join('');
+    }catch(e){document.getElementById('fpTimeline').innerHTML='<div class="fp-empty">Não foi possível carregar a linha do tempo.</div>'}
+  };
+
+  function overdueBadge(o){if(isOverdue(o))return '<span class="fp-badge overdue">⚠ ATRASADA</span>';if(isDueToday(o))return '<span class="fp-badge today">● PRAZO HOJE</span>';if(o?.deadline&&isOpen(o))return `<span class="fp-badge ok">PRAZO ${fmtDate(o.deadline)}</span>`;return ''}
+
+  const baseCard=window.createAdminOSCard;
+  if(typeof baseCard==='function'){
+    window.createAdminOSCard=function(order){
+      let html=baseCard(order);
+      const action=`<button class="action-btn" style="margin-top:7px" onclick="fpShowOrder(${Number(order.id)})">⌕ VER DETALHES</button>`;
+      html=html.replace(/(class="os-info">)/,`$1<div style="margin:3px 0 5px">${overdueBadge(order)}</div>`);
+      html=html.replace(/(\$\{actions\}|\$actions)/,'$1');
+      const pos=html.lastIndexOf('</div>');
+      if(pos>0)html=html.slice(0,pos)+action+html.slice(pos);
+      return html;
+    };
+  }
+
+  function ensureDashboardExtra(){
+    const host=document.querySelector('#view-dashboard .stats-grid');if(!host||document.getElementById('fpDashExtra'))return;
+    const p=document.createElement('div');p.id='fpDashExtra';p.className='fp-panel';p.innerHTML=`<div class="fp-head"><div><div class="fp-title">Controle de atenção</div><div class="fp-sub">Indicadores calculados a partir das O.S. carregadas.</div></div><div class="fp-hero-note"><i class="fp-dot"></i> atualização automática</div></div><div class="fp-grid"><div class="fp-mini danger"><b id="fpOverdue">0</b><span>O.S. atrasadas</span></div><div class="fp-mini warn"><b id="fpDueToday">0</b><span>Prazo hoje</span></div><div class="fp-mini"><b id="fpNoResp">0</b><span>Sem responsável</span></div><div class="fp-mini good"><b id="fpAvgTime">0h</b><span>Tempo médio</span></div></div><div class="fp-actions" style="margin-top:12px"><button class="fp-btn primary" onclick="fpPrintExecutiveReport()">▣ RELATÓRIO EXECUTIVO</button><button class="fp-btn" onclick="navigateTo('view-history')">HISTÓRICO COMPLETO</button></div>`;
+    host.parentNode.insertBefore(p,host.nextSibling);
+  }
+  function updateDashboardExtra(){
+    if(typeof dashboardOrders==='undefined')return;ensureDashboardExtra();const a=dashboardOrders||[];
+    const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+    set('fpOverdue',a.filter(isOverdue).length);set('fpDueToday',a.filter(isDueToday).length);set('fpNoResp',a.filter(o=>isOpen(o)&&!String(o.responsible||o.active_employee||'').trim()).length);set('fpAvgTime',secFmt(avgTime(a.filter(o=>Number(o.total_service_seconds||0)>0))));
+  }
+
+  function ensureAttentionPanel(){
+    const dash=document.getElementById('view-dashboard');if(!dash||document.getElementById('fpAttention'))return;
+    const p=document.createElement('div');p.id='fpAttention';p.className='fp-panel';p.innerHTML=`<div class="fp-head"><div><div class="fp-title">⚠ O.S. que exigem atenção</div><div class="fp-sub">Atrasadas, prazo de hoje e ordens de alta prioridade.</div></div></div><div id="fpAttentionBody" class="fp-empty">Nenhuma ocorrência crítica.</div>`;
+    const kan=dash.querySelector('.kanban');(kan||dash.lastElementChild)?.after(p);
+  }
+  function updateAttention(){
+    if(typeof dashboardOrders==='undefined')return;ensureAttentionPanel();const a=(dashboardOrders||[]).filter(o=>isOpen(o)&&(isOverdue(o)||isDueToday(o)||String(o.priority||'').toUpperCase()==='ALTA')).sort((x,y)=>Number(isOverdue(y))-Number(isOverdue(x))||Number(y.priority==='ALTA')-Number(x.priority==='ALTA'));
+    const h=document.getElementById('fpAttentionBody');if(!h)return;if(!a.length){h.innerHTML='<div class="fp-empty">Nenhuma O.S. exige atenção no momento.</div>';return}
+    h.className='fp-table-wrap';h.innerHTML=`<table class="fp-table"><thead><tr><th>O.S.</th><th>Máquina</th><th>Responsável</th><th>Prioridade</th><th>Prazo</th><th></th></tr></thead><tbody>${a.slice(0,12).map(o=>`<tr><td><b>${esc(o.os_number)}</b></td><td>${esc(o.machine||'-')}</td><td>${esc(o.active_employee||o.responsible||'Não definido')}</td><td>${esc(o.priority||'-')}</td><td>${overdueBadge(o)}</td><td><button class="fp-btn" onclick="fpShowOrder(${Number(o.id)})">Detalhes</button></td></tr>`).join('')}</tbody></table>`;
+  }
+
+  const baseLoadDash=window.loadDashboardData;
+  window.loadDashboardData=async function(){const r=typeof baseLoadDash==='function'?await baseLoadDash():null;setTimeout(()=>{ensureDashboardExtra();updateDashboardExtra();updateAttention()},40);return r};
+
+  /* Histórico profissional com filtros e detalhe. */
+  const baseLoadHistory=window.loadHistory;
+  window.loadHistory=async function(){
+    if(typeof isAdmin!=='undefined'&&!isAdmin)return;
+    const table=document.getElementById('historyTable');if(!table)return;
+    const r=await db.from('os_orders').select('*').order('created_at',{ascending:false});if(r.error){console.error(r.error);return}
+    window.fpHistoryOrders=r.data||[];
+    const panel=table.closest('.panel');if(panel&&!document.getElementById('fpHistoryTools')){
+      const tools=document.createElement('div');tools.id='fpHistoryTools';tools.className='fp-search-row';tools.innerHTML=`<input id="fpHistorySearch" class="fp-search" placeholder="Pesquisar O.S., máquina, TAG, setor, funcionário..." autocomplete="off"><select id="fpHistoryStatus" class="fp-select"><option value="TODOS">Todos os status</option><option>O.S. ABERTA</option><option>EM PRODUÇÃO</option><option>AGUARDANDO MATERIAL</option><option>FINALIZADA</option></select><select id="fpHistoryPriority" class="fp-select"><option value="TODAS">Todas prioridades</option><option>ALTA</option><option>MÉDIA</option><option>MODERADA</option></select><button class="fp-btn primary" onclick="fpExportHistoryCSV()">⇩ EXCEL/CSV</button>`;
+      panel.insertBefore(tools,panel.querySelector('.table-wrap')||table.parentNode);
+      ['fpHistorySearch','fpHistoryStatus','fpHistoryPriority'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderHistoryPro));
+    }
+    renderHistoryPro();
+  };
+  window.renderHistoryPro=function(){
+    const all=window.fpHistoryOrders||[];const q=(document.getElementById('fpHistorySearch')?.value||'').toLowerCase().trim();const st=document.getElementById('fpHistoryStatus')?.value||'TODOS';const pr=document.getElementById('fpHistoryPriority')?.value||'TODAS';
+    const rows=all.filter(o=>{const text=[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.description].join(' ').toLowerCase();return (!q||text.includes(q))&&(st==='TODOS'||o.status===st)&&(pr==='TODAS'||o.priority===pr)});
+    const table=document.getElementById('historyTable');if(!table)return;
+    table.innerHTML=rows.map(o=>`<tr><td><b>${esc(o.os_number)}</b></td><td>${esc(o.machine||'-')}</td><td>${esc(o.sector||'-')}</td><td>${esc(o.active_employee||o.responsible||'-')}</td><td>${esc(o.priority||'-')}</td><td><span class="status ${typeof statusClass==='function'?statusClass(o.status):''}">${esc(o.status||'-')}</span></td><td>${secFmt(typeof getTotalTime==='function'?getTotalTime(o):o.total_service_seconds)}</td><td>${fmtDate(o.deadline)}</td><td><button class="fp-btn" onclick="fpShowOrder(${Number(o.id)})">DETALHES</button></td></tr>`).join('')||`<tr><td colspan="9"><div class="fp-empty">Nenhuma O.S. encontrada com os filtros.</div></td></tr>`;
+  };
+
+  window.fpExportHistoryCSV=function(){
+    const rows=window.fpHistoryOrders||[];if(!rows.length){showPCMToast?.('Nenhuma O.S. para exportar.','warning');return}
+    const headers=['OS','Data abertura','Máquina','TAG','Setor','Tipo','Prioridade','Responsável','Status','Prazo','Tempo total','Descrição'];
+    const csv=[headers,...rows.map(o=>[o.os_number,o.opening_date||o.created_at,o.machine,o.tag,o.sector,o.maintenance_type,o.priority,o.responsible,o.status,o.deadline,secFmt(typeof getTotalTime==='function'?getTotalTime(o):o.total_service_seconds),o.description])].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\r\n');
+    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='relatorio_os_pcm.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+
+  /* Máquinas: transforma a tela existente em visão de indicadores sem criar tabela nova. */
+  const baseLoadMachines=window.loadMachines;
+  window.loadMachines=async function(){
+    const r=await (typeof baseLoadMachines==='function'?baseLoadMachines():null);setTimeout(renderMachinePro,30);return r;
+  };
+  function renderMachinePro(){
+    if(typeof dashboardOrders==='undefined')return;const host=document.getElementById('machinesContainer');if(!host)return;
+    const all=dashboardOrders||[];const map=new Map();all.forEach(o=>{const key=`${o.machine||'-'}|${o.tag||'-'}`;if(!map.has(key))map.set(key,{machine:o.machine||'-',tag:o.tag||'-',sector:o.sector||'-',orders:[]});map.get(key).orders.push(o)});
+    const list=[...map.values()].sort((a,b)=>b.orders.length-a.orders.length);
+    const existing=host.querySelector('.fp-machine-pro');if(existing)existing.remove();const p=document.createElement('div');p.className='fp-panel fp-machine-pro';p.innerHTML=`<div class="fp-head"><div><div class="fp-title">Indicadores por máquina</div><div class="fp-sub">Volume, pendências e tempo acumulado das O.S.</div></div></div><div class="fp-table-wrap"><table class="fp-table"><thead><tr><th>Máquina</th><th>TAG</th><th>Setor</th><th>Total</th><th>Abertas</th><th>Produção</th><th>Atrasadas</th><th>Tempo</th></tr></thead><tbody>${list.map(x=>`<tr><td><b>${esc(x.machine)}</b></td><td>${esc(x.tag)}</td><td>${esc(x.sector)}</td><td>${x.orders.length}</td><td>${x.orders.filter(o=>o.status==='O.S. ABERTA').length}</td><td>${x.orders.filter(o=>o.status==='EM PRODUÇÃO').length}</td><td>${x.orders.filter(isOverdue).length}</td><td>${secFmt(x.orders.reduce((s,o)=>s+Number(o.total_service_seconds||0),0))}</td></tr>`).join('')||`<tr><td colspan="8"><div class="fp-empty">Nenhuma máquina encontrada.</div></td></tr>`}</tbody></table></div>`;host.appendChild(p);
+  }
+
+  /* Equipe: indicadores calculados das O.S. já carregadas. */
+  function renderTeamPro(){
+    const host=document.querySelector('#view-team');if(!host||document.getElementById('fpTeamPro')||typeof dashboardOrders==='undefined')return;
+    const orders=dashboardOrders||[];const names=[...(typeof usersRows!=='undefined'?usersRows:[])].filter(u=>u.active&&u.role!=='admin').map(u=>u.name);
+    const map=new Map(names.map(n=>[n,{name:n,total:0,active:0,done:0,time:0}]));orders.forEach(o=>{const n=o.active_employee||o.responsible;if(!n)return;if(!map.has(n))map.set(n,{name:n,total:0,active:0,done:0,time:0});const x=map.get(n);x.total++;if(o.status==='EM PRODUÇÃO')x.active++;if(o.status==='FINALIZADA')x.done++;x.time+=Number(o.total_service_seconds||0)});
+    const p=document.createElement('div');p.id='fpTeamPro';p.className='fp-panel';p.innerHTML=`<div class="fp-head"><div><div class="fp-title">Desempenho da equipe</div><div class="fp-sub">Indicadores operacionais das O.S. atribuídas.</div></div></div><div class="fp-table-wrap"><table class="fp-table"><thead><tr><th>Funcionário</th><th>O.S.</th><th>Em produção</th><th>Finalizadas</th><th>Tempo acumulado</th></tr></thead><tbody>${[...map.values()].sort((a,b)=>b.done-a.done).map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${x.total}</td><td>${x.active}</td><td>${x.done}</td><td>${secFmt(x.time)}</td></tr>`).join('')||`<tr><td colspan="5"><div class="fp-empty">Nenhum funcionário encontrado.</div></td></tr>`}</tbody></table></div>`;host.appendChild(p);
+  }
+
+  /* Relatório executivo imprimível, sem biblioteca externa. */
+  window.fpPrintExecutiveReport=function(){
+    const orders=(typeof dashboardOrders!=='undefined'?dashboardOrders:[])||[];const win=window.open('','_blank');if(!win){showPCMToast?.('O navegador bloqueou a janela do relatório.','warning');return}
+    const rows=orders.slice().sort((a,b)=>Number(isOverdue(b))-Number(isOverdue(a))).map(o=>`<tr><td>${esc(o.os_number)}</td><td>${esc(o.machine||'-')}</td><td>${esc(o.sector||'-')}</td><td>${esc(o.responsible||o.active_employee||'-')}</td><td>${esc(o.status||'-')}</td><td>${esc(o.priority||'-')}</td><td>${fmtDate(o.deadline)}</td><td>${secFmt(typeof getTotalTime==='function'?getTotalTime(o):o.total_service_seconds)}</td></tr>`).join('');
+    const open=orders.filter(o=>o.status==='O.S. ABERTA').length,prod=orders.filter(o=>o.status==='EM PRODUÇÃO').length,mat=orders.filter(o=>o.status==='AGUARDANDO MATERIAL').length,done=orders.filter(o=>o.status==='FINALIZADA').length,late=orders.filter(isOverdue).length;
+    win.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório PCM - Controle de O.S.</title><style>body{font:12px Arial;margin:28px;color:#111}h1{margin:0 0 5px}p{color:#555}.cards{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}.card{border:1px solid #ddd;padding:12px;min-width:110px}.card b{font-size:20px;display:block}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#f3f4f6;font-size:10px}@media print{button{display:none}}</style></head><body><h1>Controle de O.S. — Relatório Executivo</h1><p>Gerado em ${new Date().toLocaleString('pt-BR')}</p><div class="cards"><div class="card"><b>${open}</b>Abertas</div><div class="card"><b>${prod}</b>Em produção</div><div class="card"><b>${mat}</b>Aguardando material</div><div class="card"><b>${done}</b>Finalizadas</div><div class="card"><b>${late}</b>Atrasadas</div></div><button onclick="print()">Imprimir / salvar PDF</button><table><thead><tr><th>O.S.</th><th>Máquina</th><th>Setor</th><th>Responsável</th><th>Status</th><th>Prioridade</th><th>Prazo</th><th>Tempo</th></tr></thead><tbody>${rows||'<tr><td colspan="8">Nenhuma O.S.</td></tr>'}</tbody></table></body></html>`);win.document.close();setTimeout(()=>win.print(),400);
+  };
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    ensureModal();
+    setTimeout(()=>{ensureDashboardExtra();updateDashboardExtra();updateAttention();renderTeamPro()},700);
+    setInterval(()=>{try{if(!document.hidden&&navigator.onLine){updateDashboardExtra();updateAttention();renderTeamPro()}}catch(e){}},10000);
+  });
+})();
+</script>
+
 </body>
 </html>
