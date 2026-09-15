@@ -5090,7 +5090,182 @@ async function exportHistoryPDF(){
         if(!popup){showPCMToast("O navegador bloqueou a janela do PDF. Permita pop-ups para este site.","warning");return;}
         const orderRows=orders.map(o=>`<tr><td>${escapeHtml(o.os_number)}</td><td>${escapeHtml(o.machine)}</td><td>${escapeHtml(o.tag||"-")}</td><td>${escapeHtml(o.sector||"-")}</td><td>${escapeHtml(o.responsible||"-")}</td><td>${escapeHtml(o.status||"-")}</td><td>${escapeHtml(formatSeconds(getTotalTime(o)))}</td></tr>`).join("");
         const execRows=execution.map(e=>`<tr><td>${escapeHtml(e.os_number||"-")}</td><td>${escapeHtml(e.employee||"-")}</td><td>${escapeHtml(e.action||"-")}</td><td>${escapeHtml(e.reason||"-")}</td><td>${escapeHtml(formatSeconds(e.duration_seconds||0))}</td><td>${escapeHtml(historyDate(e.created_at))}</td></tr>`).join("");
-        popup.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Histórico PCM</title><style>body{font-family:Arial,sans-serif;color:#111827;padding:24px;font-size:11px}h1{font-size:20px;margin:0 0 4px}h2{font-size:14px;margin:24px 0 8px}p{color:#475569;margin:0 0 18px}table{width:100%;border-collapse:collapse;margin-bottom:18px}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left;vertical-align:top}th{background:#e2e8f0;font-weight:700}@media print{body{padding:10mm}h2{break-after:avoid}table{break-inside:auto}tr{break-inside:avoid}}</style></head><body><h1>PCM • CONTROLE DE O.S.</h1><p>Histórico de ordens de serviço — gerado em ${escapeHtml(new Date().toLocaleString("pt-BR"))}</p><h2>Ordens de serviço</h2><table><thead><tr><th>O.S.</th><th>Máquina</th><th>TAG</th><th>Setor</th><th>Responsável</th><th>Status</th><th>Tempo</th></tr></thead><tbody>${orderRows||'<tr><td colspan="7">Nenhuma O.S.</td></tr>'}</tbody></table><h2>Histórico de execução</h2><table><thead><tr><th>O.S.</th><th>Funcionário</th><th>Ação</th><th>Motivo</th><th>Duração</th><th>Data</th></tr></thead><tbody>${execRows||'<tr><td colspan="6">Nenhum registro.</td></tr>'}</tbody></table><script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script></body></html>`);
+        popup.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Histórico PCM</title><style>body{font-family:Arial,sans-serif;color:#111827;padding:24px;font-size:11px}h1{font-size:20px;margin:0 0 4px}h2{font-size:14px;margin:24px 0 8px}p{color:#475569;margin:0 0 18px}table{width:100%;border-collapse:collapse;margin-bottom:18px}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left;vertical-align:top}th{background:#e2e8f0;font-weight:700}@media print{body{padding:10mm}h2{break-after:avoid}table{break-inside:auto}tr{break-inside:avoid}}</style></head><body><h1>PCM • CONTROLE DE O.S.</h1><p>Histórico de ordens de serviço — gerado em ${escapeHtml(new Date().toLocaleString("pt-BR"))}</p><h2>Ordens de serviço</h2><table><thead><tr><th>O.S.</th><th>Máquina</th><th>TAG</th><th>Setor</th><th>Responsável</th><th>Status</th><th>Tempo</th></tr></thead><tbody>${orderRows||'<tr><td colspan="7">Nenhuma O.S.</td></tr>'}</tbody></table><h2>Histórico de execução</h2><table><thead><tr><th>O.S.</th><th>Funcionário</th><th>Ação</th><th>Motivo</th><th>Duração</th><th>Data</th></tr></thead><tbody>${execRows||'<tr><td colspan="6">Nenhum registro.</td></tr>'}</tbody></table><script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>
+<style id="pcmNavigationFix">
+/* Correção de navegação: mantém todos os caminhos acessíveis no celular e no computador. */
+.sidebar{display:flex!important;flex-direction:column!important;}
+@media(max-width:900px){
+  .sidebar{display:none!important;}
+  #pcmMobileNav{display:flex!important;overflow-x:auto!important;gap:6px!important;padding:8px!important;}
+  #pcmMobileNav button{flex:0 0 auto!important;min-width:92px!important;min-height:46px!important;}
+}
+.pcm-page-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.pcm-page-tools button{border:1px solid rgba(148,163,184,.35);background:rgba(15,23,42,.75);color:#e2e8f0;border-radius:12px;padding:11px 15px;min-height:44px;font-weight:700;cursor:pointer}
+.pcm-page-tools button:hover{filter:brightness(1.15)}
+#pcmMobileNav{z-index:9999}
+</style>
+<script>
+(function(){
+  function go(view){
+    if(typeof window.navigateTo==='function') window.navigateTo(view);
+    else document.querySelectorAll('.app-view').forEach(v=>v.classList.toggle('hidden',v.id!==view));
+  }
+  function addCompleteMobileNav(){
+    let nav=document.getElementById('pcmMobileNav');
+    if(!nav){nav=document.createElement('nav');nav.id='pcmMobileNav';document.body.appendChild(nav);}
+    nav.innerHTML='';
+    const items=[
+      ['view-dashboard','⌂','PAINEL'],['view-new-os','＋','NOVA O.S.'],
+      ['view-history','▤','HISTÓRICO'],['view-team','♙','EQUIPE'],
+      ['view-users','♙','FUNCIONÁRIOS'],['view-machines','⚙','MÁQUINAS'],
+      ['view-employee','☷','MINHAS O.S.']
+    ];
+    items.forEach(([view,icon,label])=>{
+      const b=document.createElement('button');b.type='button';b.dataset.view=view;b.innerHTML='<span class="mi">'+icon+'</span> '+label;
+      b.addEventListener('click',()=>{go(view);setActive(view);});nav.appendChild(b);
+    });
+    setActive(currentView());
+  }
+  function currentView(){const v=[...document.querySelectorAll('.app-view')].find(x=>!x.classList.contains('hidden'));return v?v.id:'view-dashboard';}
+  function setActive(view){document.querySelectorAll('#pcmMobileNav button').forEach(b=>b.classList.toggle('active',b.dataset.view===view));}
+  function addBackButtons(){
+    document.querySelectorAll('.app-view').forEach(view=>{
+      if(view.id==='view-dashboard'||view.querySelector('.pcm-page-tools')) return;
+      const tools=document.createElement('div');tools.className='pcm-page-tools';
+      const back=document.createElement('button');back.type='button';back.textContent='← Voltar ao painel';back.addEventListener('click',()=>{go('view-dashboard');setActive('view-dashboard');});
+      const home=document.createElement('button');home.type='button';home.textContent='⌂ Início';home.addEventListener('click',()=>{go('view-dashboard');setActive('view-dashboard');});
+      tools.append(back,home);view.insertBefore(tools,view.firstChild);
+    });
+  }
+  function init(){addCompleteMobileNav();addBackButtons();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
+  const oldNav=window.navigateTo;
+  if(typeof oldNav==='function'&&!oldNav.__pcmFixed){
+    function fixedNav(view,button){oldNav.call(this,view,button);setActive(view);}
+    fixedNav.__pcmFixed=true;window.navigateTo=fixedNav;
+  }
+})();
+</script>
+
+
+<style id="pcmFactoryNavigationFix">
+/* =========================================================
+   FACTORY PRO — NAVEGAÇÃO COMPLETA / RETORNO / MOBILE
+   Mantém todos os botões do menu acessíveis.
+========================================================= */
+.pcm-page-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pcm-back-btn,.pcm-home-btn,.pcm-menu-btn{
+  appearance:none;border:1px solid rgba(148,163,184,.20);background:rgba(15,23,42,.78);
+  color:#f8fafc;border-radius:11px;min-height:42px;padding:9px 13px;font-weight:800;
+  cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.16);transition:.18s ease
+}
+.pcm-back-btn:hover,.pcm-home-btn:hover,.pcm-menu-btn:hover{background:rgba(30,41,59,.95);transform:translateY(-1px)}
+#pcmMobileMenuButton{display:none;position:fixed;top:14px;left:14px;z-index:100003;width:46px;height:46px;padding:0;border-radius:13px}
+#pcmMobileDrawer{display:none}
+#pcmMobileOverlay{display:none}
+
+@media(max-width:800px){
+  /* O menu lateral deixa de desaparecer: vira uma gaveta completa. */
+  .sidebar{
+    display:block!important;position:fixed!important;left:0!important;top:0!important;bottom:0!important;
+    width:280px!important;max-width:86vw!important;height:100vh!important;z-index:100004!important;
+    transform:translateX(-105%);transition:transform .22s ease!important;
+    padding:18px 14px!important;overflow-y:auto!important;
+    box-shadow:22px 0 70px rgba(0,0,0,.55)!important;
+  }
+  body.pcm-menu-open .sidebar{transform:translateX(0)!important}
+  .sidebar-brand strong,.sidebar-brand span,.nav-btn span{display:block!important}
+  .nav-btn{justify-content:flex-start!important;width:100%!important;min-height:48px!important;margin-bottom:6px!important;padding:11px 13px!important;flex-direction:row!important;font-size:13px!important}
+  .nav-btn > span:first-child{font-size:17px!important;line-height:20px!important}
+  .nav-btn > span:last-child{font-size:13px!important;line-height:normal!important;max-width:none!important;overflow:visible!important}
+  .sidebar-bottom{position:static!important;margin-top:22px!important;padding-bottom:20px}
+  .logout-btn{min-height:46px!important}
+  .main{margin-left:0!important;padding:70px 12px 90px!important}
+  #pcmMobileMenuButton{display:grid;place-items:center}
+  #pcmMobileMenuButton::before{content:'☰';font-size:22px}
+  #pcmMobileMenuButton{font-size:0}
+  body.pcm-menu-open #pcmMobileMenuButton::before{content:'×';font-size:28px}
+  #pcmMobileOverlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:100003;opacity:0;pointer-events:none;transition:.2s ease}
+  body.pcm-menu-open #pcmMobileOverlay{opacity:1;pointer-events:auto}
+  .topbar{padding-top:2px!important}
+  .pcm-page-actions{width:100%;justify-content:flex-start}
+  .pcm-back-btn,.pcm-home-btn{min-height:40px;padding:8px 11px;font-size:11px}
+  #pcmMobileNav{z-index:100002!important}
+}
+
+@media(min-width:801px){
+  .pcm-back-btn,.pcm-home-btn{min-height:38px}
+}
+</style>
+
+<script id="pcmFactoryNavigationFixScript">
+(function(){
+  function goHome(){
+    try{ if(typeof navigateTo==='function') navigateTo('view-dashboard'); }catch(e){ console.warn('goHome',e); }
+    document.body.classList.remove('pcm-menu-open');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function goBack(){
+    try{
+      if(history.length>1){
+        const prev=document.referrer;
+        if(prev && prev!==location.href){ history.back(); return; }
+      }
+    }catch(e){}
+    goHome();
+  }
+  window.pcmGoHome=goHome;
+  window.pcmGoBack=goBack;
+
+  function addMobileMenu(){
+    if(document.getElementById('pcmMobileMenuButton')) return;
+    const overlay=document.createElement('div');
+    overlay.id='pcmMobileOverlay';
+    overlay.addEventListener('click',()=>document.body.classList.remove('pcm-menu-open'));
+    document.body.appendChild(overlay);
+    const btn=document.createElement('button');
+    btn.id='pcmMobileMenuButton';btn.className='pcm-menu-btn';btn.setAttribute('aria-label','Abrir menu');
+    btn.onclick=()=>document.body.classList.toggle('pcm-menu-open');
+    document.body.appendChild(btn);
+
+    const sidebar=document.querySelector('.sidebar');
+    if(sidebar){
+      sidebar.addEventListener('click',e=>{
+        if(e.target.closest('.nav-btn') || e.target.closest('.logout-btn')){
+          setTimeout(()=>document.body.classList.remove('pcm-menu-open'),120);
+        }
+      });
+    }
+  }
+
+  function addTopbarNavigation(){
+    document.querySelectorAll('.app-view .topbar').forEach(top=>{
+      if(top.querySelector('.pcm-page-actions')) return;
+      const view=top.closest('.app-view'); if(!view) return;
+      const actions=document.createElement('div');actions.className='pcm-page-actions';
+      actions.innerHTML=`<button type="button" class="pcm-back-btn" onclick="pcmGoBack()">← Voltar</button><button type="button" class="pcm-home-btn" onclick="pcmGoHome()">⌂ Início</button>`;
+      top.appendChild(actions);
+    });
+  }
+
+  function addHomeToDashboard(){
+    const dash=document.querySelector('#view-dashboard .topbar');
+    if(!dash || dash.querySelector('.pcm-page-actions')) return;
+    const actions=document.createElement('div');actions.className='pcm-page-actions';
+    actions.innerHTML=`<button type="button" class="pcm-home-btn" onclick="pcmGoHome()">⌂ Início</button>`;
+    dash.appendChild(actions);
+  }
+
+  function ensureNavigation(){
+    addMobileMenu();addTopbarNavigation();addHomeToDashboard();
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(ensureNavigation,250));
+  window.addEventListener('resize',ensureNavigation);
+})();
+</script>
+
+</body></html>`);
         popup.document.close();
         showPCMToast("PDF preparado. Na tela de impressão, escolha Salvar como PDF.","success");
     }catch(e){console.error(e);showPCMToast("Não foi possível gerar o PDF.","error");}
@@ -5933,7 +6108,64 @@ document
     const orders=(typeof dashboardOrders!=='undefined'?dashboardOrders:[])||[];const win=window.open('','_blank');if(!win){showPCMToast?.('O navegador bloqueou a janela do relatório.','warning');return}
     const rows=orders.slice().sort((a,b)=>Number(isOverdue(b))-Number(isOverdue(a))).map(o=>`<tr><td>${esc(o.os_number)}</td><td>${esc(o.machine||'-')}</td><td>${esc(o.sector||'-')}</td><td>${esc(o.responsible||o.active_employee||'-')}</td><td>${esc(o.status||'-')}</td><td>${esc(o.priority||'-')}</td><td>${fmtDate(o.deadline)}</td><td>${secFmt(typeof getTotalTime==='function'?getTotalTime(o):o.total_service_seconds)}</td></tr>`).join('');
     const open=orders.filter(o=>o.status==='O.S. ABERTA').length,prod=orders.filter(o=>o.status==='EM PRODUÇÃO').length,mat=orders.filter(o=>o.status==='AGUARDANDO MATERIAL').length,done=orders.filter(o=>o.status==='FINALIZADA').length,late=orders.filter(isOverdue).length;
-    win.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório PCM - Controle de O.S.</title><style>body{font:12px Arial;margin:28px;color:#111}h1{margin:0 0 5px}p{color:#555}.cards{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}.card{border:1px solid #ddd;padding:12px;min-width:110px}.card b{font-size:20px;display:block}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#f3f4f6;font-size:10px}@media print{button{display:none}}</style></head><body><h1>Controle de O.S. — Relatório Executivo</h1><p>Gerado em ${new Date().toLocaleString('pt-BR')}</p><div class="cards"><div class="card"><b>${open}</b>Abertas</div><div class="card"><b>${prod}</b>Em produção</div><div class="card"><b>${mat}</b>Aguardando material</div><div class="card"><b>${done}</b>Finalizadas</div><div class="card"><b>${late}</b>Atrasadas</div></div><button onclick="print()">Imprimir / salvar PDF</button><table><thead><tr><th>O.S.</th><th>Máquina</th><th>Setor</th><th>Responsável</th><th>Status</th><th>Prioridade</th><th>Prazo</th><th>Tempo</th></tr></thead><tbody>${rows||'<tr><td colspan="8">Nenhuma O.S.</td></tr>'}</tbody></table></body></html>`);win.document.close();setTimeout(()=>win.print(),400);
+    win.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório PCM - Controle de O.S.</title><style>body{font:12px Arial;margin:28px;color:#111}h1{margin:0 0 5px}p{color:#555}.cards{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}.card{border:1px solid #ddd;padding:12px;min-width:110px}.card b{font-size:20px;display:block}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#f3f4f6;font-size:10px}@media print{button{display:none}}</style></head><body><h1>Controle de O.S. — Relatório Executivo</h1><p>Gerado em ${new Date().toLocaleString('pt-BR')}</p><div class="cards"><div class="card"><b>${open}</b>Abertas</div><div class="card"><b>${prod}</b>Em produção</div><div class="card"><b>${mat}</b>Aguardando material</div><div class="card"><b>${done}</b>Finalizadas</div><div class="card"><b>${late}</b>Atrasadas</div></div><button onclick="print()">Imprimir / salvar PDF</button><table><thead><tr><th>O.S.</th><th>Máquina</th><th>Setor</th><th>Responsável</th><th>Status</th><th>Prioridade</th><th>Prazo</th><th>Tempo</th></tr></thead><tbody>${rows||'<tr><td colspan="8">Nenhuma O.S.</td></tr>'}</tbody></table>
+<style id="pcmNavigationFix">
+/* Correção de navegação: mantém todos os caminhos acessíveis no celular e no computador. */
+.sidebar{display:flex!important;flex-direction:column!important;}
+@media(max-width:900px){
+  .sidebar{display:none!important;}
+  #pcmMobileNav{display:flex!important;overflow-x:auto!important;gap:6px!important;padding:8px!important;}
+  #pcmMobileNav button{flex:0 0 auto!important;min-width:92px!important;min-height:46px!important;}
+}
+.pcm-page-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.pcm-page-tools button{border:1px solid rgba(148,163,184,.35);background:rgba(15,23,42,.75);color:#e2e8f0;border-radius:12px;padding:11px 15px;min-height:44px;font-weight:700;cursor:pointer}
+.pcm-page-tools button:hover{filter:brightness(1.15)}
+#pcmMobileNav{z-index:9999}
+</style>
+<script>
+(function(){
+  function go(view){
+    if(typeof window.navigateTo==='function') window.navigateTo(view);
+    else document.querySelectorAll('.app-view').forEach(v=>v.classList.toggle('hidden',v.id!==view));
+  }
+  function addCompleteMobileNav(){
+    let nav=document.getElementById('pcmMobileNav');
+    if(!nav){nav=document.createElement('nav');nav.id='pcmMobileNav';document.body.appendChild(nav);}
+    nav.innerHTML='';
+    const items=[
+      ['view-dashboard','⌂','PAINEL'],['view-new-os','＋','NOVA O.S.'],
+      ['view-history','▤','HISTÓRICO'],['view-team','♙','EQUIPE'],
+      ['view-users','♙','FUNCIONÁRIOS'],['view-machines','⚙','MÁQUINAS'],
+      ['view-employee','☷','MINHAS O.S.']
+    ];
+    items.forEach(([view,icon,label])=>{
+      const b=document.createElement('button');b.type='button';b.dataset.view=view;b.innerHTML='<span class="mi">'+icon+'</span> '+label;
+      b.addEventListener('click',()=>{go(view);setActive(view);});nav.appendChild(b);
+    });
+    setActive(currentView());
+  }
+  function currentView(){const v=[...document.querySelectorAll('.app-view')].find(x=>!x.classList.contains('hidden'));return v?v.id:'view-dashboard';}
+  function setActive(view){document.querySelectorAll('#pcmMobileNav button').forEach(b=>b.classList.toggle('active',b.dataset.view===view));}
+  function addBackButtons(){
+    document.querySelectorAll('.app-view').forEach(view=>{
+      if(view.id==='view-dashboard'||view.querySelector('.pcm-page-tools')) return;
+      const tools=document.createElement('div');tools.className='pcm-page-tools';
+      const back=document.createElement('button');back.type='button';back.textContent='← Voltar ao painel';back.addEventListener('click',()=>{go('view-dashboard');setActive('view-dashboard');});
+      const home=document.createElement('button');home.type='button';home.textContent='⌂ Início';home.addEventListener('click',()=>{go('view-dashboard');setActive('view-dashboard');});
+      tools.append(back,home);view.insertBefore(tools,view.firstChild);
+    });
+  }
+  function init(){addCompleteMobileNav();addBackButtons();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
+  const oldNav=window.navigateTo;
+  if(typeof oldNav==='function'&&!oldNav.__pcmFixed){
+    function fixedNav(view,button){oldNav.call(this,view,button);setActive(view);}
+    fixedNav.__pcmFixed=true;window.navigateTo=fixedNav;
+  }
+})();
+</script>
+
+</body></html>`);win.document.close();setTimeout(()=>win.print(),400);
   };
 
   document.addEventListener('DOMContentLoaded',()=>{
@@ -5941,6 +6173,63 @@ document
     setTimeout(()=>{ensureDashboardExtra();updateDashboardExtra();updateAttention();renderTeamPro()},700);
     setInterval(()=>{try{if(!document.hidden&&navigator.onLine){updateDashboardExtra();updateAttention();renderTeamPro()}}catch(e){}},10000);
   });
+})();
+</script>
+
+
+<style id="pcmNavigationFix">
+/* Correção de navegação: mantém todos os caminhos acessíveis no celular e no computador. */
+.sidebar{display:flex!important;flex-direction:column!important;}
+@media(max-width:900px){
+  .sidebar{display:none!important;}
+  #pcmMobileNav{display:flex!important;overflow-x:auto!important;gap:6px!important;padding:8px!important;}
+  #pcmMobileNav button{flex:0 0 auto!important;min-width:92px!important;min-height:46px!important;}
+}
+.pcm-page-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.pcm-page-tools button{border:1px solid rgba(148,163,184,.35);background:rgba(15,23,42,.75);color:#e2e8f0;border-radius:12px;padding:11px 15px;min-height:44px;font-weight:700;cursor:pointer}
+.pcm-page-tools button:hover{filter:brightness(1.15)}
+#pcmMobileNav{z-index:9999}
+</style>
+<script>
+(function(){
+  function go(view){
+    if(typeof window.navigateTo==='function') window.navigateTo(view);
+    else document.querySelectorAll('.app-view').forEach(v=>v.classList.toggle('hidden',v.id!==view));
+  }
+  function addCompleteMobileNav(){
+    let nav=document.getElementById('pcmMobileNav');
+    if(!nav){nav=document.createElement('nav');nav.id='pcmMobileNav';document.body.appendChild(nav);}
+    nav.innerHTML='';
+    const items=[
+      ['view-dashboard','⌂','PAINEL'],['view-new-os','＋','NOVA O.S.'],
+      ['view-history','▤','HISTÓRICO'],['view-team','♙','EQUIPE'],
+      ['view-users','♙','FUNCIONÁRIOS'],['view-machines','⚙','MÁQUINAS'],
+      ['view-employee','☷','MINHAS O.S.']
+    ];
+    items.forEach(([view,icon,label])=>{
+      const b=document.createElement('button');b.type='button';b.dataset.view=view;b.innerHTML='<span class="mi">'+icon+'</span> '+label;
+      b.addEventListener('click',()=>{go(view);setActive(view);});nav.appendChild(b);
+    });
+    setActive(currentView());
+  }
+  function currentView(){const v=[...document.querySelectorAll('.app-view')].find(x=>!x.classList.contains('hidden'));return v?v.id:'view-dashboard';}
+  function setActive(view){document.querySelectorAll('#pcmMobileNav button').forEach(b=>b.classList.toggle('active',b.dataset.view===view));}
+  function addBackButtons(){
+    document.querySelectorAll('.app-view').forEach(view=>{
+      if(view.id==='view-dashboard'||view.querySelector('.pcm-page-tools')) return;
+      const tools=document.createElement('div');tools.className='pcm-page-tools';
+      const back=document.createElement('button');back.type='button';back.textContent='← Voltar ao painel';back.addEventListener('click',()=>{go('view-dashboard');setActive('view-dashboard');});
+      const home=document.createElement('button');home.type='button';home.textContent='⌂ Início';home.addEventListener('click',()=>{go('view-dashboard');setActive('view-dashboard');});
+      tools.append(back,home);view.insertBefore(tools,view.firstChild);
+    });
+  }
+  function init(){addCompleteMobileNav();addBackButtons();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
+  const oldNav=window.navigateTo;
+  if(typeof oldNav==='function'&&!oldNav.__pcmFixed){
+    function fixedNav(view,button){oldNav.call(this,view,button);setActive(view);}
+    fixedNav.__pcmFixed=true;window.navigateTo=fixedNav;
+  }
 })();
 </script>
 
