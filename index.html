@@ -3164,6 +3164,7 @@ function createAdminOSCard(order){
     const total=getTotalTime(order);
     const responsible=order.active_employee||order.responsible||"Não atribuído";
     let actions="";
+    actions += `<button class="action-btn btn-material" onclick="showPauseHistory(${order.id})">⏸ MOTIVOS DE PAUSA</button>`;
 
     if(order.status === "O.S. ABERTA" && order.responsible){
         actions += `<button class="action-btn btn-start" onclick="adminStartOS(${order.id})">INICIAR / LIBERAR O.S.</button>`;
@@ -3176,6 +3177,7 @@ function createAdminOSCard(order){
     }
     if(order.status === "FINALIZADA" || order.status === "FINALIZADA - OBSERVAÇÃO"){
         actions += `<button class="action-btn btn-start" onclick="releaseFinalizedOS(${order.id})">LIBERAR PARA OBSERVAÇÃO</button>`;
+        actions += `<button class="action-btn btn-material" onclick="adminEditFinalizedTime(${order.id})">⏱ EDITAR HORÁRIO / TEMPO</button>`;
     }
 
     const statusLabel = order.status === "FINALIZADA - OBSERVAÇÃO" ? "FINALIZADA • AGUARDANDO OBSERVAÇÃO" : order.status;
@@ -5799,20 +5801,66 @@ document
   async function historyFor(id){const {data,error}=await db.from('os_execution_history').select('*').eq('os_id',id).order('created_at',{ascending:false});if(error)throw error;return data||[]}
   function isMine(order){return currentUser&&!isAdmin&&responsibleMatchesUser(order.responsible,currentUser)}
 
+  async function getPauseCount(osId){
+    const {count,error}=await db.from('os_pause_history').select('id',{count:'exact',head:true}).eq('os_id',osId);
+    if(error) throw error;
+    return Number(count||0);
+  }
+
   window.pauseOS=async function(osId){
-    if(!currentUser||isAdmin)return; const order=await getOrder(osId); if(order.status!=='EM PRODUÇÃO'||!isMine(order))return alert('Esta O.S. não está ativa com você.');
-    modal('pauseModal','Pausar O.S.','Toda pausa precisa ter um motivo. O tempo trabalhado até aqui será preservado.',`<label>Motivo da pausa *</label><textarea id="pauseReasonInput" placeholder="Explique por que a O.S. está sendo pausada..."></textarea>`,'PAUSAR',async el=>{
-      const reason=el.querySelector('#pauseReasonInput').value.trim();if(!reason){alert('Informe o motivo da pausa.');return false;}const now=new Date().toISOString();const elapsed=getCurrentElapsed(order);const total=parseInt(order.total_service_seconds||0)+elapsed;
-      const {error}=await db.from('os_orders').update({status:'PAUSADA',paused_at:now,started_at:null,active_employee:null,pause_reason:reason,total_service_seconds:total}).eq('id',osId).eq('status','EM PRODUÇÃO');if(error)throw error;
-      await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:currentUser,action:'PAUSADA',reason,started_at:order.started_at,ended_at:now,duration_seconds:elapsed});await loadEmployeeOrders();return true;
+    if(!currentUser||isAdmin)return;
+    const order=await getOrder(osId);
+    if(order.status!=='EM PRODUÇÃO'||!isMine(order))return alert('Esta O.S. não está ativa com você.');
+    modal('pauseModal','Pausar O.S.','Toda pausa precisa ter um motivo. O tempo trabalhado até aqui será preservado e cada pausa ficará registrada separadamente.',`<label>Motivo da pausa *</label><textarea id="pauseReasonInput" placeholder="Explique por que a O.S. está sendo pausada..."></textarea>`,'PAUSAR',async el=>{
+      const reason=el.querySelector('#pauseReasonInput').value.trim();
+      if(!reason){alert('Informe o motivo da pausa.');return false;}
+      const now=new Date().toISOString();
+      const elapsed=getCurrentElapsed(order);
+      const total=parseInt(order.total_service_seconds||0)+elapsed;
+      const pauseNumber=(await getPauseCount(osId))+1;
+      const {error}=await db.from('os_orders').update({status:'PAUSADA',paused_at:now,started_at:null,active_employee:null,pause_reason:reason,total_service_seconds:total}).eq('id',osId).eq('status','EM PRODUÇÃO');
+      if(error)throw error;
+      const {error:pauseError}=await db.from('os_pause_history').insert({os_id:order.id,os_number:order.os_number,employee:currentUser,pause_number:pauseNumber,reason,paused_at:now,worked_seconds_before_pause:total,pause_duration_seconds:0});
+      if(pauseError)throw pauseError;
+      await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:currentUser,action:'PAUSADA',reason,started_at:order.started_at,ended_at:now,duration_seconds:elapsed});
+      await loadEmployeeOrders();return true;
     });
   };
 
   window.resumeOS=async function(osId){
-    if(!currentUser||isAdmin)return;const order=await getOrder(osId);if(order.status!=='PAUSADA'||!isMine(order))return alert('Esta O.S. não está pausada para você.');
-    const {data:active}=await db.from('os_orders').select('id,os_number').eq('status','EM PRODUÇÃO').eq('active_employee',currentUser);if(active&&active.length)return alert('Você já possui uma O.S. em produção.');
-    const now=new Date().toISOString();const {error}=await db.from('os_orders').update({status:'EM PRODUÇÃO',started_at:now,active_employee:currentUser,paused_at:null}).eq('id',osId).eq('status','PAUSADA');if(error)throw error;
-    await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:currentUser,action:'RETOMADA',reason:'O.S. retomada após pausa.',started_at:now,ended_at:null,duration_seconds:0});await loadEmployeeOrders();
+    if(!currentUser||isAdmin)return;
+    const order=await getOrder(osId);
+    if(order.status!=='PAUSADA'||!isMine(order))return alert('Esta O.S. não está pausada para você.');
+    const {data:active}=await db.from('os_orders').select('id,os_number').eq('status','EM PRODUÇÃO').eq('active_employee',currentUser);
+    if(active&&active.length)return alert('Você já possui uma O.S. em produção.');
+    const now=new Date().toISOString();
+    const {data:openPause,error:pauseReadError}=await db.from('os_pause_history').select('*').eq('os_id',osId).is('resumed_at',null).order('pause_number',{ascending:false}).limit(1);
+    if(pauseReadError)throw pauseReadError;
+    if(openPause&&openPause[0]){
+      const pausedAt=new Date(openPause[0].paused_at).getTime();
+      const pauseDuration=Math.max(0,Math.floor((Date.now()-pausedAt)/1000));
+      const {error:updatePauseError}=await db.from('os_pause_history').update({resumed_at:now,pause_duration_seconds:pauseDuration}).eq('id',openPause[0].id);
+      if(updatePauseError)throw updatePauseError;
+    }
+    const {error}=await db.from('os_orders').update({status:'EM PRODUÇÃO',started_at:now,active_employee:currentUser,paused_at:null}).eq('id',osId).eq('status','PAUSADA');
+    if(error)throw error;
+    await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:currentUser,action:'RETOMADA',reason:'O.S. retomada após pausa.',started_at:now,ended_at:null,duration_seconds:0});
+    await loadEmployeeOrders();
+  };
+
+  window.showPauseHistory=async function(osId){
+    if(!isAdmin)return;
+    const order=await getOrder(osId);
+    const {data,error}=await db.from('os_pause_history').select('*').eq('os_id',osId).order('pause_number',{ascending:true});
+    if(error)throw error;
+    const rows=(data||[]).map(p=>{
+      const paused=p.paused_at?new Date(p.paused_at).toLocaleString('pt-BR'):'-';
+      const resumed=p.resumed_at?new Date(p.resumed_at).toLocaleString('pt-BR'):'AINDA PAUSADA';
+      const dur=Number(p.pause_duration_seconds||0);const dh=Math.floor(dur/3600),dm=Math.floor(dur%3600/60),ds=dur%60;
+      return `<div style="padding:12px 0;border-bottom:1px solid #334155"><div style="display:flex;justify-content:space-between;gap:10px"><b>PAUSA ${p.pause_number}</b><span style="color:#94a3b8;font-size:11px">${escapeHtml(p.employee||'-')}</span></div><div style="margin-top:6px;color:#cbd5e1;font-size:12px"><b>Motivo:</b> ${escapeHtml(p.reason||'-')}</div><div style="margin-top:6px;color:#94a3b8;font-size:10px">Pausou: ${escapeHtml(paused)}<br>Retomou: ${escapeHtml(resumed)}<br>Duração da pausa: ${String(dh).padStart(2,'0')}:${String(dm).padStart(2,'0')}:${String(ds).padStart(2,'0')}</div></div>`;
+    }).join('');
+    modal('pauseHistoryModal',`Motivos de pausa — O.S. ${escapeHtml(order.os_number)}`,`Total de pausas registradas: <b>${(data||[]).length}</b>`,rows||'<div class="factory-note">Nenhuma pausa registrada nesta O.S.</div>','FECHAR',async()=>true);
+    const box=document.querySelector('#pauseHistoryModal .factory-modal-box');if(box){const ok=box.querySelector('[data-ok]');if(ok)ok.textContent='FECHAR';}
   };
 
   window.adminResumePausedOS=async function(osId){if(!isAdmin)return;const order=await getOrder(osId);if(order.status!=='PAUSADA')return;const now=new Date().toISOString();const {error}=await db.from('os_orders').update({status:'O.S. ABERTA',paused_at:null,started_at:null,active_employee:null}).eq('id',osId).eq('status','PAUSADA');if(error)throw error;await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:'PCM / Administrador',action:'PAUSA LIBERADA PELO PCM',reason:'O.S. disponibilizada novamente para execução.',started_at:null,ended_at:now,duration_seconds:0});await loadDashboardData();};
@@ -5833,6 +5881,30 @@ document
   window.editFinalizedTime=async function(osId){
     if(!currentUser||isAdmin)return;const order=await getOrder(osId);if(order.status!=='FINALIZADA'||!isMine(order))return;const finished=new Date(order.finished_at||0).getTime();if(!finished||Date.now()-finished>30*60*1000)return alert('A janela de 30 minutos para alterar o tempo já terminou.');const h=await historyFor(osId);if(h.some(x=>x.action===ACTION_TIME))return alert('O tempo desta O.S. já foi alterado uma vez.');
     modal('editTimeModal','Revisar tempo da O.S.','Você pode alterar o tempo uma única vez. A justificativa é obrigatória.',`<label>Novo tempo total (HH:MM:SS)</label><input id="editTimeInput" value="${durInput(parseInt(order.total_service_seconds||0))}" inputmode="numeric"><label>Justificativa *</label><textarea id="editTimeReason" placeholder="Explique por que o tempo precisa ser alterado..."></textarea>`,'SALVAR ALTERAÇÃO',async el=>{const nt=parseDuration(el.querySelector('#editTimeInput').value);const reason=el.querySelector('#editTimeReason').value.trim();if(nt===null){alert('Use HH:MM:SS.');return false;}if(nt===parseInt(order.total_service_seconds||0)){alert('O novo tempo é igual ao atual.');return false;}if(!reason){alert('Informe a justificativa.');return false;}const now=new Date().toISOString();const {error}=await db.from('os_orders').update({total_service_seconds:nt}).eq('id',osId).eq('status','FINALIZADA');if(error)throw error;await insertExecutionHistory({os_id:osId,os_number:order.os_number,employee:currentUser,action:ACTION_TIME,reason,started_at:null,ended_at:now,duration_seconds:nt});await loadEmployeeOrders();return true;});
+  };
+
+  window.adminEditFinalizedTime=async function(osId){
+    if(!isAdmin)return;
+    const order=await getOrder(osId);
+    if(!order || !["FINALIZADA","FINALIZADA - OBSERVAÇÃO"].includes(order.status))return alert("Esta O.S. ainda não está finalizada.");
+    const history=await historyFor(osId);
+    const startEvent=[...history].find(h=>h.action==="INICIADA") || [...history].find(h=>h.action==="RETOMADA");
+    const finishEvent=[...history].reverse().find(h=>h.action==="FINALIZADA");
+    const startValue=startEvent?.started_at||startEvent?.ended_at||"";
+    const endValue=order.finished_at||finishEvent?.ended_at||"";
+    const toLocal=iso=>{if(!iso)return "";const d=new Date(iso),p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`};
+    const fields=`<div class="factory-note">O PCM pode corrigir o horário real em que o serviço foi executado. Toda alteração fica registrada no histórico.</div><label>Início do serviço</label><input id="adminStartTime" type="datetime-local" value="${toLocal(startValue)}"><label>Fim do serviço</label><input id="adminFinishTime" type="datetime-local" value="${toLocal(endValue)}"><label>Tempo total (HH:MM:SS)</label><input id="adminTotalTime" value="${durInput(parseInt(order.total_service_seconds||0))}" inputmode="numeric"><label>Justificativa da alteração *</label><textarea id="adminTimeReason" placeholder="Por que o PCM está corrigindo o horário/tempo?"></textarea>`;
+    modal('adminEditTimeModal','Editar horário da O.S.','Corrija o horário real e/ou o tempo total do serviço.',fields,'SALVAR CORREÇÃO',async el=>{
+      const start=el.querySelector('#adminStartTime').value,finish=el.querySelector('#adminFinishTime').value,reason=el.querySelector('#adminTimeReason').value.trim();
+      if(!reason){alert('Informe a justificativa.');return false;}
+      let total=parseDuration(el.querySelector('#adminTotalTime').value);
+      if(start&&finish){const a=new Date(start).getTime(),b=new Date(finish).getTime();if(!Number.isFinite(a)||!Number.isFinite(b)||b<a){alert('Confira os horários de início e fim.');return false;}total=Math.floor((b-a)/1000);}
+      if(total===null||total<0){alert('Informe um tempo válido em HH:MM:SS.');return false;}
+      const payload={total_service_seconds:total};if(start)payload.started_at=new Date(start).toISOString();if(finish)payload.finished_at=new Date(finish).toISOString();
+      const {error}=await db.from('os_orders').update(payload).eq('id',osId);if(error)throw error;
+      const now=new Date().toISOString();await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:'PCM / Administrador',action:'TEMPO/HORÁRIO AJUSTADO PELO PCM',reason,started_at:payload.started_at||null,ended_at:payload.finished_at||now,duration_seconds:total});
+      await loadDashboardData();return true;
+    });
   };
 
   window.releaseFinalizedOS=async function(osId){
