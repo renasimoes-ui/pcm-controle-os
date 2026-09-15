@@ -5145,125 +5145,7 @@ async function exportHistoryPDF(){
     fixedNav.__pcmFixed=true;window.navigateTo=fixedNav;
   }
 })();
-</script>
-
-
-<style id="pcmFactoryNavigationFix">
-/* =========================================================
-   FACTORY PRO — NAVEGAÇÃO COMPLETA / RETORNO / MOBILE
-   Mantém todos os botões do menu acessíveis.
-========================================================= */
-.pcm-page-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.pcm-back-btn,.pcm-home-btn,.pcm-menu-btn{
-  appearance:none;border:1px solid rgba(148,163,184,.20);background:rgba(15,23,42,.78);
-  color:#f8fafc;border-radius:11px;min-height:42px;padding:9px 13px;font-weight:800;
-  cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.16);transition:.18s ease
-}
-.pcm-back-btn:hover,.pcm-home-btn:hover,.pcm-menu-btn:hover{background:rgba(30,41,59,.95);transform:translateY(-1px)}
-#pcmMobileMenuButton{display:none;position:fixed;top:14px;left:14px;z-index:100003;width:46px;height:46px;padding:0;border-radius:13px}
-#pcmMobileDrawer{display:none}
-#pcmMobileOverlay{display:none}
-
-@media(max-width:800px){
-  /* O menu lateral deixa de desaparecer: vira uma gaveta completa. */
-  .sidebar{
-    display:block!important;position:fixed!important;left:0!important;top:0!important;bottom:0!important;
-    width:280px!important;max-width:86vw!important;height:100vh!important;z-index:100004!important;
-    transform:translateX(-105%);transition:transform .22s ease!important;
-    padding:18px 14px!important;overflow-y:auto!important;
-    box-shadow:22px 0 70px rgba(0,0,0,.55)!important;
-  }
-  body.pcm-menu-open .sidebar{transform:translateX(0)!important}
-  .sidebar-brand strong,.sidebar-brand span,.nav-btn span{display:block!important}
-  .nav-btn{justify-content:flex-start!important;width:100%!important;min-height:48px!important;margin-bottom:6px!important;padding:11px 13px!important;flex-direction:row!important;font-size:13px!important}
-  .nav-btn > span:first-child{font-size:17px!important;line-height:20px!important}
-  .nav-btn > span:last-child{font-size:13px!important;line-height:normal!important;max-width:none!important;overflow:visible!important}
-  .sidebar-bottom{position:static!important;margin-top:22px!important;padding-bottom:20px}
-  .logout-btn{min-height:46px!important}
-  .main{margin-left:0!important;padding:70px 12px 90px!important}
-  #pcmMobileMenuButton{display:grid;place-items:center}
-  #pcmMobileMenuButton::before{content:'☰';font-size:22px}
-  #pcmMobileMenuButton{font-size:0}
-  body.pcm-menu-open #pcmMobileMenuButton::before{content:'×';font-size:28px}
-  #pcmMobileOverlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:100003;opacity:0;pointer-events:none;transition:.2s ease}
-  body.pcm-menu-open #pcmMobileOverlay{opacity:1;pointer-events:auto}
-  .topbar{padding-top:2px!important}
-  .pcm-page-actions{width:100%;justify-content:flex-start}
-  .pcm-back-btn,.pcm-home-btn{min-height:40px;padding:8px 11px;font-size:11px}
-  #pcmMobileNav{z-index:100002!important}
-}
-
-@media(min-width:801px){
-  .pcm-back-btn,.pcm-home-btn{min-height:38px}
-}
-</style>
-
-<script id="pcmFactoryNavigationFixScript">
-(function(){
-  function goHome(){
-    try{ if(typeof navigateTo==='function') navigateTo('view-dashboard'); }catch(e){ console.warn('goHome',e); }
-    document.body.classList.remove('pcm-menu-open');
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-  function goBack(){
-    try{
-      if(history.length>1){
-        const prev=document.referrer;
-        if(prev && prev!==location.href){ history.back(); return; }
-      }
-    }catch(e){}
-    goHome();
-  }
-  window.pcmGoHome=goHome;
-  window.pcmGoBack=goBack;
-
-  function addMobileMenu(){
-    if(document.getElementById('pcmMobileMenuButton')) return;
-    const overlay=document.createElement('div');
-    overlay.id='pcmMobileOverlay';
-    overlay.addEventListener('click',()=>document.body.classList.remove('pcm-menu-open'));
-    document.body.appendChild(overlay);
-    const btn=document.createElement('button');
-    btn.id='pcmMobileMenuButton';btn.className='pcm-menu-btn';btn.setAttribute('aria-label','Abrir menu');
-    btn.onclick=()=>document.body.classList.toggle('pcm-menu-open');
-    document.body.appendChild(btn);
-
-    const sidebar=document.querySelector('.sidebar');
-    if(sidebar){
-      sidebar.addEventListener('click',e=>{
-        if(e.target.closest('.nav-btn') || e.target.closest('.logout-btn')){
-          setTimeout(()=>document.body.classList.remove('pcm-menu-open'),120);
-        }
-      });
-    }
-  }
-
-  function addTopbarNavigation(){
-    document.querySelectorAll('.app-view .topbar').forEach(top=>{
-      if(top.querySelector('.pcm-page-actions')) return;
-      const view=top.closest('.app-view'); if(!view) return;
-      const actions=document.createElement('div');actions.className='pcm-page-actions';
-      actions.innerHTML=`<button type="button" class="pcm-back-btn" onclick="pcmGoBack()">← Voltar</button><button type="button" class="pcm-home-btn" onclick="pcmGoHome()">⌂ Início</button>`;
-      top.appendChild(actions);
-    });
-  }
-
-  function addHomeToDashboard(){
-    const dash=document.querySelector('#view-dashboard .topbar');
-    if(!dash || dash.querySelector('.pcm-page-actions')) return;
-    const actions=document.createElement('div');actions.className='pcm-page-actions';
-    actions.innerHTML=`<button type="button" class="pcm-home-btn" onclick="pcmGoHome()">⌂ Início</button>`;
-    dash.appendChild(actions);
-  }
-
-  function ensureNavigation(){
-    addMobileMenu();addTopbarNavigation();addHomeToDashboard();
-  }
-
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(ensureNavigation,250));
-  window.addEventListener('resize',ensureNavigation);
-})();
-</script>
+<\/script>
 
 </body></html>`);
         popup.document.close();
@@ -6163,7 +6045,7 @@ document
     fixedNav.__pcmFixed=true;window.navigateTo=fixedNav;
   }
 })();
-</script>
+<\/script>
 
 </body></html>`);win.document.close();setTimeout(()=>win.print(),400);
   };
