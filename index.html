@@ -18,7 +18,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=YWXrthX-qbXrfb0MrGE8OL4qwVU_s2AaKKhzAO9_FAFC13zAqiqIl6NorrHefMfyRyQ5AZgxJjKQfMcSIQu1-3Rqiycj_3QbnSKaKQv3OhOGzDtVmAP_TxtyA8JiRRmi1FKtXM_vYRTAwDzC-KsD6OEd2GePs4HPyKAsGdilAWKmkGihMlkmRAT2BkKyYIhZEuTUWYFyGsIxAOxaN6c68v9kvKmMdi9XhxT2Se4FJfq3b--E2fmt_x9mzWoM1HS4JQbQCrHROBAtz-h7iKPYJoRfgOw7WQz7lpVUjWRaLOalq7TRgT9gbdEApOk5Orv9-_KmdgbTEKNeYT2O8j_P1g" charset="UTF-8"></script><style>
+<style>
 *{
     box-sizing:border-box;
 }
@@ -3149,7 +3149,7 @@ function renderKanban(){
         "PAUSADA": document.getElementById("kanbanPausada"),
         "AGUARDANDO MATERIAL": document.getElementById("kanbanMaterial"),
         "FINALIZADA": document.getElementById("kanbanFinalizada"),
-        "FINALIZADA - AGUARDANDO OBSERVAÇÃO": document.getElementById("kanbanFinalizada")
+        "FINALIZADA - OBSERVAÇÃO": document.getElementById("kanbanFinalizada")
     };
     Object.values(containers).forEach(c=>{if(c)c.innerHTML="";});
     dashboardOrders.forEach(order=>{
@@ -3174,11 +3174,11 @@ function createAdminOSCard(order){
     if(order.status === "AGUARDANDO MATERIAL"){
         actions += `<button class="action-btn btn-material" onclick="openReleaseModal(${order.material_request_id || "null"},${order.id})">LIBERAR APÓS MATERIAL</button>`;
     }
-    if(order.status === "FINALIZADA" || order.status === "FINALIZADA - AGUARDANDO OBSERVAÇÃO"){
+    if(order.status === "FINALIZADA" || order.status === "FINALIZADA - OBSERVAÇÃO"){
         actions += `<button class="action-btn btn-start" onclick="releaseFinalizedOS(${order.id})">LIBERAR PARA OBSERVAÇÃO</button>`;
     }
 
-    const statusLabel = order.status === "FINALIZADA - AGUARDANDO OBSERVAÇÃO" ? "FINALIZADA • AGUARDANDO OBSERVAÇÃO" : order.status;
+    const statusLabel = order.status === "FINALIZADA - OBSERVAÇÃO" ? "FINALIZADA • AGUARDANDO OBSERVAÇÃO" : order.status;
     return `
         <div class="os-card">
             <div class="os-card-top"><div class="os-number">${escapeHtml(order.os_number)}</div><div class="priority ${priorityClass(order.priority)}">${escapeHtml(order.priority||"MODERADA")}</div></div>
@@ -3407,7 +3407,7 @@ function createEmployeeCard(order){
         }
     }
 
-    if(order.status === "FINALIZADA - AGUARDANDO OBSERVAÇÃO") buttons=`<div class="factory-note warning">📝 O PCM liberou esta O.S. para completar a observação.</div><button class="action-btn btn-start" onclick="openObservationModal(${order.id})">📝 ADICIONAR OBSERVAÇÃO</button>`;
+    if(order.status === "FINALIZADA - OBSERVAÇÃO") buttons=`<div class="factory-note warning">📝 O PCM liberou esta O.S. para completar a observação.</div><button class="action-btn btn-start" onclick="openObservationModal(${order.id})">📝 ADICIONAR OBSERVAÇÃO</button>`;
 
     return `<div class="employee-os">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div class="number">O.S. ${escapeHtml(order.os_number)}</div><div class="priority ${priorityClass(order.priority)}">${escapeHtml(order.priority||"")}</div></div>
@@ -5272,6 +5272,10 @@ document
     const esc=(value)=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
     window.showPCMToast=function(message,type="success",title=""){
+        const duplicateKey=String(type)+"|"+String(message);
+        const nowToast=Date.now();
+        if(window.__pcmLastToastKey===duplicateKey && nowToast-(window.__pcmLastToastAt||0)<1800) return;
+        window.__pcmLastToastKey=duplicateKey; window.__pcmLastToastAt=nowToast;
         const icons={success:"✓",error:"!",warning:"⚠",info:"i"};
         const toast=document.createElement("div");
         toast.className=`pcm-toast ${type}`;
@@ -5286,7 +5290,8 @@ document
         const text=String(message??"");
         const lower=text.toLowerCase();
         let type="success",title="Tudo certo";
-        if(lower.includes("erro")||lower.includes("não foi")||lower.includes("violates")||lower.includes("falha")){type="error";title="Não foi possível concluir"}
+        if(lower.includes("value too long")||lower.includes("character varying")){type="error";title="Campo muito longo";}
+        if(lower.includes("erro")||lower.includes("não foi")||lower.includes("violates")||lower.includes("falha")||lower.includes("value too long")||lower.includes("character varying")||lower.includes("duplicate")||lower.includes("constraint")||lower.includes("permission")||lower.includes("rls")){type="error";title="Não foi possível concluir"}
         else if(lower.includes("atenção")||lower.includes("precisa")||lower.includes("já possui")){type="warning";title="Atenção"}
         showPCMToast(text,type,title);
     };
@@ -5384,7 +5389,7 @@ document
       const text=[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.description,o.pause_reason].join(' ').toLowerCase();
       return (!q||text.includes(q))&&(status==='TODAS'||o.status===status);
     });
-    const containers={"O.S. ABERTA":document.getElementById('kanbanAberta'),"EM PRODUÇÃO":document.getElementById('kanbanProducao'),"PAUSADA":document.getElementById('kanbanPausada'),"AGUARDANDO MATERIAL":document.getElementById('kanbanMaterial'),"FINALIZADA":document.getElementById('kanbanFinalizada'),"FINALIZADA - AGUARDANDO OBSERVAÇÃO":document.getElementById('kanbanFinalizada')};
+    const containers={"O.S. ABERTA":document.getElementById('kanbanAberta'),"EM PRODUÇÃO":document.getElementById('kanbanProducao'),"PAUSADA":document.getElementById('kanbanPausada'),"AGUARDANDO MATERIAL":document.getElementById('kanbanMaterial'),"FINALIZADA":document.getElementById('kanbanFinalizada'),"FINALIZADA - OBSERVAÇÃO":document.getElementById('kanbanFinalizada')};
     Object.values(containers).forEach(c=>{if(c)c.innerHTML='';});
     filtered.forEach(o=>{const c=containers[o.status];if(c)c.insertAdjacentHTML('beforeend',typeof createAdminOSCard==='function'?createAdminOSCard(o):'');});
     Object.entries(containers).forEach(([st,c])=>{if(c&&!c.innerHTML)c.innerHTML=`<div class="pcm-empty">Nenhuma O.S. encontrada</div>`;});
@@ -5831,13 +5836,13 @@ document
   };
 
   window.releaseFinalizedOS=async function(osId){
-    if(!isAdmin)return;const order=await getOrder(osId);if(!['FINALIZADA','FINALIZADA - AGUARDANDO OBSERVAÇÃO'].includes(order.status))return;
-    modal('releaseFinalModal','Liberar O.S. para observação','A O.S. continuará finalizada, mas ficará disponível para o funcionário completar a observação. Isso não reinicia o cronômetro.',`<div class="factory-note">Responsável: <b>${escapeHtml(order.responsible||'-')}</b><br>Tempo registrado: <b>${formatSeconds(order.total_service_seconds)}</b></div>`,'LIBERAR',async()=>{const now=new Date().toISOString();const {error}=await db.from('os_orders').update({status:'FINALIZADA - AGUARDANDO OBSERVAÇÃO'}).eq('id',osId);if(error)throw error;await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:'PCM / Administrador',action:'LIBERADA PARA OBSERVAÇÃO',reason:'O.S. liberada para o funcionário completar a observação final.',started_at:null,ended_at:now,duration_seconds:0});await loadDashboardData();return true;});
+    if(!isAdmin)return;const order=await getOrder(osId);if(!['FINALIZADA','FINALIZADA - OBSERVAÇÃO'].includes(order.status))return;
+    modal('releaseFinalModal','Liberar O.S. para observação','A O.S. continuará finalizada, mas ficará disponível para o funcionário completar a observação. Isso não reinicia o cronômetro.',`<div class="factory-note">Responsável: <b>${escapeHtml(order.responsible||'-')}</b><br>Tempo registrado: <b>${formatSeconds(order.total_service_seconds)}</b></div>`,'LIBERAR',async()=>{const now=new Date().toISOString();const {error}=await db.from('os_orders').update({status:'FINALIZADA - OBSERVAÇÃO'}).eq('id',osId);if(error)throw error;await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:'PCM / Administrador',action:'LIBERADA PARA OBSERVAÇÃO',reason:'O.S. liberada para o funcionário completar a observação final.',started_at:null,ended_at:now,duration_seconds:0});await loadDashboardData();return true;});
   };
 
   window.openObservationModal=async function(osId){
-    if(!currentUser||isAdmin)return;const order=await getOrder(osId);if(order.status!=='FINALIZADA - AGUARDANDO OBSERVAÇÃO'||!isMine(order))return;
-    modal('observationModal','Observação final','Registre a observação do serviço realizado. A O.S. continuará como finalizada.',`<label>Observação *</label><textarea id="finalObsInput" style="min-height:150px" placeholder="Descreva o que foi realizado, condição encontrada, pendência ou recomendação..."></textarea>`, 'SALVAR OBSERVAÇÃO',async el=>{const obs=el.querySelector('#finalObsInput').value.trim();if(!obs){alert('Informe a observação.');return false;}const now=new Date().toISOString();const prefix=`[${new Date().toLocaleString('pt-BR')}] ${currentUser}: `;const combined=(order.observations?order.observations+'\n':'')+prefix+obs;const {error}=await db.from('os_orders').update({observations:combined,status:'FINALIZADA'}).eq('id',osId).eq('status','FINALIZADA - AGUARDANDO OBSERVAÇÃO');if(error)throw error;await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:currentUser,action:'OBSERVAÇÃO REGISTRADA',reason:obs,started_at:null,ended_at:now,duration_seconds:0});await loadEmployeeOrders();return true;});
+    if(!currentUser||isAdmin)return;const order=await getOrder(osId);if(order.status!=='FINALIZADA - OBSERVAÇÃO'||!isMine(order))return;
+    modal('observationModal','Observação final','Registre a observação do serviço realizado. A O.S. continuará como finalizada.',`<label>Observação *</label><textarea id="finalObsInput" style="min-height:150px" placeholder="Descreva o que foi realizado, condição encontrada, pendência ou recomendação..."></textarea>`, 'SALVAR OBSERVAÇÃO',async el=>{const obs=el.querySelector('#finalObsInput').value.trim();if(!obs){alert('Informe a observação.');return false;}const now=new Date().toISOString();const prefix=`[${new Date().toLocaleString('pt-BR')}] ${currentUser}: `;const combined=(order.observations?order.observations+'\n':'')+prefix+obs;const {error}=await db.from('os_orders').update({observations:combined,status:'FINALIZADA'}).eq('id',osId).eq('status','FINALIZADA - OBSERVAÇÃO');if(error)throw error;await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:currentUser,action:'OBSERVAÇÃO REGISTRADA',reason:obs,started_at:null,ended_at:now,duration_seconds:0});await loadEmployeeOrders();return true;});
   };
 
   // Navegação definitiva: funcionário só recebe MINHAS O.S.
