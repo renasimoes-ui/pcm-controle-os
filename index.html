@@ -13,25 +13,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:,">
-<!-- PROTEÇÃO CONTRA CACHE/SERVICE WORKER ANTIGO -->
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=heTGpr4Ep6d0PDjKxT0sHhPPlIp9gCeRM0NvSb-6xEelV7Bi1exHAmRJnLMHGnjs81WeYHXkkC3ZAR6hyS1ehAK29ff08joDhHPRdtMQi2uCeIX2eUda3wUBVOppnf1xHA1iiBof3_QGo7tPwx9KiV7M3cj7U7dJEAHLhkYHqqpurLvTrLjtYci1RBzbvAIOEoWZn2_GiQ6X1oCFDVqiiAPUSzSzSxnWvQK9iqNBWgYesz4vLyE8SsA2rGiCSCKg9BxBJ_pZA8F3MvDXfq4uQFWHN2_bZmXvaoSsACguZr6Ev4xQyNEMI30vpRHKQ0DyA8YDHrPpNFdtAQNdn8Of-A" charset="UTF-8"></script><script>
-(function(){
-  try{
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.getRegistrations().then(function(regs){
-        if(!regs || !regs.length) return;
-        return Promise.all(regs.map(function(r){ return r.unregister().catch(function(){return false;}); }));
-      }).then(function(){
-        if(window.caches && typeof caches.keys === 'function'){
-          return caches.keys().then(function(keys){
-            return Promise.all(keys.map(function(k){ return caches.delete(k).catch(function(){return false;}); }));
-          });
-        }
-      }).catch(function(){});
-    }
-  }catch(e){}
-})();
-</script>
 
 <title>PCM • Controle de O.S.</title>
 
@@ -1309,32 +1290,21 @@ body{min-height:100dvh;overflow-x:hidden;-webkit-text-size-adjust:100%;}
   .history-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
   .history-actions button{width:100%;min-height:42px}
 }
+/* ESTABILIDADE MOBILE */
+html,body{width:100%;min-height:100%;overflow-x:hidden;-webkit-text-size-adjust:100%;}
+body{-webkit-overflow-scrolling:touch;}
+button,input,select,textarea{font:inherit;}
+@media(max-width:767px){
+  body{min-height:100dvh;}
+  #loginScreen{min-height:100dvh;width:100%;padding:16px;}
+  .login-card{width:min(100%,430px);max-width:100%;}
+  .form-input,.form-select{font-size:16px!important;}
+}
 </style>
 </head>
 
 <body>
 <!-- BOOT MOBILE: a interface abre antes do Supabase -->
-<div id="mobileBoot" style="position:fixed;inset:0;z-index:999999;background:#020617;color:#e5e7eb;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;font-family:Arial,sans-serif;">
-  <div style="width:min(380px,92vw);padding:28px 22px;border:1px solid #334155;border-radius:18px;background:#0f172a;box-shadow:0 20px 60px rgba(0,0,0,.55)">
-    <div style="font-size:11px;letter-spacing:3px;color:#94a3b8;font-weight:700">PCM</div>
-    <div style="font-size:22px;font-weight:800;margin-top:8px">CONTROLE DE O.S.</div>
-    <div id="mobileBootMsg" style="font-size:12px;color:#64748b;margin-top:10px">Carregando sistema...</div>
-  </div>
-</div>
-<script>
-(function(){
-  var loaded=false;
-  function hideBoot(){var e=document.getElementById('mobileBoot');if(e)e.style.display='none';}
-  function msg(t){var e=document.getElementById('mobileBootMsg');if(e)e.textContent=t;}
-  window.__pcmHideBoot=hideBoot;
-  window.__pcmBootMessage=msg;
-  function load(src, ok, fail){var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=fail;document.head.appendChild(s);}
-  function finish(){if(window.supabase&&typeof window.supabase.createClient==='function'){loaded=true;hideBoot();return true;}return false;}
-  load('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',function(){if(!finish())load('https://unpkg.com/@supabase/supabase-js@2',function(){if(!finish())load('https://esm.sh/@supabase/supabase-js@2',finish,function(){msg('Não foi possível carregar a conexão. Verifique a internet e toque em atualizar.');});},function(){load('https://esm.sh/@supabase/supabase-js@2',finish,function(){msg('Não foi possível carregar a conexão. Verifique a internet e toque em atualizar.');});});},function(){load('https://unpkg.com/@supabase/supabase-js@2',function(){if(!finish())load('https://esm.sh/@supabase/supabase-js@2',finish,function(){msg('Não foi possível carregar a conexão. Verifique a internet e toque em atualizar.');});},function(){load('https://esm.sh/@supabase/supabase-js@2',finish,function(){msg('Não foi possível carregar a conexão. Verifique a internet e toque em atualizar.');});});});
-  setTimeout(function(){if(!loaded && window.supabase)finish();},8000);
-})();
-</script>
-
 <!-- Fallback visual: se algum erro de JavaScript ocorrer no celular, nunca deixa uma tela preta sem explicação. -->
 <div id="pcmBootError" style="display:none;position:fixed;inset:0;z-index:999999;background:#020617;color:#e5e7eb;padding:28px 20px;font-family:Arial,sans-serif;align-items:center;justify-content:center;text-align:center;">
   <div style="width:min(430px,100%);border:1px solid #334155;border-radius:18px;padding:24px;background:#0f172a;box-shadow:0 20px 60px rgba(0,0,0,.45);">
@@ -1374,7 +1344,15 @@ window.addEventListener('unhandledrejection',function(ev){
 
         <label class="form-label">USUÁRIO</label>
         <select id="loginUser" class="form-select">
-            <option value="">Carregando usuários...</option>
+            <option value="">Selecione o usuário</option>
+            <option value="PCM / Administrador">PCM / Administrador — ADMIN</option>
+            <option value="Adryan">Adryan</option>
+            <option value="Fabio">Fabio</option>
+            <option value="Rodrigo">Rodrigo</option>
+            <option value="Leonardo">Leonardo</option>
+            <option value="Vilmar">Vilmar</option>
+            <option value="Rafael">Rafael</option>
+            <option value="Danilo">Danilo</option>
         </select>
 
         <div style="height:15px"></div>
@@ -2298,7 +2276,14 @@ async function login(){
         return;
     }
 
-    await loadUsers();
+    try{
+        await loadUsers();
+    }catch(e){
+        // Mantém a tela de login utilizável mesmo se a biblioteca/conexão demorar no celular.
+        usersRows = defaultUsers.slice();
+        usersDB = {};
+        usersRows.forEach(u=>{ usersDB[u.name]=String(u.pin||""); });
+    }
 
     const user =
         document.getElementById("loginUser").value;
@@ -5468,8 +5453,8 @@ document
 (function(){
     document.addEventListener("DOMContentLoaded",function(){
         setTimeout(function(){
-            loadUsers().catch(function(e){ console.error("Inicialização de usuários",e); });
-        },50);
+            loadUsers().catch(function(e){ console.warn("Usuários ainda não disponíveis; o login permanece acessível.",e); });
+        },150);
     });
 })();
 </script>
