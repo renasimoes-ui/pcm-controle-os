@@ -13,20 +13,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:,">
-<!-- SUPABASE: carregamento antecipado para evitar tela preta em celulares -->
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=GNHNKbQ5u9KiRofofWhsWjk688ZUw0D7Id4vxBdRkCZnISETdjQBHHrSyR2kiRuEfwAa97v9LwEveDsP8dgfcC9wtCcU73epPpMFsJCx0TOEQzEGqfpwUEW3zQwe7Tt1fpzzL2_Opxr31Zz7Fup-koxYH9NSV_bEqeP6vP0peglrH3UxL5VX_5KgkDKBmuSu2KIJSmuQlksGJN_PSckm4avfAMY4OjmDO8J3c0L0cvWb1JUcvKkaX5YVqLRa5SAtRjAkJWzmwOvcT25yi0XdMOAXIjGVlhrz_NDyiEdDM_7BjfZxVFvi2JnkretLAEPr" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(function(){
-  if(!window.supabase || typeof window.supabase.createClient !== "function"){
-    var s=document.createElement("script");
-    s.src="https://unpkg.com/@supabase/supabase-js@2";
-    document.head.appendChild(s);
-  }
-})();
-</script>
-
 <!-- PROTEÇÃO CONTRA CACHE/SERVICE WORKER ANTIGO -->
-<script>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=fk39_v9JhvplpK6rOJSf2O9lTiJOnpjdUBp5C_dtrrTcqDAoZXxhgL6PgtNSjy3GaI9MoXNT6jrb7F1Oii4l39NUxKEi1fEd8jXDln7mnn-eZ8bGVy3BuVG3b5zjzwJBDsdYlZMUK5Z3b1ugIXtRhtw4uIKlPApWV7oJX3alfiysbovbqFbNigYP2OF1zERPxP2G2yBTjVymvh-LhpC1gyAZ4MZkKcc3Q_0LAaQ0x51ax2aOlUb2TkNdvDFrhBR7KqBeQDaEYw-D_G0TrXAdZYG-uYBPqsIrZOxc2ZnNuTWycTsAF1v4P6BPBv7DkHIpsqvOKvQCXmhQBqgdENiQgQ" charset="UTF-8"></script><script>
 (function(){
   try{
     if('serviceWorker' in navigator){
@@ -1325,6 +1313,27 @@ body{min-height:100dvh;overflow-x:hidden;-webkit-text-size-adjust:100%;}
 </head>
 
 <body>
+<!-- BOOT MOBILE: a interface abre antes do Supabase -->
+<div id="mobileBoot" style="position:fixed;inset:0;z-index:999999;background:#020617;color:#e5e7eb;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;font-family:Arial,sans-serif;">
+  <div style="width:min(380px,92vw);padding:28px 22px;border:1px solid #334155;border-radius:18px;background:#0f172a;box-shadow:0 20px 60px rgba(0,0,0,.55)">
+    <div style="font-size:11px;letter-spacing:3px;color:#94a3b8;font-weight:700">PCM</div>
+    <div style="font-size:22px;font-weight:800;margin-top:8px">CONTROLE DE O.S.</div>
+    <div id="mobileBootMsg" style="font-size:12px;color:#64748b;margin-top:10px">Carregando sistema...</div>
+  </div>
+</div>
+<script>
+(function(){
+  var loaded=false;
+  function hideBoot(){var e=document.getElementById('mobileBoot');if(e)e.style.display='none';}
+  function msg(t){var e=document.getElementById('mobileBootMsg');if(e)e.textContent=t;}
+  window.__pcmHideBoot=hideBoot;
+  window.__pcmBootMessage=msg;
+  function load(src, ok, fail){var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=fail;document.head.appendChild(s);}
+  function finish(){if(window.supabase&&typeof window.supabase.createClient==='function'){loaded=true;hideBoot();return true;}return false;}
+  load('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',function(){if(!finish())load('https://unpkg.com/@supabase/supabase-js@2',function(){if(!finish())load('https://esm.sh/@supabase/supabase-js@2',finish,function(){msg('Não foi possível carregar a conexão. Verifique a internet e toque em atualizar.');});},function(){load('https://esm.sh/@supabase/supabase-js@2',finish,function(){msg('Não foi possível carregar a conexão. Verifique a internet e toque em atualizar.');});});},function(){load('https://unpkg.com/@supabase/supabase-js@2',function(){if(!finish())load('https://esm.sh/@supabase/supabase-js@2',finish,function(){msg('Não foi possível carregar a conexão. Verifique a internet e toque em atualizar.');});},function(){load('https://esm.sh/@supabase/supabase-js@2',finish,function(){msg('Não foi possível carregar a conexão. Verifique a internet e toque em atualizar.');});});});
+  setTimeout(function(){if(!loaded && window.supabase)finish();},8000);
+})();
+</script>
 
 <!-- Fallback visual: se algum erro de JavaScript ocorrer no celular, nunca deixa uma tela preta sem explicação. -->
 <div id="pcmBootError" style="display:none;position:fixed;inset:0;z-index:999999;background:#020617;color:#e5e7eb;padding:28px 20px;font-family:Arial,sans-serif;align-items:center;justify-content:center;text-align:center;">
