@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=CYT4xa5tlSvygZroAST_cU5ISPX9ZvSydAUSAxsQR3mq9rSF9ggWDgVAQtvIuJObPohDwVZqRQ2ECnlzDxLdx2TZEr9Ek0BOcREKC7RNAcE394it7Dq7Kc-aJ1idoMsDa7g3lIwT4dU3FmNcFP4FinFNaGRLXyi-ZDSuykanPwfCHPLt-YAC6o8xEREFifQFyuT2ssr3i4s9IDAaF2oY2tXzJT2SuOv1YRQ0WZ7V101ipyqiWHYbBTv7WWpUrycuXUZAs-vrlMfUNKL-bnlgYe4IIPLEc8wBjAHpHYNJ7kNgyh2pCB_fgAKTHu0R1q0KXM8rywyh44TG9CjAo1dbr_3w8nM4sNyf49zEOwS75ww" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=CpVU2keE4xsjlaEhvapr7kel5OA2LN7GHWpccLB-F0RS4FB0686ixmW5ytuEUPxymj5N4yW2eUK6jW2D9Lr5i5dvHo7wMVV_g3x7-pU_ZoxzKma7rEOHt5YkquZLTSc0lwaA90n_WLWqezy0-UoMBpypXAcbBSVlXwdl4K4VXRkLdith582TKHyxCmCqCSDwZaGoy0CB-dSMiJmj7Tv91BWpDPabI-wWZOTyNsbeCsLImXLR6eNTO3fIq4JCmRWedfv-3N3W9WYgE6UaSqYsGQ" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -1553,6 +1553,49 @@ input, select, textarea, button {
 }
 </style>
 
+<style id="controle-os-login-modern">
+:root{--os-blue:#38bdf8;--os-bg:#020617;--os-text:#f8fafc}
+#loginScreen.os-login-modern{min-height:100vh;min-height:100svh;width:100%;position:relative;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);align-items:stretch;overflow:auto;padding:0;isolation:isolate;background:radial-gradient(circle at 18% 18%,rgba(56,189,248,.12),transparent 30%),radial-gradient(circle at 82% 78%,rgba(37,99,235,.12),transparent 32%),linear-gradient(135deg,#020617,#07111f 52%,#020617)}
+#loginScreen.os-login-modern .os-login-bg{position:absolute;inset:0;z-index:-2;overflow:hidden;background:linear-gradient(90deg,rgba(2,6,23,.96),rgba(2,6,23,.78) 45%,rgba(2,6,23,.94))}
+#loginScreen.os-login-modern .os-grid{position:absolute;inset:-20%;opacity:.18;background-image:linear-gradient(rgba(56,189,248,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.08) 1px,transparent 1px);background-size:48px 48px;transform:perspective(700px) rotateX(58deg) scale(1.5);transform-origin:center bottom}
+#loginScreen.os-login-modern .os-glow{position:absolute;width:420px;height:420px;border-radius:50%;background:rgba(56,189,248,.08);filter:blur(70px);top:-140px;left:-100px}
+#loginScreen.os-login-modern .os-brand-side{min-width:0;display:flex;align-items:center;justify-content:center;padding:48px clamp(24px,7vw,100px)}
+#loginScreen.os-login-modern .os-brand-content{width:min(560px,100%);color:var(--os-text)}
+#loginScreen.os-login-modern .os-brand-top{display:flex;align-items:center;gap:12px;margin-bottom:30px}
+#loginScreen.os-login-modern .os-brand-mark{width:58px;height:58px;flex:0 0 58px;border:1px solid rgba(148,163,184,.35);border-radius:17px;display:grid;place-items:center;background:linear-gradient(145deg,#172033,#07101c);box-shadow:0 15px 40px rgba(0,0,0,.35);position:relative}
+#loginScreen.os-login-modern .os-brand-mark:before{content:"";width:26px;height:26px;border:3px solid #e2e8f0;border-radius:7px;transform:rotate(45deg)}
+#loginScreen.os-login-modern .os-brand-mark:after{content:"";position:absolute;width:10px;height:10px;border-radius:50%;background:var(--os-blue);box-shadow:0 0 20px rgba(56,189,248,.65)}
+#loginScreen.os-login-modern .os-eyebrow{color:#60a5fa;font-size:10px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;margin-bottom:5px}
+#loginScreen.os-login-modern .os-brand-company{color:#cbd5e1;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+#loginScreen.os-login-modern h1{margin:0;font-size:clamp(34px,5vw,64px);line-height:.98;letter-spacing:-.045em;font-weight:950}
+#loginScreen.os-login-modern .os-brand-subtitle{margin:18px 0 0;color:#a8b6c9;font-size:15px;line-height:1.6;max-width:470px}
+#loginScreen.os-login-modern .os-brand-line{width:88px;height:3px;margin:24px 0 0;border-radius:99px;background:linear-gradient(90deg,var(--os-blue),transparent)}
+#loginScreen.os-login-modern .os-feature-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:38px;max-width:540px}
+#loginScreen.os-login-modern .os-feature{padding:14px 12px;border:1px solid rgba(51,65,85,.7);border-radius:14px;background:rgba(15,23,42,.55);backdrop-filter:blur(12px)}
+#loginScreen.os-login-modern .os-feature strong{display:block;color:#e2e8f0;font-size:11px;margin-bottom:4px}
+#loginScreen.os-login-modern .os-feature span{color:#718198;font-size:9px;line-height:1.35}
+#loginScreen.os-login-modern .os-login-side{min-width:0;display:flex;align-items:center;justify-content:center;padding:30px clamp(18px,5vw,70px);background:linear-gradient(90deg,rgba(2,6,23,.05),rgba(2,6,23,.42))}
+#loginScreen.os-login-modern .os-login-card{width:min(430px,100%);padding:30px;border:1px solid rgba(71,85,105,.72);border-radius:24px;background:linear-gradient(180deg,rgba(15,23,42,.97),rgba(7,14,25,.97));box-shadow:0 30px 90px rgba(0,0,0,.52),0 0 0 1px rgba(255,255,255,.015) inset}
+#loginScreen.os-login-modern .os-card-icon{width:50px;height:50px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(145deg,rgba(56,189,248,.18),rgba(37,99,235,.08));border:1px solid rgba(56,189,248,.22);margin-bottom:20px}
+#loginScreen.os-login-modern .os-card-icon svg{width:25px;height:25px;stroke:#7dd3fc}
+#loginScreen.os-login-modern .os-kicker{color:#60a5fa;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+#loginScreen.os-login-modern .os-login-card h2{margin:7px 0 5px;color:#f8fafc;font-size:27px;letter-spacing:-.03em}
+#loginScreen.os-login-modern .os-card-subtitle{margin:0 0 25px;color:#7f91aa;font-size:12px;line-height:1.5}
+#loginScreen.os-login-modern .os-field{margin-bottom:16px}
+#loginScreen.os-login-modern .os-field label{display:block;margin-bottom:7px;color:#b8c5d7;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+#loginScreen.os-login-modern .os-input-wrap{position:relative}
+#loginScreen.os-login-modern .os-input-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:#64748b;pointer-events:none}
+#loginScreen.os-login-modern select,#loginScreen.os-login-modern input{width:100%;min-height:50px;border:1px solid #26364b;border-radius:13px;outline:none;background:#07101d;color:#f8fafc;padding:0 14px 0 43px;font-size:16px!important;-webkit-appearance:none;appearance:none;box-sizing:border-box}
+#loginScreen.os-login-modern select{padding-right:42px}
+#loginScreen.os-login-modern select:focus,#loginScreen.os-login-modern input:focus{border-color:rgba(56,189,248,.62);box-shadow:0 0 0 3px rgba(56,189,248,.09)}
+#loginScreen.os-login-modern .os-select-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#64748b;pointer-events:none;font-size:13px}
+#loginScreen.os-login-modern .os-login-btn{width:100%;min-height:52px;margin-top:5px;border:0;border-radius:13px;cursor:pointer;color:#02111d;font-size:13px;font-weight:950;letter-spacing:.04em;background:linear-gradient(135deg,#e0f2fe,#7dd3fc);box-shadow:0 12px 30px rgba(56,189,248,.16)}
+#loginScreen.os-login-modern .os-login-error{margin-top:12px;padding:10px 12px;border:1px solid rgba(239,68,68,.25);border-radius:11px;background:rgba(127,29,29,.18);color:#fca5a5;font-size:11px;line-height:1.4;text-align:center}
+#loginScreen.os-login-modern .os-login-footer{margin-top:22px;padding-top:16px;border-top:1px solid #1b283a;color:#607087;font-size:9px;text-align:center}
+#loginScreen.os-login-modern .os-login-footer strong{color:#93a4ba}
+@media(max-width:900px){#loginScreen.os-login-modern{grid-template-columns:1fr;min-height:100vh;min-height:100svh}#loginScreen.os-login-modern .os-brand-side{padding:28px 18px 10px}#loginScreen.os-login-modern .os-brand-content{text-align:center}#loginScreen.os-login-modern .os-brand-top{justify-content:center;margin-bottom:19px}#loginScreen.os-login-modern h1{font-size:32px}#loginScreen.os-login-modern .os-brand-subtitle{margin:10px auto 0;font-size:12px;max-width:340px}#loginScreen.os-login-modern .os-brand-line{margin:15px auto 0}#loginScreen.os-login-modern .os-feature-list{margin:20px auto 0;max-width:430px;gap:7px}#loginScreen.os-login-modern .os-feature{padding:10px 7px}#loginScreen.os-login-modern .os-feature strong{font-size:9px}#loginScreen.os-login-modern .os-feature span{font-size:8px}#loginScreen.os-login-modern .os-login-side{padding:12px 14px 28px;align-items:flex-start}#loginScreen.os-login-modern .os-login-card{padding:22px 18px;border-radius:20px}}
+@media(max-width:420px){#loginScreen.os-login-modern .os-brand-side{padding-top:20px}#loginScreen.os-login-modern .os-brand-mark{width:48px;height:48px;flex-basis:48px;border-radius:14px}#loginScreen.os-login-modern .os-brand-mark:before{width:21px;height:21px}#loginScreen.os-login-modern h1{font-size:28px}#loginScreen.os-login-modern .os-login-card{padding:20px 15px}}
+</style>
 </head>
 
 <body>
@@ -1623,56 +1666,25 @@ window.addEventListener('unhandledrejection',function(ev){
 
 <!-- LOGIN -->
 
-<section id="loginScreen">
-    <div class="login-bg"></div>
-
-    <div class="login-card">
-
-        <div class="ab-logo">AB</div>
-
-        <div class="login-brand">
-            <div class="small">PCM • CONTROLE INDUSTRIAL</div>
-            <h1>CONTROLE DE O.S.</h1>
-            <p>Gestão de manutenção industrial</p>
-        </div>
-
-        <label class="form-label">USUÁRIO</label>
-        <select id="loginUser" class="form-select">
-            <option value="">Selecione o usuário</option>
-            <option value="PCM / Administrador">PCM / Administrador — ADMIN</option>
-            <option value="Adryan">Adryan</option>
-            <option value="Fabio">Fabio</option>
-            <option value="Rodrigo">Rodrigo</option>
-            <option value="Leonardo">Leonardo</option>
-            <option value="Vilmar">Vilmar</option>
-            <option value="Rafael">Rafael</option>
-            <option value="Danilo">Danilo</option>
-        </select>
-
-        <div style="height:15px"></div>
-
-        <label class="form-label">PIN</label>
-        <input
-            id="loginPin"
-            class="form-input"
-            type="password"
-            inputmode="numeric"
-            maxlength="4"
-            placeholder="Digite seu PIN"
-        >
-
-        <button class="login-btn" onclick="login()">
-            ENTRAR
-        </button>
-
-        <div id="loginError" class="login-error hidden">
-            Usuário ou PIN incorreto.
-        </div>
-
-    </div>
-</section>
-
-
+<section id="loginScreen" class="os-login-modern">
+<div class="os-login-bg"><div class="os-grid"></div><div class="os-glow"></div></div>
+<div class="os-brand-side"><div class="os-brand-content">
+<div class="os-brand-top"><div class="os-brand-mark"></div><div><div class="os-eyebrow">PCM • CONTROLE INDUSTRIAL</div><div class="os-brand-company">AB Florestas e Madeiras</div></div></div>
+<h1>CONTROLE DE O.S.</h1>
+<p class="os-brand-subtitle">Gestão de ordens de serviço e manutenção industrial. Acompanhe, execute e finalize suas O.S. em um único sistema.</p>
+<div class="os-brand-line"></div>
+<div class="os-feature-list"><div class="os-feature"><strong>O.S.</strong><span>Abertas e em produção</span></div><div class="os-feature"><strong>PCM</strong><span>Planejamento e controle</span></div><div class="os-feature"><strong>STATUS</strong><span>Acompanhamento em tempo real</span></div></div>
+</div></div>
+<div class="os-login-side"><div class="os-login-card">
+<div class="os-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="10" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path><path d="M12 14v3"></path></svg></div>
+<div class="os-kicker">ACESSO SEGURO</div><h2>Acessar o sistema</h2><p class="os-card-subtitle">Selecione seu usuário e informe o PIN de acesso.</p>
+<form id="osLoginForm" onsubmit="event.preventDefault(); login();">
+<div class="os-field"><label for="loginUser">Usuário</label><div class="os-input-wrap"><svg class="os-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg><select id="loginUser" autocomplete="username" required><option value="">Selecione o usuário</option><option value="PCM / Administrador">PCM / Administrador — ADMIN</option><option value="Adryan">Adryan</option><option value="Fabio">Fabio</option><option value="Rodrigo">Rodrigo</option><option value="Leonardo">Leonardo</option><option value="Vilmar">Vilmar</option><option value="Rafael">Rafael</option><option value="Danilo">Danilo</option></select><span class="os-select-arrow">⌄</span></div></div>
+<div class="os-field"><label for="loginPin">PIN de acesso</label><div class="os-input-wrap"><svg class="os-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg><input id="loginPin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" placeholder="Digite seu PIN" required></div></div>
+<button type="submit" class="os-login-btn">ENTRAR NO CONTROLE DE O.S.</button></form>
+<div id="loginError" class="os-login-error hidden">Usuário ou PIN incorreto.</div>
+<div class="os-login-footer"><strong>PCM • CONTROLE INDUSTRIAL</strong><br>Sistema de gestão de manutenção</div>
+</div></div></section>
 <!-- APP -->
 
 <section id="app" class="hidden">
