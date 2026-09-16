@@ -18,7 +18,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=cg803ukPMMiI4Zglg4tuzS7oLd7G5XZR-w-WS5eycOmFNPsEX0tqSlS-f1R-m3wYH7oXudPUHNsZ1OLCLNW9QRe6kWDWu6_YW-faGq-08dTqIuZ6vTqbxP4AwsqsdwDgEvAFUauzv4Pe6QrwgFKlB377vzyYMUKiSex8pC9a2zg8A8KT0hQKYo9RATNBPDGedUqaCKJdPITnvF7B7YtxKASvGb4gO6Q7x_JfNH6XfbuQVKLCat0xXoxArqJk4mJkJMMYJ6DYj1gBqwEIKtADg8iiZPhBTQobG1nF3EPGBipv2oLhf7zab21JnM-Z71EXkPQYlrqPyQMMQldQHCZXww" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=89d3hDPMm9Xzw3FGJo1TJ2Lmczuc2y4bFYdrESGFOvetiiYHgwTi72AFvJK0gDVFaYWbeXg0X4Cdiu-hc0JdABclpwhDxQYXjIV9dedqbIKdU4M6WCT4JnfdDWUNZCjYobAoPf8pty13cdA6sabCqfYbT3awtRbIf0L2ZUG2dYdfJ1EKJpVMxZFgmv36dZqOyo9eHDJIPPBrQG36I8hA25LGDb6_sgCZm7vJwpONsRxWCabozLrVB8gUjO5gq2BbEQPpDSNE8a7xU_ckO_JtUKe4VARLR2foa1sgtT4I6a6slqVJ9p0jY00bpFewtGt7yeIXVgAwxcF5BINIbBuukA" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -3231,6 +3231,57 @@ function createAdminOSCard(order){
 
 
 
+
+/* Modal global exclusivo para a edição de O.S.
+   A função modal() original do sistema fica dentro de uma IIFE,
+   por isso não pode ser chamada diretamente por window.adminEditOS. */
+function adminEditOSModal(id,title,text,fields,okText,onOk){
+    let el=document.getElementById(id);
+    if(el) el.remove();
+
+    el=document.createElement('div');
+    el.id=id;
+    el.className='modal';
+    el.style.display='flex';
+
+    el.innerHTML=
+        `<div class="factory-modal-box">
+            <h3>${title}</h3>
+            <p>${text}</p>
+            ${fields||''}
+            <div class="factory-modal-actions">
+                <button type="button" class="factory-cancel" data-cancel>CANCELAR</button>
+                <button type="button" class="factory-ok" data-ok>${okText}</button>
+            </div>
+        </div>`;
+
+    document.body.appendChild(el);
+
+    const close=()=>el.remove();
+
+    const cancel=el.querySelector('[data-cancel]');
+    if(cancel) cancel.onclick=close;
+
+    el.onclick=e=>{
+        if(e.target===el) close();
+    };
+
+    const ok=el.querySelector('[data-ok]');
+    if(ok){
+        ok.onclick=async()=>{
+            try{
+                const done=await onOk(el);
+                if(done!==false) close();
+            }catch(e){
+                console.error(e);
+                alert(e.message||'Não foi possível concluir.');
+            }
+        };
+    }
+
+    return el;
+}
+
 /* =========================================================
    EDITAR O.S. PELO ADMINISTRADOR
    Edita a mesma O.S. no Supabase — não cria uma nova.
@@ -3355,7 +3406,7 @@ window.adminEditOS = async function(osId){
             </div>
         `;
 
-        modal(
+        adminEditOSModal(
             "adminEditOSModal",
             `✏️ Editar O.S. ${esc(order.os_number)}`,
             "Altere os dados necessários e salve. A O.S. original será atualizada no banco de dados.",
