@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -18,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=89d3hDPMm9Xzw3FGJo1TJ2Lmczuc2y4bFYdrESGFOvetiiYHgwTi72AFvJK0gDVFaYWbeXg0X4Cdiu-hc0JdABclpwhDxQYXjIV9dedqbIKdU4M6WCT4JnfdDWUNZCjYobAoPf8pty13cdA6sabCqfYbT3awtRbIf0L2ZUG2dYdfJ1EKJpVMxZFgmv36dZqOyo9eHDJIPPBrQG36I8hA25LGDb6_sgCZm7vJwpONsRxWCabozLrVB8gUjO5gq2BbEQPpDSNE8a7xU_ckO_JtUKe4VARLR2foa1sgtT4I6a6slqVJ9p0jY00bpFewtGt7yeIXVgAwxcF5BINIbBuukA" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=CYT4xa5tlSvygZroAST_cU5ISPX9ZvSydAUSAxsQR3mq9rSF9ggWDgVAQtvIuJObPohDwVZqRQ2ECnlzDxLdx2TZEr9Ek0BOcREKC7RNAcE394it7Dq7Kc-aJ1idoMsDa7g3lIwT4dU3FmNcFP4FinFNaGRLXyi-ZDSuykanPwfCHPLt-YAC6o8xEREFifQFyuT2ssr3i4s9IDAaF2oY2tXzJT2SuOv1YRQ0WZ7V101ipyqiWHYbBTv7WWpUrycuXUZAs-vrlMfUNKL-bnlgYe4IIPLEc8wBjAHpHYNJ7kNgyh2pCB_fgAKTHu0R1q0KXM8rywyh44TG9CjAo1dbr_3w8nM4sNyf49zEOwS75ww" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -854,7 +855,7 @@ html{
 }
 body{
     min-height:100vh;
-    min-height:100dvh;
+    min-height:100vh;
     overflow-x:hidden;
     -webkit-tap-highlight-color:transparent;
 }
@@ -873,11 +874,11 @@ button{
 }
 #loginScreen{
     min-height:100vh;
-    min-height:100dvh;
+    min-height:100vh;
     padding:20px;
 }
 .login-card{
-    max-height:calc(100dvh - 32px);
+    max-height:calc(100vh - 32px);
     overflow:auto;
 }
 .main{
@@ -1014,7 +1015,7 @@ img,svg,video{
         margin-left:0;
         width:100%;
         min-height:100vh;
-        min-height:100dvh;
+        min-height:100vh;
         padding:13px 12px 88px;
     }
 
@@ -1223,8 +1224,8 @@ img,svg,video{
 
 /* MOBILE SAFE LOAD */
 html,body{width:100%;min-height:100%;}
-body{min-height:100dvh;overflow-x:hidden;-webkit-text-size-adjust:100%;}
-#loginScreen{min-height:100dvh;width:100%;}
+body{min-height:100vh;overflow-x:hidden;-webkit-text-size-adjust:100%;}
+#loginScreen{min-height:100vh;width:100%;}
 @media(max-width:700px){
  .login-card{width:calc(100vw - 28px);max-width:430px;padding:26px 20px;}
  .form-input,.form-select,button{font-size:16px;}
@@ -1456,8 +1457,8 @@ html,body{width:100%;min-height:100%;overflow-x:hidden;-webkit-text-size-adjust:
 body{-webkit-overflow-scrolling:touch;}
 button,input,select,textarea{font:inherit;}
 @media(max-width:767px){
-  body{min-height:100dvh;}
-  #loginScreen{min-height:100dvh;width:100%;padding:16px;}
+  body{min-height:100vh;}
+  #loginScreen{min-height:100vh;width:100%;padding:16px;}
   .login-card{width:min(100%,430px);max-width:100%;}
   .form-input,.form-select{font-size:16px!important;}
 }
@@ -1489,6 +1490,69 @@ button{font-weight:800!important}.dashboard-actions{flex-wrap:wrap!important}.da
 #pcmMobileNav{border-top:1px solid #223149!important;background:rgba(5,10,18,.98)!important;backdrop-filter:blur(18px)!important}#pcmMobileNav button{font-size:9px!important;color:#94a3b8!important}#pcmMobileNav button.active{color:#e0f2fe!important}
 @media(max-width:700px){.main{padding:12px 10px 84px!important}.app-view{padding-bottom:24px}.employee-actions{grid-template-columns:1fr!important}.dashboard-hero{border-radius:15px!important}.panel{padding:13px!important}.os-card,.employee-os{padding:13px!important}.stats-grid{gap:8px!important}.stat-card{padding:12px!important}.stat-value{font-size:23px!important}.kanban-column{border-radius:13px!important}.topbar{padding:8px 0!important;margin-bottom:10px!important}.login-card{width:calc(100vw - 24px)!important;padding:24px!important}}
 </style>
+
+<style id="pcm-mobile-final-fix">
+/* ===== CORREÇÃO FINAL DE COMPATIBILIDADE MOBILE ===== */
+html, body {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  min-height: 100vh;
+  background: #020617;
+}
+#loginScreen {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  position: relative;
+}
+#app {
+  width: 100%;
+  min-width: 0;
+}
+.login-card {
+  width: 92%;
+  max-width: 430px;
+}
+input, select, textarea, button {
+  font-size: 16px !important;
+  max-width: 100%;
+}
+@media (max-width: 700px) {
+  #loginScreen {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    padding: 12px !important;
+  }
+  .login-card {
+    width: 100% !important;
+    max-width: 430px !important;
+    padding: 22px 18px !important;
+    margin: 0 auto !important;
+  }
+  .login-brand h1 {
+    font-size: 21px !important;
+  }
+  .main {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding: 12px 10px 90px !important;
+  }
+  .sidebar {
+    display: none !important;
+  }
+  #pcmMobileNav {
+    display: flex !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -1511,6 +1575,48 @@ window.addEventListener('unhandledrejection',function(ev){
   var box=document.getElementById('pcmBootError'),txt=document.getElementById('pcmBootErrorText');
   if(box){box.style.display='flex';if(txt)txt.textContent='Falha de conexão/inicialização. Tente RECARREGAR.';}
 });
+</script>
+
+<script id="pcm-mobile-watchdog">
+(function () {
+  function showBootProblem(message) {
+    try {
+      var box = document.getElementById("pcmBootError");
+      var txt = document.getElementById("pcmBootErrorText");
+      if (box) {
+        box.style.display = "flex";
+        if (txt) txt.textContent = message;
+      }
+    } catch (e) {}
+  }
+
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      try {
+        var login = document.getElementById("loginScreen");
+        var card = login && login.querySelector(".login-card");
+        var app = document.getElementById("app");
+
+        if (!login && !app) {
+          showBootProblem("A interface do Controle de O.S. não foi carregada. Atualize o link do Vercel.");
+          return;
+        }
+
+        var loginStyle = window.getComputedStyle(login);
+        var appStyle = app ? window.getComputedStyle(app) : null;
+
+        if (loginStyle.display === "none" && (!app || appStyle.display === "none")) {
+          showBootProblem("A interface ficou oculta durante a inicialização. Toque em RECARREGAR.");
+          return;
+        }
+
+        if (loginStyle.display !== "none" && !card) {
+          showBootProblem("A tela de login não foi montada corretamente no celular. Toque em RECARREGAR.");
+        }
+      } catch (e) {}
+    }, 2500);
+  });
+})();
 </script>
 
 <div id="pcmToastContainer" aria-live="polite" aria-atomic="true"></div>
