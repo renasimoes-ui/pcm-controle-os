@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=uX_vkSIv58Nfkdy4mDot1W27_7WO2iBiLfNsmed6Xk7ML_CaEadJ8F6T5gwuUqLZrmv9rPyVLVsqW1htq6Jh54moDZpxnw4HBA27ImFi5ZxiYv-ml0nCZy9h_tDH_mPgB9B0gcmOefEu-WlWSPz8KzCSsNCZm5BcZ8jayqhbdd9e8Eo1il1WZ1-xGCY8kdz7cE29tsbtYKwOLlFOnZKUP3zlPcp-_yl1VjF5qAEj-CKPYuc_SVr44WVS1Kdivx9m7LJeH_bqsHhGd-yNCYrt_3OdNEpB8nIx26KCkie5HjiSg0nOV3v8a_8q3h4-i2cBAlM8QLbn5gPBGyJSX11DoQ" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=JEOnDV9nA8_fplBDt39qQn4gnAdzHgJLrqcEfqQLr2hH3XlsIikN_Jc_O0DlBvCelESw2XrtJR6Qet8yQlEfbKjJX4tZTOYPKw74BiLR1EktAIWlisj2C-KSNY2DBIIBEhsgVF2GE1oyaHI-PTt_VEs6GhovxfTAe1hvkzd6W34k1gjsTFMSoeTzMQaQiYK-RiBFTRDWnH1pxq5TvlOINMhXfai04FEMX__8M21ZY9qrefseWqOWRQlTw1rQbrq138T7FCQiT-kaQ-Rhi2J0AqFW72Xectaevcgv4gPO6oNVjFNw7Jb18XRRWeCgStGGLaXGQsNILGWN55trt0byIw" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -523,6 +523,11 @@ td{
 .status-finalizada{
     background:#334155;
     color:#cbd5e1;
+}
+
+.status-cancelada{
+    background:#450a0a;
+    color:#fecaca;
 }
 
 /* FORM */
@@ -2931,6 +2936,91 @@ body:has(#loginScreen:not(.hidden)){
 }
 </style>
 
+
+<style id="pcm-edit-os-final-alignment">
+/* =========================================================
+   ALINHAMENTO FINAL — EDITAR / CANCELAR O.S.
+   Usa os mesmos campos e opções do cadastro de NOVA O.S.
+========================================================= */
+#adminEditOSModal,
+#adminCancelOSModal{
+    padding:12px!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    box-sizing:border-box!important;
+}
+
+#adminEditOSModal .factory-modal-box,
+#adminCancelOSModal .factory-modal-box{
+    width:min(760px,calc(100vw - 24px))!important;
+    max-width:760px!important;
+    max-height:calc(100dvh - 24px)!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    box-sizing:border-box!important;
+    -webkit-overflow-scrolling:touch!important;
+}
+
+#adminEditOSModal .edit-os-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+
+#adminEditOSModal .form-input,
+#adminEditOSModal .form-select,
+#adminEditOSModal .form-textarea,
+#adminCancelOSModal .form-input,
+#adminCancelOSModal .form-select,
+#adminCancelOSModal .form-textarea{
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+}
+
+@media(max-width:700px){
+    #adminEditOSModal,
+    #adminCancelOSModal{
+        align-items:flex-start!important;
+        justify-content:center!important;
+        padding:8px!important;
+    }
+
+    #adminEditOSModal .factory-modal-box,
+    #adminCancelOSModal .factory-modal-box{
+        width:100%!important;
+        max-width:none!important;
+        max-height:calc(100dvh - 16px)!important;
+        margin:0!important;
+        padding:16px!important;
+        border-radius:16px!important;
+    }
+
+    #adminEditOSModal .edit-os-grid{
+        grid-template-columns:1fr!important;
+        gap:10px!important;
+    }
+
+    #adminEditOSModal .form-group{
+        min-width:0!important;
+    }
+
+    #adminEditOSModal .factory-modal-actions,
+    #adminCancelOSModal .factory-modal-actions{
+        position:sticky;
+        bottom:0;
+        z-index:3;
+        background:#0a1220;
+        padding-top:10px;
+        margin-top:12px;
+    }
+
+    #adminEditOSModal .factory-modal-actions button,
+    #adminCancelOSModal .factory-modal-actions button{
+        flex:1 1 140px;
+        min-height:46px;
+    }
+}
+</style>
+
 </head>
 
 <body>
@@ -4176,6 +4266,10 @@ function statusClass(status){
         return "status-material";
     }
 
+    if(status === "CANCELADA"){
+        return "status-cancelada";
+    }
+
     return "status-finalizada";
 }
 
@@ -4600,7 +4694,8 @@ function renderKanban(){
         "AGUARDANDO MATERIAL": document.getElementById("kanbanMaterial"),
         "FINALIZADA": document.getElementById("kanbanFinalizada"),
         "FINALIZADA - AGUARDANDO PCM": document.getElementById("kanbanFinalizada"),
-        "FINALIZADA - OBSERVAÇÃO": document.getElementById("kanbanFinalizada")
+        "FINALIZADA - OBSERVAÇÃO": document.getElementById("kanbanFinalizada"),
+        "CANCELADA": document.getElementById("kanbanFinalizada")
     };
     Object.values(containers).forEach(c=>{if(c)c.innerHTML="";});
     dashboardOrders.forEach(order=>{
@@ -4616,9 +4711,6 @@ function createAdminOSCard(order){
     const responsible=order.active_employee||order.responsible||"Não atribuído";
     let actions="";
     actions += `<button class="action-btn" style="background:#334155;color:#f8fafc" onclick="adminEditOS(${order.id})">✏️ EDITAR O.S.</button>`;
-    if(order.status !== "CANCELADA") {
-        actions += `<button class="action-btn" style="background:#b91c1c;color:#fff" onclick="adminCancelOS(${order.id})">✖ CANCELAR O.S.</button>`;
-    }
     actions += `<button class="action-btn btn-material" onclick="showPauseHistory(${order.id})">⏸ MOTIVOS DE PAUSA</button>`;
 
     if(order.status === "O.S. ABERTA" && order.responsible){
@@ -4636,6 +4728,12 @@ function createAdminOSCard(order){
     }
     if(order.status === "FINALIZADA" || order.status === "FINALIZADA - OBSERVAÇÃO"){
         actions += `<button class="action-btn btn-material" onclick="adminEditFinalizedTime(${order.id})">⏱ EDITAR HORÁRIO / TEMPO</button>`;
+    }
+
+    // Cancelamento mantém a O.S. no banco e no histórico. Não oferecemos
+    // cancelamento para O.S. já finalizada ou já cancelada.
+    if(!["FINALIZADA","FINALIZADA - AGUARDANDO PCM","FINALIZADA - OBSERVAÇÃO","CANCELADA"].includes(order.status)){
+        actions += `<button class="action-btn" style="background:#7f1d1d;color:#fee2e2" onclick="adminCancelOS(${order.id})">✕ CANCELAR O.S.</button>`;
     }
 
     const statusLabel = order.status === "FINALIZADA - AGUARDANDO PCM" ? "FINALIZADA • AGUARDANDO PCM" : (order.status === "FINALIZADA - OBSERVAÇÃO" ? "FINALIZADA • AGUARDANDO OBSERVAÇÃO" : order.status);
@@ -4734,14 +4832,44 @@ window.adminEditOS = async function(osId){
 
         const esc = (value) => escapeHtml(value == null ? "" : String(value));
 
+        /*
+         * IMPORTANTE:
+         * A edição usa as MESMAS opções já existentes no cadastro de NOVA O.S.
+         * Assim não existem duas listas diferentes de setor, manutenção ou
+         * responsável.
+         */
+        const copyOptionsFrom = (sourceId, currentValue) => {
+            const source = document.getElementById(sourceId);
+            const current = currentValue == null ? "" : String(currentValue);
+            let html = source ? source.innerHTML : "";
+            if(!html){
+                html = '<option value="">Selecione...</option>';
+            }
+
+            // Se o banco tiver um valor antigo que não exista mais na lista,
+            // preserva o valor para não apagar informação ao editar.
+            const tmp = document.createElement("select");
+            tmp.innerHTML = html;
+            const exists = [...tmp.options].some(o => String(o.value) === current);
+            if(current && !exists){
+                html += `<option value="${esc(current)}">${esc(current)}</option>`;
+            }
+            return html;
+        };
+
+        const sectorOptions = copyOptionsFrom("osSector", order.sector);
+        const typeOptions = copyOptionsFrom("osType", order.maintenance_type);
+        const priorityOptions = copyOptionsFrom("osPriority", order.priority || "MODERADA");
+        const responsibleOptions = copyOptionsFrom("osResponsible", order.responsible);
+
         const fields = `
-            <div class="form-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <div class="form-grid edit-os-grid">
 
                 <div class="form-group">
                     <label class="form-label">Nº O.S. — WK</label>
                     <input class="form-input" value="${esc(order.os_number)}" disabled>
                     <div style="font-size:10px;color:#64748b;margin-top:5px">
-                        O número da O.S. não é alterado para evitar duplicidade.
+                        O número da O.S. não é alterado.
                     </div>
                 </div>
 
@@ -4756,55 +4884,28 @@ window.adminEditOS = async function(osId){
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">TAG</label>
+                    <label class="form-label">Código / TAG</label>
                     <input id="editOsTag" class="form-input" value="${esc(order.tag || "")}" autocomplete="off">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Setor *</label>
-                    <select id="editOsSector" class="form-select">
-                        <option value="">Selecione...</option>
-                        <option value="TMM">TMM</option>
-                        <option value="LINHA SCHIFFER">LINHA SCHIFFER</option>
-                        <option value="MENDES">MENDES</option>
-                        <option value="FÁBRICA DE COMPONENTES">FÁBRICA DE COMPONENTES</option>
-                    </select>
+                    <select id="editOsSector" class="form-select">${sectorOptions}</select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Tipo de manutenção *</label>
-                    <select id="editOsType" class="form-select">
-                        <option value="">Selecione...</option>
-                        <option value="CORRETIVA">CORRETIVA</option>
-                        <option value="PREVENTIVA">PREVENTIVA</option>
-                        <option value="PREDITIVA">PREDITIVA</option>
-                        <option value="INSPEÇÃO">INSPEÇÃO</option>
-                        <option value="MELHORIA">MELHORIA</option>
-                        <option value="OUTRA">OUTRA</option>
-                    </select>
+                    <select id="editOsType" class="form-select">${typeOptions}</select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Prioridade</label>
-                    <select id="editOsPriority" class="form-select">
-                        <option value="ALTA">ALTA</option>
-                        <option value="MÉDIA">MÉDIA</option>
-                        <option value="MODERADA">MODERADA</option>
-                    </select>
+                    <select id="editOsPriority" class="form-select">${priorityOptions}</select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Responsável</label>
-                    <select id="editOsResponsible" class="form-select">
-                        <option value="">Não atribuído</option>
-                        <option value="Adryan">Adryan</option>
-                        <option value="Fabio">Fabio</option>
-                        <option value="Rodrigo">Rodrigo</option>
-                        <option value="Leonardo">Leonardo</option>
-                        <option value="Vilmar">Vilmar</option>
-                        <option value="Danilo">Danilo</option>
-                        <option value="Rafael">Rafael</option>
-                    </select>
+                    <select id="editOsResponsible" class="form-select">${responsibleOptions}</select>
                 </div>
 
                 <div class="form-group">
@@ -4813,20 +4914,20 @@ window.adminEditOS = async function(osId){
                 </div>
 
                 <div class="form-group full">
-                    <label class="form-label">Descrição da O.S. *</label>
-                    <textarea id="editOsDescription" class="form-textarea" style="min-height:110px">${esc(order.description || "")}</textarea>
+                    <label class="form-label">Descrição do problema / serviço *</label>
+                    <textarea id="editOsDescription" class="form-textarea" style="min-height:120px">${esc(order.description || "")}</textarea>
                 </div>
 
                 <div class="form-group full">
                     <label class="form-label">Observações</label>
-                    <textarea id="editOsObservations" class="form-textarea" style="min-height:110px">${esc(order.observations || "")}</textarea>
+                    <textarea id="editOsObservations" class="form-textarea" style="min-height:120px">${esc(order.observations || "")}</textarea>
                 </div>
 
                 <div class="form-group full">
                     <div class="factory-note">
                         <b>Status atual:</b> ${esc(order.status || "-")}<br>
-                        A edição altera os dados cadastrais da mesma O.S. e não reinicia o cronômetro.
-                        Alterações ficam registradas no histórico do sistema.
+                        A edição altera somente os dados cadastrais desta O.S.
+                        O status e o cronômetro não são reiniciados.
                     </div>
                 </div>
             </div>
@@ -4835,7 +4936,7 @@ window.adminEditOS = async function(osId){
         adminEditOSModal(
             "adminEditOSModal",
             `✏️ Editar O.S. ${esc(order.os_number)}`,
-            "Altere os dados necessários e salve. A O.S. original será atualizada no banco de dados.",
+            "Esta é a mesma O.S. cadastrada. Altere os campos necessários e salve as alterações.",
             fields,
             "SALVAR ALTERAÇÕES",
             async el => {
@@ -4863,7 +4964,7 @@ window.adminEditOS = async function(osId){
                     tag: tag || null,
                     sector: sector,
                     maintenance_type: type,
-                    priority: priority,
+                    priority: priority || "MODERADA",
                     responsible: responsible || null,
                     description: description,
                     observations: observations || null
@@ -4883,13 +4984,15 @@ window.adminEditOS = async function(osId){
                             updateError.message
                         );
                     }else{
-                        alert("Não foi possível salvar as alterações.\n\n" + (updateError.message || ""));
+                        alert(
+                            "Não foi possível salvar as alterações.\n\n" +
+                            (updateError.message || "")
+                        );
                     }
 
                     return false;
                 }
 
-                // Registra a alteração sem alterar o schema existente.
                 try{
                     await insertExecutionHistory({
                         os_id: order.id,
@@ -4898,32 +5001,42 @@ window.adminEditOS = async function(osId){
                         action: "O.S. EDITADA PELO PCM",
                         reason:
                             `Dados cadastrais alterados. ` +
-                            `Máquina: ${machine}; Setor: ${sector}; ` +
-                            `Tipo: ${type}; Prioridade: ${priority}; ` +
-                            `Responsável: ${responsible || "Não atribuído"}.`,
+                            `Máquina: ${machine}; TAG: ${tag || "-"}; ` +
+                            `Setor: ${sector}; Tipo: ${type}; ` +
+                            `Prioridade: ${priority || "MODERADA"}; ` +
+                            `Responsável: ${responsible || "Não atribuído"}; ` +
+                            `Prazo: ${deadline || "Sem prazo"}.`,
                         started_at: null,
                         ended_at: new Date().toISOString(),
                         duration_seconds: Number(order.total_service_seconds || 0)
                     });
                 }catch(historyError){
-                    // A O.S. já foi atualizada. O histórico não deve desfazer a alteração.
-                    console.warn("Não foi possível registrar o histórico da edição:",historyError);
+                    console.warn(
+                        "Não foi possível registrar o histórico da edição:",
+                        historyError
+                    );
                 }
 
-                showPcmToast(`O.S. ${order.os_number} atualizada com sucesso!`,"success");
+                showPcmToast(
+                    `O.S. ${order.os_number} atualizada com sucesso!`,
+                    "success"
+                );
 
                 await loadDashboardData();
 
-                // Se a tela de histórico estiver aberta, atualiza também.
                 if(typeof loadHistory === "function"){
-                    try{ await loadHistory(); }catch(e){ console.warn(e); }
+                    try{
+                        await loadHistory();
+                    }catch(e){
+                        console.warn(e);
+                    }
                 }
 
                 return true;
             }
         );
 
-        // Preenche os selects depois que o modal foi criado.
+        // Garante que o valor atual fique selecionado.
         const sectorSelect = document.querySelector("#adminEditOSModal #editOsSector");
         const typeSelect = document.querySelector("#adminEditOSModal #editOsType");
         const prioritySelect = document.querySelector("#adminEditOSModal #editOsPriority");
@@ -4934,24 +5047,29 @@ window.adminEditOS = async function(osId){
         if(prioritySelect) prioritySelect.value = order.priority || "MODERADA";
         if(responsibleSelect) responsibleSelect.value = order.responsible || "";
 
-        // Ajuste para telas pequenas.
         const box = document.querySelector("#adminEditOSModal .factory-modal-box");
         if(box){
+            box.style.width = "min(760px, calc(100vw - 24px))";
             box.style.maxWidth = "760px";
-            box.style.maxHeight = "90vh";
+            box.style.maxHeight = "calc(100dvh - 24px)";
             box.style.overflowY = "auto";
+            box.style.boxSizing = "border-box";
         }
 
     }catch(error){
         console.error("Falha ao abrir edição da O.S.:",error);
-        alert("Não foi possível abrir a edição da O.S.\n\n" + (error.message || error));
+        alert(
+            "Não foi possível abrir a edição da O.S.\n\n" +
+            (error.message || error)
+        );
     }
 };
 
 /* =========================================================
    CANCELAR O.S. PELO ADMINISTRADOR
-   Não exclui a O.S.; apenas altera o status e registra o motivo.
+   Mantém a linha no banco e registra motivo no histórico.
 ========================================================= */
+
 window.adminCancelOS = async function(osId){
     if(!isAdmin){
         alert("Somente o PCM / Administrador pode cancelar O.S.");
@@ -4970,53 +5088,69 @@ window.adminCancelOS = async function(osId){
             return;
         }
 
-        if(order.status === "CANCELADA"){
-            alert("Esta O.S. já está cancelada.");
+        if(["FINALIZADA","FINALIZADA - AGUARDANDO PCM","FINALIZADA - OBSERVAÇÃO","CANCELADA"].includes(order.status)){
+            alert("Essa O.S. não pode mais ser cancelada.");
             return;
         }
 
-        const esc = value => escapeHtml(value == null ? "" : String(value));
-        const fields = `
-            <div class="form-group">
-                <label class="form-label">Motivo do cancelamento *</label>
-                <textarea id="cancelOsReason" class="form-textarea" style="min-height:120px" placeholder="Informe o motivo do cancelamento..."></textarea>
-            </div>
-            <div class="factory-note">
-                <b>O.S.:</b> ${esc(order.os_number)}<br>
-                <b>Responsável atual:</b> ${esc(order.active_employee || order.responsible || "Não atribuído")}<br>
-                A O.S. não será apagada do banco. O cancelamento ficará registrado no histórico.
-            </div>`;
+        const currentElapsed =
+            ["EM PRODUÇÃO","PAUSADA"].includes(order.status)
+                ? getCurrentElapsed(order)
+                : 0;
+
+        const currentTotal =
+            Number(order.total_service_seconds || 0) +
+            Number(currentElapsed || 0);
 
         adminEditOSModal(
             "adminCancelOSModal",
-            `✖ Cancelar O.S. ${esc(order.os_number)}`,
-            "Confirme o cancelamento informando o motivo.",
-            fields,
+            `✕ Cancelar O.S. ${escapeHtml(order.os_number)}`,
+            "A O.S. não será apagada. Ela continuará registrada no sistema como CANCELADA.",
+            `
+                <div class="factory-note">
+                    <b>Máquina:</b> ${escapeHtml(order.machine || "-")}<br>
+                    <b>Setor:</b> ${escapeHtml(order.sector || "-")}<br>
+                    <b>Status atual:</b> ${escapeHtml(order.status || "-")}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Motivo do cancelamento *</label>
+                    <textarea id="cancelOsReason" class="form-textarea" style="min-height:130px" placeholder="Informe por que esta O.S. está sendo cancelada..."></textarea>
+                </div>
+            `,
             "CONFIRMAR CANCELAMENTO",
             async el => {
-                const reason = el.querySelector("#cancelOsReason").value.trim();
+
+                const reason =
+                    el.querySelector("#cancelOsReason").value.trim();
+
                 if(!reason){
                     alert("Informe o motivo do cancelamento.");
                     return false;
                 }
 
-                const previousObservation = order.observations || "";
-                const cancellationText = `CANCELAMENTO: ${reason} | Cancelado por: PCM / Administrador | Data/hora: ${new Date().toLocaleString("pt-BR")}`;
-                const observations = previousObservation
-                    ? `${previousObservation}\n\n${cancellationText}`
-                    : cancellationText;
+                const now = new Date().toISOString();
+
+                const payload = {
+                    status: "CANCELADA",
+                    total_service_seconds: currentTotal,
+                    active_employee: null,
+                    started_at: null,
+                    paused_at: null,
+                    finished_at: now
+                };
 
                 const {error:updateError} = await db
                     .from("os_orders")
-                    .update({
-                        status: "CANCELADA",
-                        observations: observations
-                    })
+                    .update(payload)
                     .eq("id",osId);
 
                 if(updateError){
                     console.error("Erro ao cancelar O.S.:",updateError);
-                    alert("Não foi possível cancelar a O.S.\n\n" + (updateError.message || ""));
+                    alert(
+                        "Não foi possível cancelar a O.S.\n\n" +
+                        (updateError.message || "")
+                    );
                     return false;
                 }
 
@@ -5025,37 +5159,55 @@ window.adminCancelOS = async function(osId){
                         os_id: order.id,
                         os_number: order.os_number,
                         employee: "PCM / Administrador",
-                        action: "O.S. CANCELADA PELO PCM",
+                        action: "O.S. CANCELADA",
                         reason: reason,
                         started_at: null,
-                        ended_at: new Date().toISOString(),
-                        duration_seconds: Number(order.total_service_seconds || 0)
+                        ended_at: now,
+                        duration_seconds: currentTotal
                     });
                 }catch(historyError){
-                    console.warn("O.S. cancelada, mas não foi possível registrar o histórico:",historyError);
+                    console.warn(
+                        "Não foi possível registrar o histórico do cancelamento:",
+                        historyError
+                    );
                 }
 
-                showPcmToast(`O.S. ${order.os_number} cancelada com sucesso!`,"success");
+                showPcmToast(
+                    `O.S. ${order.os_number} cancelada e mantida no histórico.`,
+                    "success"
+                );
+
                 await loadDashboardData();
+
                 if(typeof loadHistory === "function"){
-                    try{ await loadHistory(); }catch(e){ console.warn(e); }
+                    try{
+                        await loadHistory();
+                    }catch(e){
+                        console.warn(e);
+                    }
                 }
+
                 return true;
             }
         );
 
         const box = document.querySelector("#adminCancelOSModal .factory-modal-box");
         if(box){
+            box.style.width = "min(600px, calc(100vw - 24px))";
             box.style.maxWidth = "600px";
-            box.style.maxHeight = "90vh";
+            box.style.maxHeight = "calc(100dvh - 24px)";
             box.style.overflowY = "auto";
+            box.style.boxSizing = "border-box";
         }
+
     }catch(error){
-        console.error("Falha ao abrir cancelamento da O.S.:",error);
-        alert("Não foi possível abrir o cancelamento da O.S.\n\n" + (error.message || error));
+        console.error("Falha ao cancelar O.S.:",error);
+        alert(
+            "Não foi possível abrir o cancelamento.\n\n" +
+            (error.message || error)
+        );
     }
 };
-
 
 /* =========================================================
    INICIAR O.S. PELO ADMIN
@@ -5183,7 +5335,10 @@ async function loadEmployeeOrders(){
     if(!currentUser || isAdmin) return;
     const {data,error}=await db.from("os_orders").select("*").order("created_at",{ascending:false});
     if(error){console.error(error);return;}
-    const myOrders=(data||[]).filter(order=>responsibleMatchesUser(order.responsible,currentUser));
+    const myOrders=(data||[]).filter(order=>
+        order.status !== "CANCELADA" &&
+        responsibleMatchesUser(order.responsible,currentUser)
+    );
     employeeHistoryMeta=new Map();
     const ids=myOrders.map(o=>o.id);
     if(ids.length){
@@ -7389,7 +7544,7 @@ document
       const text=[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.description,o.pause_reason].join(' ').toLowerCase();
       return (!q||text.includes(q))&&(status==='TODAS'||o.status===status);
     });
-    const containers={"O.S. ABERTA":document.getElementById('kanbanAberta'),"EM PRODUÇÃO":document.getElementById('kanbanProducao'),"PAUSADA":document.getElementById('kanbanPausada'),"AGUARDANDO MATERIAL":document.getElementById('kanbanMaterial'),"FINALIZADA":document.getElementById('kanbanFinalizada'),"FINALIZADA - AGUARDANDO PCM":document.getElementById('kanbanFinalizada'),"FINALIZADA - OBSERVAÇÃO":document.getElementById('kanbanFinalizada')};
+    const containers={"O.S. ABERTA":document.getElementById('kanbanAberta'),"EM PRODUÇÃO":document.getElementById('kanbanProducao'),"PAUSADA":document.getElementById('kanbanPausada'),"AGUARDANDO MATERIAL":document.getElementById('kanbanMaterial'),"FINALIZADA":document.getElementById('kanbanFinalizada'),"FINALIZADA - AGUARDANDO PCM":document.getElementById('kanbanFinalizada'),"FINALIZADA - OBSERVAÇÃO":document.getElementById('kanbanFinalizada'),"CANCELADA":document.getElementById('kanbanFinalizada')};
     Object.values(containers).forEach(c=>{if(c)c.innerHTML='';});
     filtered.forEach(o=>{const c=containers[o.status];if(c)c.insertAdjacentHTML('beforeend',typeof createAdminOSCard==='function'?createAdminOSCard(o):'');});
     Object.entries(containers).forEach(([st,c])=>{if(c&&!c.innerHTML)c.innerHTML=`<div class="pcm-empty">Nenhuma O.S. encontrada</div>`;});
@@ -7595,7 +7750,7 @@ document
     const r=await db.from('os_orders').select('*').order('created_at',{ascending:false});if(r.error){console.error(r.error);return}
     window.fpHistoryOrders=r.data||[];
     const panel=table.closest('.panel');if(panel&&!document.getElementById('fpHistoryTools')){
-      const tools=document.createElement('div');tools.id='fpHistoryTools';tools.className='fp-search-row';tools.innerHTML=`<input id="fpHistorySearch" class="fp-search" placeholder="Pesquisar O.S., máquina, TAG, setor, funcionário..." autocomplete="off"><select id="fpHistoryStatus" class="fp-select"><option value="TODOS">Todos os status</option><option>O.S. ABERTA</option><option>EM PRODUÇÃO</option><option>AGUARDANDO MATERIAL</option><option>FINALIZADA</option></select><select id="fpHistoryPriority" class="fp-select"><option value="TODAS">Todas prioridades</option><option>ALTA</option><option>MÉDIA</option><option>MODERADA</option></select><button class="fp-btn primary" onclick="fpExportHistoryCSV()">⇩ EXCEL/CSV</button>`;
+      const tools=document.createElement('div');tools.id='fpHistoryTools';tools.className='fp-search-row';tools.innerHTML=`<input id="fpHistorySearch" class="fp-search" placeholder="Pesquisar O.S., máquina, TAG, setor, funcionário..." autocomplete="off"><select id="fpHistoryStatus" class="fp-select"><option value="TODOS">Todos os status</option><option>O.S. ABERTA</option><option>EM PRODUÇÃO</option><option>AGUARDANDO MATERIAL</option><option>FINALIZADA</option><option>PAUSADA</option><option>CANCELADA</option></select><select id="fpHistoryPriority" class="fp-select"><option value="TODAS">Todas prioridades</option><option>ALTA</option><option>MÉDIA</option><option>MODERADA</option></select><button class="fp-btn primary" onclick="fpExportHistoryCSV()">⇩ EXCEL/CSV</button>`;
       panel.insertBefore(tools,panel.querySelector('.table-wrap')||table.parentNode);
       ['fpHistorySearch','fpHistoryStatus','fpHistoryPriority'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderHistoryPro));
     }
