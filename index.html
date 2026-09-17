@@ -19,7 +19,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=uX_vkSIv58Nfkdy4mDot1W27_7WO2iBiLfNsmed6Xk7ML_CaEadJ8F6T5gwuUqLZrmv9rPyVLVsqW1htq6Jh54moDZpxnw4HBA27ImFi5ZxiYv-ml0nCZy9h_tDH_mPgB9B0gcmOefEu-WlWSPz8KzCSsNCZm5BcZ8jayqhbdd9e8Eo1il1WZ1-xGCY8kdz7cE29tsbtYKwOLlFOnZKUP3zlPcp-_yl1VjF5qAEj-CKPYuc_SVr44WVS1Kdivx9m7LJeH_bqsHhGd-yNCYrt_3OdNEpB8nIx26KCkie5HjiSg0nOV3v8a_8q3h4-i2cBAlM8QLbn5gPBGyJSX11DoQ" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -4616,6 +4616,9 @@ function createAdminOSCard(order){
     const responsible=order.active_employee||order.responsible||"Não atribuído";
     let actions="";
     actions += `<button class="action-btn" style="background:#334155;color:#f8fafc" onclick="adminEditOS(${order.id})">✏️ EDITAR O.S.</button>`;
+    if(order.status !== "CANCELADA") {
+        actions += `<button class="action-btn" style="background:#b91c1c;color:#fff" onclick="adminCancelOS(${order.id})">✖ CANCELAR O.S.</button>`;
+    }
     actions += `<button class="action-btn btn-material" onclick="showPauseHistory(${order.id})">⏸ MOTIVOS DE PAUSA</button>`;
 
     if(order.status === "O.S. ABERTA" && order.responsible){
@@ -4944,6 +4947,115 @@ window.adminEditOS = async function(osId){
         alert("Não foi possível abrir a edição da O.S.\n\n" + (error.message || error));
     }
 };
+
+/* =========================================================
+   CANCELAR O.S. PELO ADMINISTRADOR
+   Não exclui a O.S.; apenas altera o status e registra o motivo.
+========================================================= */
+window.adminCancelOS = async function(osId){
+    if(!isAdmin){
+        alert("Somente o PCM / Administrador pode cancelar O.S.");
+        return;
+    }
+
+    try{
+        const {data:order,error} = await db
+            .from("os_orders")
+            .select("*")
+            .eq("id",osId)
+            .single();
+
+        if(error || !order){
+            alert("Não foi possível localizar a O.S.");
+            return;
+        }
+
+        if(order.status === "CANCELADA"){
+            alert("Esta O.S. já está cancelada.");
+            return;
+        }
+
+        const esc = value => escapeHtml(value == null ? "" : String(value));
+        const fields = `
+            <div class="form-group">
+                <label class="form-label">Motivo do cancelamento *</label>
+                <textarea id="cancelOsReason" class="form-textarea" style="min-height:120px" placeholder="Informe o motivo do cancelamento..."></textarea>
+            </div>
+            <div class="factory-note">
+                <b>O.S.:</b> ${esc(order.os_number)}<br>
+                <b>Responsável atual:</b> ${esc(order.active_employee || order.responsible || "Não atribuído")}<br>
+                A O.S. não será apagada do banco. O cancelamento ficará registrado no histórico.
+            </div>`;
+
+        adminEditOSModal(
+            "adminCancelOSModal",
+            `✖ Cancelar O.S. ${esc(order.os_number)}`,
+            "Confirme o cancelamento informando o motivo.",
+            fields,
+            "CONFIRMAR CANCELAMENTO",
+            async el => {
+                const reason = el.querySelector("#cancelOsReason").value.trim();
+                if(!reason){
+                    alert("Informe o motivo do cancelamento.");
+                    return false;
+                }
+
+                const previousObservation = order.observations || "";
+                const cancellationText = `CANCELAMENTO: ${reason} | Cancelado por: PCM / Administrador | Data/hora: ${new Date().toLocaleString("pt-BR")}`;
+                const observations = previousObservation
+                    ? `${previousObservation}\n\n${cancellationText}`
+                    : cancellationText;
+
+                const {error:updateError} = await db
+                    .from("os_orders")
+                    .update({
+                        status: "CANCELADA",
+                        observations: observations
+                    })
+                    .eq("id",osId);
+
+                if(updateError){
+                    console.error("Erro ao cancelar O.S.:",updateError);
+                    alert("Não foi possível cancelar a O.S.\n\n" + (updateError.message || ""));
+                    return false;
+                }
+
+                try{
+                    await insertExecutionHistory({
+                        os_id: order.id,
+                        os_number: order.os_number,
+                        employee: "PCM / Administrador",
+                        action: "O.S. CANCELADA PELO PCM",
+                        reason: reason,
+                        started_at: null,
+                        ended_at: new Date().toISOString(),
+                        duration_seconds: Number(order.total_service_seconds || 0)
+                    });
+                }catch(historyError){
+                    console.warn("O.S. cancelada, mas não foi possível registrar o histórico:",historyError);
+                }
+
+                showPcmToast(`O.S. ${order.os_number} cancelada com sucesso!`,"success");
+                await loadDashboardData();
+                if(typeof loadHistory === "function"){
+                    try{ await loadHistory(); }catch(e){ console.warn(e); }
+                }
+                return true;
+            }
+        );
+
+        const box = document.querySelector("#adminCancelOSModal .factory-modal-box");
+        if(box){
+            box.style.maxWidth = "600px";
+            box.style.maxHeight = "90vh";
+            box.style.overflowY = "auto";
+        }
+    }catch(error){
+        console.error("Falha ao abrir cancelamento da O.S.:",error);
+        alert("Não foi possível abrir o cancelamento da O.S.\n\n" + (error.message || error));
+    }
+};
+
 
 /* =========================================================
    INICIAR O.S. PELO ADMIN
