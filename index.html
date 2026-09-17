@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=CpVU2keE4xsjlaEhvapr7kel5OA2LN7GHWpccLB-F0RS4FB0686ixmW5ytuEUPxymj5N4yW2eUK6jW2D9Lr5i5dvHo7wMVV_g3x7-pU_ZoxzKma7rEOHt5YkquZLTSc0lwaA90n_WLWqezy0-UoMBpypXAcbBSVlXwdl4K4VXRkLdith582TKHyxCmCqCSDwZaGoy0CB-dSMiJmj7Tv91BWpDPabI-wWZOTyNsbeCsLImXLR6eNTO3fIq4JCmRWedfv-3N3W9WYgE6UaSqYsGQ" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=8wr1vQc4n6UT7bwv-eY6y5HUPI7je2wPJwc9VByPV3hxHCsxGdYTDgQ9G1qtmrULyOvMPnjJIj6oeApGw-BKSIXiC0uN_OKufoC_1u43EkJnploqRYHhF5-IaVGoLioxZOm2kuR0pv4oaIZEJwKChea9NRg9Wn9VdAjbwQ9x7HCYV4H_jMsCFT9jCDE6icLp635E-dC90jAk7rGPr7IUP4QT11RMDDqizYukjFBOGmfOijcSD0Sm62S6nM9yJl-ulSoB71fDDrsdZr-4vctnUp1h0SAX8Lcqey2Wb_a-ua18suC02B5emuR4SCR6EPRnQKah1xbfAeF8qiMSD1T52A" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -1596,12 +1596,19 @@ input, select, textarea, button {
 @media(max-width:900px){#loginScreen.os-login-modern{grid-template-columns:1fr;min-height:100vh;min-height:100svh}#loginScreen.os-login-modern .os-brand-side{padding:28px 18px 10px}#loginScreen.os-login-modern .os-brand-content{text-align:center}#loginScreen.os-login-modern .os-brand-top{justify-content:center;margin-bottom:19px}#loginScreen.os-login-modern h1{font-size:32px}#loginScreen.os-login-modern .os-brand-subtitle{margin:10px auto 0;font-size:12px;max-width:340px}#loginScreen.os-login-modern .os-brand-line{margin:15px auto 0}#loginScreen.os-login-modern .os-feature-list{margin:20px auto 0;max-width:430px;gap:7px}#loginScreen.os-login-modern .os-feature{padding:10px 7px}#loginScreen.os-login-modern .os-feature strong{font-size:9px}#loginScreen.os-login-modern .os-feature span{font-size:8px}#loginScreen.os-login-modern .os-login-side{padding:12px 14px 28px;align-items:flex-start}#loginScreen.os-login-modern .os-login-card{padding:22px 18px;border-radius:20px}}
 @media(max-width:420px){#loginScreen.os-login-modern .os-brand-side{padding-top:20px}#loginScreen.os-login-modern .os-brand-mark{width:48px;height:48px;flex-basis:48px;border-radius:14px}#loginScreen.os-login-modern .os-brand-mark:before{width:21px;height:21px}#loginScreen.os-login-modern h1{font-size:28px}#loginScreen.os-login-modern .os-login-card{padding:20px 15px}}
 </style>
+
+<style id="controle-os-final-mobile-fix">
+html,body{width:100%;min-width:0;max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body{min-height:100vh;background:#020617;}
+#loginScreen.os-login-modern{display:grid!important;visibility:visible!important;opacity:1!important;width:100%!important;min-width:0!important;}
+@media(max-width:900px){#loginScreen.os-login-modern{display:grid!important;grid-template-columns:1fr!important;min-height:100vh!important;min-height:100svh!important;overflow-x:hidden!important;overflow-y:auto!important;}#loginScreen.os-login-modern .os-brand-side,#loginScreen.os-login-modern .os-login-side,#loginScreen.os-login-modern .os-login-card{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}#loginScreen.os-login-modern input,#loginScreen.os-login-modern select,#loginScreen.os-login-modern button{font-size:16px!important;}}
+</style>
 </head>
 
 <body>
 <!-- BOOT MOBILE: a interface abre antes do Supabase -->
 <!-- Fallback visual: se algum erro de JavaScript ocorrer no celular, nunca deixa uma tela preta sem explicação. -->
-<div id="pcmBootError" style="display:none;position:fixed;inset:0;z-index:999999;background:#020617;color:#e5e7eb;padding:28px 20px;font-family:Arial,sans-serif;align-items:center;justify-content:center;text-align:center;">
+<div id="pcmBootError" style="display:none!important;position:fixed;inset:0;z-index:999999;background:#020617;color:#e5e7eb;padding:28px 20px;font-family:Arial,sans-serif;align-items:center;justify-content:center;text-align:center;">
   <div style="width:min(430px,100%);border:1px solid #334155;border-radius:18px;padding:24px;background:#0f172a;box-shadow:0 20px 60px rgba(0,0,0,.45);">
     <div style="font-size:34px;margin-bottom:12px;">⚠️</div>
     <div style="font-size:20px;font-weight:800;margin-bottom:8px;">O.S. não conseguiu iniciar</div>
@@ -1609,59 +1616,6 @@ input, select, textarea, button {
     <button type="button" onclick="location.reload()" style="margin-top:18px;border:0;border-radius:12px;padding:13px 20px;font-weight:800;cursor:pointer;">RECARREGAR</button>
   </div>
 </div>
-<script>
-window.addEventListener('error',function(ev){
-  var box=document.getElementById('pcmBootError'),txt=document.getElementById('pcmBootErrorText');
-  if(box){box.style.display='flex';if(txt)txt.textContent='Erro: '+(ev.message||'falha inesperada')+' — tente RECARREGAR.';}
-});
-window.addEventListener('unhandledrejection',function(ev){
-  var box=document.getElementById('pcmBootError'),txt=document.getElementById('pcmBootErrorText');
-  if(box){box.style.display='flex';if(txt)txt.textContent='Falha de conexão/inicialização. Tente RECARREGAR.';}
-});
-</script>
-
-<script id="pcm-mobile-watchdog">
-(function () {
-  function showBootProblem(message) {
-    try {
-      var box = document.getElementById("pcmBootError");
-      var txt = document.getElementById("pcmBootErrorText");
-      if (box) {
-        box.style.display = "flex";
-        if (txt) txt.textContent = message;
-      }
-    } catch (e) {}
-  }
-
-  window.addEventListener("load", function () {
-    setTimeout(function () {
-      try {
-        var login = document.getElementById("loginScreen");
-        var card = login && login.querySelector(".login-card");
-        var app = document.getElementById("app");
-
-        if (!login && !app) {
-          showBootProblem("A interface do Controle de O.S. não foi carregada. Atualize o link do Vercel.");
-          return;
-        }
-
-        var loginStyle = window.getComputedStyle(login);
-        var appStyle = app ? window.getComputedStyle(app) : null;
-
-        if (loginStyle.display === "none" && (!app || appStyle.display === "none")) {
-          showBootProblem("A interface ficou oculta durante a inicialização. Toque em RECARREGAR.");
-          return;
-        }
-
-        if (loginStyle.display !== "none" && !card) {
-          showBootProblem("A tela de login não foi montada corretamente no celular. Toque em RECARREGAR.");
-        }
-      } catch (e) {}
-    }, 2500);
-  });
-})();
-</script>
-
 <div id="pcmToastContainer" aria-live="polite" aria-atomic="true"></div>
 
 <!-- LOGIN -->
