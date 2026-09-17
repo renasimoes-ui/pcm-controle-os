@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=FAL9YL-lRSc320GfjlnQPC5KTiK_wvQASXZeCAdXn1NWAvfw6DdxmJmDl-RmY_cDmItoOibp1Ruq2l74qF-Benn78fvlg9wwIFIpVutwJbpYaLVq55gF1rBxP_FFeA7Eq1IFspondkRrRAnpsNFst8I9JyYUq3gW9DobsJjfh7q4aKrNeid5vVbejD0r8APx-SjI67h1dCUtUp59XJuTwpfKWvFxcb6tp_NnvKpHrHsuZUV_Mq8CvDeZ5Gy82KazEQ3q0D4Y2p2GC3B7iyt9-ZvhLgfgmsu0oC1vRDf4m2pKlj6YMgQXLklw1gWgJxmO" charset="UTF-8"></script><style>
+<style>
 *{
     box-sizing:border-box;
 }
@@ -1604,155 +1604,49 @@ body{min-height:100vh;background:#020617;}
 @media(max-width:900px){#loginScreen.os-login-modern{display:grid!important;grid-template-columns:1fr!important;min-height:100vh!important;min-height:100svh!important;overflow-x:hidden!important;overflow-y:auto!important;}#loginScreen.os-login-modern .os-brand-side,#loginScreen.os-login-modern .os-login-side,#loginScreen.os-login-modern .os-login-card{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}#loginScreen.os-login-modern input,#loginScreen.os-login-modern select,#loginScreen.os-login-modern button{font-size:16px!important;}}
 </style>
 
-<style id="lubrificacao-mobile-compat">
-/* =========================================================
-   COMPATIBILIDADE MOBILE — baseada apenas na estrutura mobile
-   que funciona no PCM Lubrificação. Não altera a lógica da O.S.
-========================================================= */
-html,body{
-  width:100%;
-  min-width:0;
-  max-width:100%;
-  min-height:100%;
-  margin:0;
-  padding:0;
-  overflow-x:hidden!important;
-  -webkit-text-size-adjust:100%;
-  text-size-adjust:100%;
-}
-body{
-  min-height:100vh;
-  min-height:100dvh;
-  -webkit-overflow-scrolling:touch;
-}
-*,*:before,*:after{box-sizing:border-box;}
-img,svg,video,canvas{max-width:100%;}
-button,input,select,textarea{max-width:100%;touch-action:manipulation;}
-input,select,textarea{font-size:16px!important;}
-
-/* A entrada ocupa a tela inteira, como no app de Lubrificação. */
-#loginScreen.os-login-modern{
-  position:fixed!important;
-  inset:0!important;
-  width:100%!important;
-  height:100dvh!important;
-  min-height:100svh!important;
-  min-width:0!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-  z-index:99999!important;
-}
-
-/* Depois do login, a entrada desaparece completamente. */
-body.pcm-app-open #loginScreen{
-  display:none!important;
-  visibility:hidden!important;
-  pointer-events:none!important;
-  opacity:0!important;
-}
-body.pcm-app-open #app{
-  display:block!important;
-  visibility:visible!important;
-  opacity:1!important;
-  width:100%!important;
-  min-width:0!important;
-  overflow-x:hidden!important;
-}
-
+<style id="pcm-mobile-final">
+html,body{width:100%;min-width:0!important;max-width:100%;margin:0;padding:0;overflow-x:hidden!important;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{min-height:100vh;min-height:100dvh;-webkit-overflow-scrolling:touch}
+*,*:before,*:after{box-sizing:border-box}
+img,svg,video,canvas{max-width:100%;height:auto}
+button,input,select,textarea{max-width:100%;touch-action:manipulation}
+input,select,textarea{font-size:16px!important}
+#loginScreen{width:100%!important;max-width:100%!important;min-width:0!important;min-height:100vh!important;min-height:100dvh!important;overflow-x:hidden!important;overflow-y:auto!important}
 @media(max-width:900px){
-  #loginScreen.os-login-modern{
-    display:grid!important;
-    grid-template-columns:1fr!important;
-    align-items:start!important;
-    justify-items:stretch!important;
-    padding:0!important;
-  }
-  #loginScreen.os-login-modern .os-brand-side{
-    width:100%!important;
-    min-width:0!important;
-    padding:24px 16px 10px!important;
-  }
-  #loginScreen.os-login-modern .os-brand-content{
-    width:100%!important;
-    max-width:100%!important;
-    min-width:0!important;
-    text-align:center!important;
-  }
-  #loginScreen.os-login-modern .os-brand-top{
-    justify-content:center!important;
-    margin-bottom:16px!important;
-  }
-  #loginScreen.os-login-modern h1{
-    font-size:30px!important;
-    max-width:100%!important;
-  }
-  #loginScreen.os-login-modern .os-brand-subtitle{
-    margin:9px auto 0!important;
-    max-width:360px!important;
-    font-size:12px!important;
-  }
-  #loginScreen.os-login-modern .os-brand-line{
-    margin:14px auto 0!important;
-  }
-  #loginScreen.os-login-modern .os-feature-list{
-    width:100%!important;
-    max-width:430px!important;
-    margin:18px auto 0!important;
-    gap:7px!important;
-  }
-  #loginScreen.os-login-modern .os-feature{
-    min-width:0!important;
-    padding:10px 6px!important;
-  }
-  #loginScreen.os-login-modern .os-login-side{
-    width:100%!important;
-    min-width:0!important;
-    padding:10px 14px 28px!important;
-    align-items:flex-start!important;
-  }
-  #loginScreen.os-login-modern .os-login-card{
-    width:100%!important;
-    max-width:430px!important;
-    min-width:0!important;
-    margin:0 auto!important;
-    padding:22px 18px!important;
-    border-radius:20px!important;
-  }
-  #loginScreen.os-login-modern input,
-  #loginScreen.os-login-modern select,
-  #loginScreen.os-login-modern button{
-    font-size:16px!important;
-    max-width:100%!important;
-  }
-  #app:not(.hidden){
-    width:100%!important;
-    max-width:100%!important;
-    min-width:0!important;
-    overflow-x:hidden!important;
-  }
-  .main{
-    width:100%!important;
-    max-width:100%!important;
-    min-width:0!important;
-    margin-left:0!important;
-    overflow-x:hidden!important;
-  }
-  #pcmMobileNav{
-    max-width:calc(100vw - 20px)!important;
-  }
+#loginScreen.os-login-modern{display:grid!important;grid-template-columns:1fr!important;align-items:start!important;justify-items:stretch!important;padding:0!important}
+#loginScreen.os-login-modern .os-brand-side{width:100%!important;min-width:0!important;padding:24px 16px 10px!important}
+#loginScreen.os-login-modern .os-brand-content{width:100%!important;max-width:100%!important;min-width:0!important;text-align:center!important}
+#loginScreen.os-login-modern .os-brand-top{justify-content:center!important;margin-bottom:16px!important}
+#loginScreen.os-login-modern h1{font-size:30px!important;max-width:100%!important}
+#loginScreen.os-login-modern .os-brand-subtitle{margin:9px auto 0!important;max-width:360px!important;font-size:12px!important}
+#loginScreen.os-login-modern .os-feature-list{width:100%!important;max-width:430px!important;margin:18px auto 0!important;gap:7px!important}
+#loginScreen.os-login-modern .os-feature{min-width:0!important;padding:10px 6px!important}
+#loginScreen.os-login-modern .os-login-side{width:100%!important;min-width:0!important;padding:10px 14px 28px!important;align-items:flex-start!important}
+#loginScreen.os-login-modern .os-login-card{width:100%!important;max-width:430px!important;min-width:0!important;margin:0 auto!important;padding:22px 18px!important;border-radius:20px!important}
+#loginScreen.os-login-modern input,#loginScreen.os-login-modern select,#loginScreen.os-login-modern button{font-size:16px!important;max-width:100%!important}
+#app:not(.hidden),.main{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important}
+.main{margin-left:0!important}
 }
-
 @media(max-width:420px){
-  #loginScreen.os-login-modern .os-brand-side{padding-top:18px!important;}
-  #loginScreen.os-login-modern h1{font-size:27px!important;}
-  #loginScreen.os-login-modern .os-brand-subtitle{font-size:11px!important;}
-  #loginScreen.os-login-modern .os-login-card{padding:20px 15px!important;}
+#loginScreen.os-login-modern .os-brand-side{padding-top:18px!important}
+#loginScreen.os-login-modern h1{font-size:27px!important}
+#loginScreen.os-login-modern .os-login-card{padding:20px 15px!important}
 }
 </style>
 
 </head>
 
 <body>
+<!-- BOOT MOBILE: a interface abre antes do Supabase -->
+<!-- Fallback visual: se algum erro de JavaScript ocorrer no celular, nunca deixa uma tela preta sem explicação. -->
+<div id="pcmBootError" style="display:none!important;position:fixed;inset:0;z-index:999999;background:#020617;color:#e5e7eb;padding:28px 20px;font-family:Arial,sans-serif;align-items:center;justify-content:center;text-align:center;">
+  <div style="width:min(430px,100%);border:1px solid #334155;border-radius:18px;padding:24px;background:#0f172a;box-shadow:0 20px 60px rgba(0,0,0,.45);">
+    <div style="font-size:34px;margin-bottom:12px;">⚠️</div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:8px;">O.S. não conseguiu iniciar</div>
+    <div id="pcmBootErrorText" style="font-size:14px;line-height:1.5;color:#94a3b8;">Recarregue a página.</div>
+    <button type="button" onclick="location.reload()" style="margin-top:18px;border:0;border-radius:12px;padding:13px 20px;font-weight:800;cursor:pointer;">RECARREGAR</button>
+  </div>
+</div>
 <div id="pcmToastContainer" aria-live="polite" aria-atomic="true"></div>
 
 <!-- LOGIN -->
@@ -2672,38 +2566,31 @@ let timerInterval = null;
 
 async function login(){
 
-    try{
-        await ensureSupabase();
-    }catch(e){
-        console.error(e);
-        showPCMToast("A conexão do sistema não carregou. Verifique a internet e tente novamente.","error");
-        return;
-    }
+    const user = document.getElementById("loginUser").value;
+    const pin = document.getElementById("loginPin").value.replace(/\D/g,"");
+    const error = document.getElementById("loginError");
 
-    try{
-        await loadUsers();
-    }catch(e){
-        // Mantém a tela de login utilizável mesmo se a biblioteca/conexão demorar no celular.
+    if(!Array.isArray(usersRows) || !usersRows.length){
         usersRows = defaultUsers.slice();
-        usersDB = {};
-        usersRows.forEach(u=>{ usersDB[u.name]=String(u.pin||""); });
     }
 
-    const user =
-        document.getElementById("loginUser").value;
-
-    const pin =
-        document.getElementById("loginPin").value
-        .replace(/\D/g,"");
-
-    const error =
-        document.getElementById("loginError");
-
-    const foundUser = usersRows.find(u =>
+    let foundUser = usersRows.find(u =>
         String(u.name) === String(user) &&
         String(u.pin) === String(pin) &&
         u.active === true
     );
+
+    try{
+        await ensureSupabase();
+        await loadUsers();
+        foundUser = usersRows.find(u =>
+            String(u.name) === String(user) &&
+            String(u.pin) === String(pin) &&
+            u.active === true
+        );
+    }catch(e){
+        console.warn("Supabase indisponível; usando usuários locais.", e);
+    }
 
     if(!foundUser){
         error.textContent = "Usuário, PIN ou status de acesso inválido.";
@@ -2715,67 +2602,34 @@ async function login(){
     currentUser = foundUser.name;
     isAdmin = foundUser.role === "admin" || foundUser.name === "PCM / Administrador";
 
-    document
-        .getElementById("loginScreen")
-        .classList.add("hidden");
-
-    document
-        .getElementById("app")
-        .classList.remove("hidden");
-
-    /* Compatibilidade mobile: fecha a entrada e volta ao topo. */
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
     document.body.classList.add("pcm-app-open");
+
+    const badge = document.getElementById("currentUserBadge");
+    if(badge) badge.textContent = currentUser;
+    const employeeBadge = document.getElementById("employeeUserBadge");
+    if(employeeBadge) employeeBadge.textContent = currentUser;
+
     try{
-        if(document.activeElement && typeof document.activeElement.blur === "function"){
-            document.activeElement.blur();
-        }
+        document.activeElement?.blur?.();
         window.scrollTo(0,0);
         document.documentElement.scrollLeft = 0;
         document.body.scrollLeft = 0;
-        setTimeout(()=>{
-            window.scrollTo(0,0);
-            document.documentElement.scrollLeft = 0;
-            document.body.scrollLeft = 0;
-        },50);
     }catch(e){}
 
-    document
-        .getElementById("currentUserBadge")
-        .textContent = currentUser;
-
-    document
-        .getElementById("employeeUserBadge")
-        .textContent = currentUser;
-
-
     if(isAdmin){
-
-        document
-            .getElementById("adminMenu")
-            .classList.remove("hidden");
-
-        document
-            .getElementById("employeeMenu")
-            .classList.add("hidden");
-
+        document.getElementById("adminMenu")?.classList.remove("hidden");
+        document.getElementById("employeeMenu")?.classList.add("hidden");
         navigateTo("view-dashboard");
-
-        await loadDashboardData();
-
+        try{ await loadDashboardData(); }
+        catch(e){ console.error(e); showPCMToast("O sistema abriu, mas as O.S. não puderam ser carregadas agora.","warning"); }
     }else{
-
-        document
-            .getElementById("adminMenu")
-            .classList.add("hidden");
-
-        document
-            .getElementById("employeeMenu")
-            .classList.remove("hidden");
-
+        document.getElementById("adminMenu")?.classList.add("hidden");
+        document.getElementById("employeeMenu")?.classList.remove("hidden");
         navigateTo("view-employee");
-
-        await loadEmployeeOrders();
-
+        try{ await loadEmployeeOrders(); }
+        catch(e){ console.error(e); showPCMToast("O sistema abriu, mas suas O.S. não puderam ser carregadas agora.","warning"); }
     }
 
     startRefreshTimer();
@@ -2790,8 +2644,6 @@ function logout(){
 
     currentUser = null;
     isAdmin = false;
-    document.body.classList.remove("pcm-app-open");
-    try{window.scrollTo(0,0);document.documentElement.scrollLeft=0;document.body.scrollLeft=0;}catch(e){}
 
     if(timerInterval){
         clearInterval(timerInterval);
@@ -5485,22 +5337,23 @@ async function exportHistoryPDF(){
 })();
 <\/script>
 
-<script>
+<script id="pcm-mobile-guard">
 (function(){
-  function mobileVisualGuard(){
+  function guard(){
     try{
-      if(!document.body.classList.contains('pcm-app-open')){
-        var login=document.getElementById('loginScreen');
-        var app=document.getElementById('app');
-        if(login) login.classList.remove('hidden');
-        if(app) app.classList.add('hidden');
+      var login=document.getElementById("loginScreen");
+      var app=document.getElementById("app");
+      if(!document.body.classList.contains("pcm-app-open")){
+        if(login) login.classList.remove("hidden");
+        if(app) app.classList.add("hidden");
       }
     }catch(e){}
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mobileVisualGuard,{once:true});
-  else mobileVisualGuard();
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",guard,{once:true});
+  else guard();
 })();
 </script>
+
 </body></html>`);
         popup.document.close();
         showPCMToast("PDF preparado. Na tela de impressão, escolha Salvar como PDF.","success");
