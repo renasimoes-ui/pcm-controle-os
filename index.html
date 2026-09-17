@@ -19,7 +19,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=BUepqilWPIgH7nT-ZrfTvoiEp0tm0OW3ue8aWi5u7Cd_ByLlvOkPsbkptQ1Z4UlZF66dDzrCGv-Qic6zQZvz6rpyjZRw7wC3TZYjaHc9p3-4Q9M7xlEVq4Y4zLhgN73yXJ7RdIV8X6CrZyVUV_1CWSdDSz0dihc_VEDD7KlPTpHXA4hDJuGWDmCLvhuriBXpEFOjg7WG6dnY_tOxlnaHir-c56uxEbHb9u7ouVqGGvNeEEo74Duu4dCLTRzD2xgLpZDf9B-7KJ1GnwBnSnz_45PvVubk2Jv2ZWzuEun_KsaD_DnnAInz2srG0ZMgX_lrpsS1-MdRPOxnpoUrmCOJBUtgI7oy_8E2zHiNU6SfpmU" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -2660,6 +2660,275 @@ html,body{width:100%;max-width:100%;margin:0;padding:0;overflow-x:hidden}
   #loginScreen.os-login-modern .os-login-card{max-height:calc(100svh - 24px)!important;overflow:auto!important}
 }
 </style>
+
+<style id="pcm-mobile-layout-only">
+/* =========================================================
+   MOBILE — SOMENTE LAYOUT
+   Não altera main.js, Supabase, login ou regras de O.S.
+   ========================================================= */
+html,body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+  -webkit-text-size-adjust:100%;
+}
+body{margin:0;}
+
+/* A tela de login ocupa exatamente a tela do celular.
+   Não cria rolagem para conseguir chegar ao formulário. */
+#loginScreen.os-login-modern{
+  width:100%;
+  min-width:0;
+  height:100vh;
+  height:100dvh;
+  min-height:0;
+  overflow:hidden;
+}
+
+/* Mantém o visual em duas áreas em telas maiores */
+#loginScreen.os-login-modern .os-brand-side,
+#loginScreen.os-login-modern .os-login-side{
+  min-width:0;
+  min-height:0;
+}
+
+/* Celular: tudo cabe na tela sem precisar rolar */
+@media (max-width: 700px){
+  #loginScreen.os-login-modern{
+    height:100vh;
+    height:100dvh;
+    min-height:0;
+    overflow:hidden;
+    display:grid;
+    grid-template-columns:1fr;
+    grid-template-rows:auto 1fr;
+    align-content:stretch;
+    padding:0;
+  }
+
+  #loginScreen.os-login-modern .os-brand-side{
+    padding:12px 16px 4px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:0;
+  }
+
+  #loginScreen.os-login-modern .os-brand-content{
+    width:100%;
+    max-width:500px;
+    text-align:center;
+  }
+
+  #loginScreen.os-login-modern .os-brand-top{
+    justify-content:center;
+    margin-bottom:7px;
+  }
+
+  #loginScreen.os-login-modern .os-brand-mark{
+    width:42px;
+    height:42px;
+    flex-basis:42px;
+    border-radius:12px;
+  }
+
+  #loginScreen.os-login-modern .os-brand-mark:before{
+    width:18px;
+    height:18px;
+    border-width:2px;
+  }
+
+  #loginScreen.os-login-modern .os-brand-mark:after{
+    width:7px;
+    height:7px;
+  }
+
+  #loginScreen.os-login-modern .os-eyebrow{
+    font-size:8px;
+    letter-spacing:.15em;
+  }
+
+  #loginScreen.os-login-modern .os-brand-company{
+    font-size:9px;
+  }
+
+  #loginScreen.os-login-modern h1{
+    font-size:clamp(25px,8vw,32px);
+    line-height:1;
+  }
+
+  #loginScreen.os-login-modern .os-brand-subtitle{
+    margin:6px auto 0;
+    max-width:360px;
+    font-size:10px;
+    line-height:1.35;
+  }
+
+  #loginScreen.os-login-modern .os-brand-line{
+    width:60px;
+    height:2px;
+    margin:8px auto 0;
+  }
+
+  /* Os três cartões informativos ocupavam a altura que causava a rolagem.
+     O layout continua existindo, mas fica oculto apenas no celular. */
+  #loginScreen.os-login-modern .os-feature-list{
+    display:none;
+  }
+
+  #loginScreen.os-login-modern .os-login-side{
+    min-height:0;
+    padding:5px 14px 12px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  #loginScreen.os-login-modern .os-login-card{
+    width:100%;
+    max-width:430px;
+    padding:17px 17px 14px;
+    border-radius:18px;
+    max-height:none;
+    overflow:visible;
+  }
+
+  #loginScreen.os-login-modern .os-card-icon{
+    width:38px;
+    height:38px;
+    border-radius:11px;
+    margin-bottom:9px;
+  }
+
+  #loginScreen.os-login-modern .os-card-icon svg{
+    width:20px;
+    height:20px;
+  }
+
+  #loginScreen.os-login-modern .os-kicker{
+    font-size:8px;
+    letter-spacing:.16em;
+  }
+
+  #loginScreen.os-login-modern .os-login-card h2{
+    font-size:21px;
+    margin:5px 0 3px;
+  }
+
+  #loginScreen.os-login-modern .os-card-subtitle{
+    margin:0 0 12px;
+    font-size:10px;
+    line-height:1.35;
+  }
+
+  #loginScreen.os-login-modern .os-field{
+    margin-bottom:10px;
+  }
+
+  #loginScreen.os-login-modern .os-field label{
+    margin-bottom:5px;
+    font-size:9px;
+  }
+
+  #loginScreen.os-login-modern select,
+  #loginScreen.os-login-modern input{
+    min-height:45px;
+    height:45px;
+    font-size:16px !important;
+  }
+
+  #loginScreen.os-login-modern .os-login-btn{
+    min-height:46px;
+    height:46px;
+    margin-top:2px;
+    font-size:11px;
+  }
+
+  #loginScreen.os-login-modern .os-login-footer{
+    margin-top:10px;
+    padding-top:9px;
+    font-size:8px;
+  }
+
+  /* Evita que o navegador crie largura/rolagem horizontal */
+  #app,
+  #app .main,
+  #app .app-view{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+  }
+
+  #app .main{
+    margin-left:0 !important;
+  }
+}
+
+/* Celulares bem pequenos */
+@media (max-width:380px){
+  #loginScreen.os-login-modern .os-brand-side{
+    padding-top:8px;
+  }
+
+  #loginScreen.os-login-modern h1{
+    font-size:24px;
+  }
+
+  #loginScreen.os-login-modern .os-brand-subtitle{
+    font-size:9px;
+  }
+
+  #loginScreen.os-login-modern .os-login-side{
+    padding:3px 10px 8px;
+  }
+
+  #loginScreen.os-login-modern .os-login-card{
+    padding:14px 14px 11px;
+    border-radius:16px;
+  }
+
+  #loginScreen.os-login-modern .os-card-icon{
+    display:none;
+  }
+
+  #loginScreen.os-login-modern .os-card-subtitle{
+    margin-bottom:9px;
+  }
+
+  #loginScreen.os-login-modern .os-field{
+    margin-bottom:8px;
+  }
+
+  #loginScreen.os-login-modern .os-login-footer{
+    margin-top:7px;
+    padding-top:7px;
+  }
+}
+
+/* Teclado do celular: quando aparece, não deixa o formulário
+   criar uma segunda página/rolagem no login. */
+@media (max-height:700px) and (max-width:700px){
+  #loginScreen.os-login-modern .os-brand-side{
+    padding-top:5px;
+  }
+
+  #loginScreen.os-login-modern .os-brand-top{
+    margin-bottom:3px;
+  }
+
+  #loginScreen.os-login-modern .os-brand-subtitle,
+  #loginScreen.os-login-modern .os-brand-line{
+    display:none;
+  }
+
+  #loginScreen.os-login-modern .os-login-card{
+    padding-top:12px;
+    padding-bottom:10px;
+  }
+}
+</style>
+
 </head>
 
 <body>
