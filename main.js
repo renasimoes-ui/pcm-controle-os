@@ -1,115 +1,42 @@
-/* PCM Controle de O.S. — bootstrap
-   Arquivo auxiliar do projeto atual.
-   Não altera Supabase, tabelas ou dados.
-*/
+/* =========================================================
+   PCM • CONTROLE DE O.S. — MAIN BOOT
+   AB Florestas e Madeiras
+
+   Este arquivo NÃO cria banco, NÃO altera tabelas
+   e NÃO faz chamadas ao Supabase.
+   O index.html controla a aplicação.
+   ========================================================= */
 
 (function () {
-  'use strict';
+    'use strict';
 
-  const SUPABASE_CLIENT_CDNS = [
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-    'https://unpkg.com/@supabase/supabase-js@2',
-    'https://esm.sh/@supabase/supabase-js@2'
-  ];
+    // Marca que o arquivo foi carregado corretamente.
+    window.PCM_BOOT = window.PCM_BOOT || {};
 
-  window.PCM_BOOT = window.PCM_BOOT || {};
-  window.PCM_BOOT.startedAt = Date.now();
-  window.PCM_BOOT.supabasePromise =
-    window.PCM_BOOT.supabasePromise || null;
+    window.PCM_BOOT.loaded = true;
+    window.PCM_BOOT.startedAt = Date.now();
 
-  function loadSupabase() {
-    if (
-      window.supabase &&
-      typeof window.supabase.createClient === 'function'
-    ) {
-      return Promise.resolve(window.supabase);
-    }
+    /*
+     * Não carregar Supabase aqui.
+     *
+     * O próprio index.html já possui a rotina de conexão.
+     * Assim evitamos duas inicializações simultâneas,
+     * problemas de CDN e falhas no carregamento do celular.
+     */
 
-    if (window.PCM_BOOT.supabasePromise) {
-      return window.PCM_BOOT.supabasePromise;
-    }
-
-    window.PCM_BOOT.supabasePromise = new Promise((resolve, reject) => {
-      let index = 0;
-
-      function next() {
-        if (
-          window.supabase &&
-          typeof window.supabase.createClient === 'function'
-        ) {
-          resolve(window.supabase);
-          return;
-        }
-
-        if (index >= SUPABASE_CLIENT_CDNS.length) {
-          reject(new Error('SUPABASE_CLIENT_LOAD_FAILED'));
-          return;
-        }
-
-        const script = document.createElement('script');
-
-        script.src = SUPABASE_CLIENT_CDNS[index++];
-        script.async = false;
-
-        script.onload = function () {
-          if (
-            window.supabase &&
-            typeof window.supabase.createClient === 'function'
-          ) {
-            resolve(window.supabase);
-          } else {
-            next();
-          }
-        };
-
-        script.onerror = function () {
-          next();
-        };
-
-        document.head.appendChild(script);
-      }
-
-      next();
+    window.addEventListener('error', function (event) {
+        console.error(
+            '[PCM] Erro JavaScript:',
+            event.error || event.message || event
+        );
     });
 
-    return window.PCM_BOOT.supabasePromise;
-  }
+    window.addEventListener('unhandledrejection', function (event) {
+        console.error(
+            '[PCM] Promise rejeitada:',
+            event.reason || event
+        );
+    });
 
-  window.PCM_BOOT.loadSupabase = loadSupabase;
-
-  window.addEventListener('error', function (event) {
-    console.error(
-      '[PCM BOOT] JavaScript:',
-      event.error || event.message
-    );
-  });
-
-  window.addEventListener(
-    'unhandledrejection',
-    function (event) {
-      console.error(
-        '[PCM BOOT] Promise rejeitada:',
-        event.reason
-      );
-    }
-  );
-
-  /*
-   * Não bloqueia a abertura do aplicativo.
-   * O Supabase é carregado em segundo plano.
-   */
-  loadSupabase().catch(function (error) {
-    console.error(
-      '[PCM BOOT] Supabase não carregou:',
-      error
-    );
-
-    window.PCM_BOOT.supabaseError =
-      String(
-        error &&
-        error.message
-          ? error.message
-          : error
-      );
-  });
+    console.log('[PCM] main.js carregado com sucesso.');
 })();
