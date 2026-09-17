@@ -19,7 +19,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=e90GIAdewxau5lc4hcyVgi1MT4jb3vNGceHKnJbPEC6ApBH52cnmflsQxUDBiFOg7B29lzmVFSpVp42y66qBWsPttqlZyklnGd1TIaoP6kFkL4B2BsqduwHDWlOS4gVfHlcIZOoS2kkDK_lzSuSCktl8NxZc1yQkHB5cOBEl4wrxaS0WrC19ZXyKNqQdoPMLflW8dHOwGy26J3JxtVyR4bYes3wzoQZ32zguIymCGERyf9sFwS578Ug47uuEn2Ic2pxe_BAly18S4mkDFJSmSPquEHHpPZXKSkwtfnPgkWoTWxhMo3Urc9UloGQT-fV2hH40EOLHL3lXfMY3bdIsXRzm_081VCRlk_M7N-hrZyU" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -2480,6 +2480,186 @@ body{margin:0!important;background:#080808!important;}
 </style>
 
 <script src="/main.js?v=20260917" defer></script>
+
+<style id="pcm-layout-only-final">
+/* =========================================================
+   PCM — AJUSTE EXCLUSIVO DE LAYOUT
+   NÃO altera JavaScript, Supabase, login, tabelas ou funções.
+   ========================================================= */
+*{box-sizing:border-box}
+html,body{width:100%;max-width:100%;margin:0;padding:0;overflow-x:hidden}
+
+/* DESKTOP: duas áreas claramente separadas */
+#loginScreen.os-login-modern{
+  min-height:100vh;
+  min-height:100svh;
+  width:100%;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(390px,460px)!important;
+  align-items:stretch!important;
+  overflow:hidden!important;
+  padding:0!important;
+}
+#loginScreen.os-login-modern .os-brand-side{
+  min-width:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:clamp(28px,5vw,72px)!important;
+}
+#loginScreen.os-login-modern .os-brand-content{
+  width:min(680px,100%)!important;
+  margin:0 auto!important;
+}
+#loginScreen.os-login-modern .os-login-side{
+  min-width:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:32px!important;
+  border-left:1px solid rgba(205,159,102,.18)!important;
+  background:rgba(5,5,5,.42)!important;
+}
+#loginScreen.os-login-modern .os-login-card{
+  width:100%!important;
+  max-width:420px!important;
+  margin:0 auto!important;
+}
+
+/* CELULAR: marca compacta em cima + acesso logo abaixo, sem empurrar
+   o formulário para fora da tela desnecessariamente. */
+@media(max-width:800px){
+  #loginScreen.os-login-modern{
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    align-items:stretch!important;
+    min-height:100svh!important;
+    height:auto!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding:0!important;
+  }
+  #loginScreen.os-login-modern .os-brand-side{
+    flex:0 0 auto!important;
+    width:100%!important;
+    min-height:0!important;
+    padding:18px 16px 8px!important;
+    align-items:flex-start!important;
+  }
+  #loginScreen.os-login-modern .os-brand-content{
+    width:100%!important;
+    max-width:520px!important;
+    text-align:center!important;
+  }
+  #loginScreen.os-login-modern .os-brand-logo-image{
+    margin:0 auto 8px!important;
+  }
+  #loginScreen.os-login-modern .os-brand-top{
+    justify-content:center!important;
+    margin-bottom:6px!important;
+  }
+  #loginScreen.os-login-modern .os-brand-company,
+  #loginScreen.os-login-modern .os-eyebrow,
+  #loginScreen.os-login-modern .os-brand-line,
+  #loginScreen.os-login-modern .os-feature-list{
+    display:none!important;
+  }
+  #loginScreen.os-login-modern .os-brand-content h1{
+    margin:4px 0 4px!important;
+    font-size:clamp(21px,6vw,27px)!important;
+    line-height:1.05!important;
+  }
+  #loginScreen.os-login-modern .os-brand-subtitle{
+    margin:0 auto!important;
+    max-width:440px!important;
+    font-size:12px!important;
+    line-height:1.35!important;
+  }
+  #loginScreen.os-login-modern .os-login-side{
+    flex:0 0 auto!important;
+    width:100%!important;
+    min-width:0!important;
+    padding:8px 12px 20px!important;
+    border-left:0!important;
+    background:transparent!important;
+  }
+  #loginScreen.os-login-modern .os-login-card{
+    width:100%!important;
+    max-width:430px!important;
+    margin:0 auto!important;
+    padding:20px 17px!important;
+    border-radius:20px!important;
+  }
+  #loginScreen.os-login-modern .os-card-icon{
+    margin-bottom:7px!important;
+    transform:scale(.88);
+  }
+  #loginScreen.os-login-modern .os-kicker{
+    margin-bottom:4px!important;
+    font-size:10px!important;
+  }
+  #loginScreen.os-login-modern .os-login-card h2{
+    margin:0 0 5px!important;
+    font-size:21px!important;
+    line-height:1.15!important;
+  }
+  #loginScreen.os-login-modern .os-card-subtitle{
+    margin:0 0 14px!important;
+    font-size:12px!important;
+    line-height:1.35!important;
+  }
+  #loginScreen.os-login-modern .os-field{
+    margin-bottom:11px!important;
+  }
+  #loginScreen.os-login-modern .os-field label{
+    margin-bottom:5px!important;
+    font-size:12px!important;
+  }
+  #loginScreen.os-login-modern .os-input-wrap,
+  #loginScreen.os-login-modern .os-input-wrap input,
+  #loginScreen.os-login-modern .os-input-wrap select{
+    min-height:46px!important;
+  }
+  #loginScreen.os-login-modern .os-login-btn{
+    min-height:47px!important;
+    margin-top:4px!important;
+  }
+  #loginScreen.os-login-modern .os-login-footer{
+    margin-top:12px!important;
+    font-size:10px!important;
+    line-height:1.35!important;
+  }
+}
+
+/* Celulares pequenos: reduz ainda mais o topo para o acesso ficar visível. */
+@media(max-width:390px){
+  #loginScreen.os-login-modern .os-brand-side{padding:12px 12px 5px!important}
+  #loginScreen.os-login-modern .os-brand-logo-image{transform:scale(.82);margin-top:-3px!important;margin-bottom:0!important}
+  #loginScreen.os-login-modern .os-brand-content h1{font-size:20px!important}
+  #loginScreen.os-login-modern .os-brand-subtitle{font-size:11px!important;max-width:340px!important}
+  #loginScreen.os-login-modern .os-login-side{padding:5px 9px 14px!important}
+  #loginScreen.os-login-modern .os-login-card{padding:17px 14px!important}
+  #loginScreen.os-login-modern .os-card-icon{display:none!important}
+  #loginScreen.os-login-modern .os-card-subtitle{margin-bottom:11px!important}
+  #loginScreen.os-login-modern .os-field{margin-bottom:9px!important}
+}
+
+/* Em modo paisagem no celular, usa as duas áreas lado a lado para não
+   criar uma página vertical desnecessariamente comprida. */
+@media(max-width:800px) and (orientation:landscape){
+  #loginScreen.os-login-modern{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(300px,390px)!important;
+    grid-template-rows:100svh!important;
+    overflow:hidden!important;
+  }
+  #loginScreen.os-login-modern .os-brand-side{padding:16px!important;align-items:center!important}
+  #loginScreen.os-login-modern .os-brand-subtitle{max-width:360px!important}
+  #loginScreen.os-login-modern .os-login-side{padding:12px!important;border-left:1px solid rgba(205,159,102,.18)!important}
+  #loginScreen.os-login-modern .os-login-card{max-height:calc(100svh - 24px)!important;overflow:auto!important}
+}
+</style>
 </head>
 
 <body>
