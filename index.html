@@ -19,7 +19,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=pOO_bvI2bc2FZaHwtmLNYlQbb0TqJ_vMKFemTDl6cMpyFHlymdm7pfFYRplVZAXcaqXWGbiH2U1QWAF7ER6NdJJWxbSP6AYflNVYaS-PbhMHWDoBCnE981R2bv_H6Kk-wJnmEH6Op5NJo2YnEMSYmpLmAfUYfXf6a0jq-KtLV9MYGi-tTr0gQNrvyLBTTMZVd_AKjkZ7g3JIW4RBYWOR76fVBkOuvwRWQ_oVtjbEg6mPr55W6oj_JHeZSCX9drYXqXs6SLTM4jwR-dmITGz4eZoJes3jFTnWij93aOPFrJn2JxcMYHR8fxzfiHGhMgjBYP-ZLr3Eo37bTpKbCd6r_rhooyNGSf7hZxjm_hu5lIw" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -1816,6 +1816,453 @@ a:hover,
     max-height:76px;
   }
 }
+</style>
+
+
+<style id="ab-florestas-inner-complete-palette">
+/* =========================================================
+   IDENTIDADE AB FLORESTAS — PARTE INTERNA DO SISTEMA
+   ========================================================= */
+
+/* Fundo geral e áreas internas */
+body,
+.main,
+main,
+.app,
+.content,
+.page-content{
+  background:#050505 !important;
+  color:#F4F1EC !important;
+}
+
+/* Cabeçalhos */
+.header,
+.topbar,
+.app-header,
+.page-header{
+  background:linear-gradient(135deg,#090909,#15110C) !important;
+  border-color:#33281D !important;
+}
+
+/* Títulos e textos de destaque */
+h1,h2,h3,h4,
+.title,
+.page-title{
+  color:#E2BF8A !important;
+}
+
+/* Cartões / painéis */
+.card,
+.panel,
+.stat-card,
+.dashboard-card,
+.section-card,
+.table-card,
+.modal-content{
+  background:linear-gradient(145deg,#14110D,#0B0B0B) !important;
+  border-color:#4A3825 !important;
+  color:#F4F1EC !important;
+  box-shadow:0 10px 30px rgba(0,0,0,.28) !important;
+}
+
+/* Números e indicadores */
+.stat-value,
+.metric-value,
+.counter,
+.number{
+  color:#CD9F66 !important;
+}
+
+/* Botões principais */
+button.primary,
+.btn-primary,
+.btn-blue,
+button[type="submit"]{
+  background:linear-gradient(135deg,#E2BF8A,#CD9F66 55%,#9B6D3B) !important;
+  border-color:#CD9F66 !important;
+  color:#120D08 !important;
+  font-weight:800 !important;
+}
+
+/* Botões secundários */
+button.secondary,
+.btn-secondary{
+  background:#17130F !important;
+  border-color:#5A432B !important;
+  color:#E2BF8A !important;
+}
+
+/* Navegação lateral */
+.sidebar,
+aside{
+  background:linear-gradient(180deg,#080808,#110E0A) !important;
+  border-color:#33281D !important;
+}
+
+.sidebar .nav-btn,
+.nav-btn{
+  color:#CFC7BC !important;
+  border-color:transparent !important;
+}
+
+.sidebar .nav-btn:hover,
+.nav-btn:hover{
+  background:rgba(205,159,102,.10) !important;
+  color:#E2BF8A !important;
+}
+
+.sidebar .nav-btn.active,
+.nav-btn.active{
+  background:linear-gradient(135deg,rgba(205,159,102,.24),rgba(143,106,61,.10)) !important;
+  border-color:rgba(205,159,102,.34) !important;
+  color:#E2BF8A !important;
+  box-shadow:inset 3px 0 0 #CD9F66 !important;
+}
+
+/* Abas */
+.tab,
+.tab-btn,
+.filter-btn{
+  background:#0D0C0A !important;
+  border-color:#3D3022 !important;
+  color:#CFC7BC !important;
+}
+
+.tab.active,
+.tab-btn.active,
+.filter-btn.active{
+  background:rgba(205,159,102,.18) !important;
+  border-color:#CD9F66 !important;
+  color:#E2BF8A !important;
+}
+
+/* Inputs e selects */
+input,
+select,
+textarea{
+  background:#090909 !important;
+  border-color:#403122 !important;
+  color:#F4F1EC !important;
+}
+
+input::placeholder,
+textarea::placeholder{
+  color:#8D8377 !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+  border-color:#CD9F66 !important;
+  box-shadow:0 0 0 3px rgba(205,159,102,.11) !important;
+  outline:none !important;
+}
+
+/* Tabelas */
+table{
+  background:#0A0A0A !important;
+  color:#F4F1EC !important;
+}
+
+thead,
+.table-header,
+th{
+  background:#18120D !important;
+  color:#E2BF8A !important;
+  border-color:#4A3825 !important;
+}
+
+td{
+  border-color:#2B2118 !important;
+}
+
+tbody tr:hover{
+  background:rgba(205,159,102,.06) !important;
+}
+
+/* Etiquetas e badges */
+.badge,
+.tag,
+.label{
+  border-color:#5A432B !important;
+}
+
+/* O.S. — destaque dourado sem alterar as cores de prioridade
+   (Alta/Urgência, Médio e Moderada continuam com suas cores) */
+.os-card,
+.order-card{
+  background:linear-gradient(145deg,#15110D,#0A0A0A) !important;
+  border-color:#4A3825 !important;
+}
+
+.os-card:hover,
+.order-card:hover{
+  border-color:#CD9F66 !important;
+}
+
+/* Status neutros */
+.status-open,
+.status-pending,
+.status-waiting{
+  border-color:#6B5337 !important;
+}
+
+/* Links */
+a{
+  color:#DDB77F !important;
+}
+
+a:hover{
+  color:#F0D09D !important;
+}
+
+/* Modais */
+.modal,
+.modal-overlay{
+  background:rgba(0,0,0,.76) !important;
+}
+
+.modal-content{
+  border:1px solid #5A432B !important;
+}
+
+/* Divisores */
+hr,
+.divider{
+  border-color:#33281D !important;
+}
+
+/* Scroll */
+*{
+  scrollbar-color:#8F6A3D #080808;
+}
+
+/* Texto auxiliar */
+.text-muted,
+.muted,
+.subtitle,
+.helper-text{
+  color:#A69A8B !important;
+}
+
+/* Destaques de identidade */
+.text-primary,
+.text-blue,
+.primary-text{
+  color:#CD9F66 !important;
+}
+
+/* Ícones de destaque */
+.icon-primary,
+.text-accent{
+  color:#CD9F66 !important;
+}
+
+/* Rodapé */
+footer{
+  background:#080808 !important;
+  border-top-color:#33281D !important;
+  color:#9D9285 !important;
+}
+</style>
+
+
+<style id="ab-florestas-black-gold-final">
+/* ===== AB FLORESTAS — PRETO VISÍVEL + DOURADO ===== */
+:root{
+  --ab-black:#080808;
+  --ab-black-2:#101010;
+  --ab-black-3:#171717;
+  --ab-black-4:#202020;
+  --ab-line:#303030;
+  --ab-line-gold:#5A432B;
+  --ab-gold:#CD9F66;
+  --ab-gold-light:#E2BF8A;
+}
+
+/* Remove aparência azulada do sistema */
+body,
+.main,
+main,
+.app,
+.content,
+.page-content{
+  background:#080808 !important;
+  color:#F2F0EC !important;
+}
+
+/* Área principal */
+.main{
+  background:
+    radial-gradient(circle at 85% 5%,rgba(205,159,102,.045),transparent 25%),
+    #080808 !important;
+}
+
+/* Cabeçalho */
+.header,.topbar,.app-header,.page-header{
+  background:#101010 !important;
+  border-color:#303030 !important;
+}
+
+/* Menu */
+.sidebar,aside{
+  background:#0A0A0A !important;
+  border-color:#2D2D2D !important;
+}
+
+.sidebar .nav-btn,.nav-btn{
+  background:transparent !important;
+  color:#BEB9B1 !important;
+  border-color:transparent !important;
+}
+
+.sidebar .nav-btn:hover,.nav-btn:hover{
+  background:#181818 !important;
+  color:#E2BF8A !important;
+}
+
+.sidebar .nav-btn.active,.nav-btn.active{
+  background:#1C1813 !important;
+  color:#E2BF8A !important;
+  border-color:#5A432B !important;
+  box-shadow:inset 3px 0 0 #CD9F66 !important;
+}
+
+/* Cards internos — preto, mas com contraste */
+.card,.panel,.stat-card,.dashboard-card,
+.section-card,.table-card,.modal-content{
+  background:linear-gradient(145deg,#181818,#101010) !important;
+  border:1px solid #303030 !important;
+  color:#F2F0EC !important;
+  box-shadow:0 8px 24px rgba(0,0,0,.35) !important;
+}
+
+/* Cards de O.S. */
+.os-card,.order-card{
+  background:linear-gradient(145deg,#191919,#0F0F0F) !important;
+  border-color:#383838 !important;
+}
+
+.os-card:hover,.order-card:hover{
+  border-color:#6B5134 !important;
+}
+
+/* Títulos */
+h1,h2,h3,h4,.title,.page-title{
+  color:#E2BF8A !important;
+}
+
+/* Números/indicadores */
+.stat-value,.metric-value,.counter,.number{
+  color:#CD9F66 !important;
+}
+
+/* Botões */
+button.primary,.btn-primary,.btn-blue,button[type="submit"]{
+  background:linear-gradient(135deg,#D9B27D,#CD9F66,#A97945) !important;
+  color:#0A0806 !important;
+  border-color:#CD9F66 !important;
+}
+
+button.secondary,.btn-secondary{
+  background:#181818 !important;
+  color:#D6B27F !important;
+  border-color:#3B3B3B !important;
+}
+
+/* Inputs */
+input,select,textarea{
+  background:#111111 !important;
+  color:#F3F1ED !important;
+  border-color:#353535 !important;
+}
+
+input::placeholder,textarea::placeholder{
+  color:#77736D !important;
+}
+
+input:focus,select:focus,textarea:focus{
+  background:#151515 !important;
+  border-color:#CD9F66 !important;
+  box-shadow:0 0 0 2px rgba(205,159,102,.10) !important;
+}
+
+/* Tabelas */
+table{
+  background:#0D0D0D !important;
+  color:#F2F0EC !important;
+}
+
+thead,th,.table-header{
+  background:#191612 !important;
+  color:#E2BF8A !important;
+  border-color:#3A3026 !important;
+}
+
+td{
+  background:#101010 !important;
+  border-color:#292929 !important;
+}
+
+tbody tr:hover td{
+  background:#1A1816 !important;
+}
+
+/* Abas e filtros */
+.tab,.tab-btn,.filter-btn{
+  background:#121212 !important;
+  color:#AAA59D !important;
+  border-color:#303030 !important;
+}
+
+.tab.active,.tab-btn.active,.filter-btn.active{
+  background:#211A13 !important;
+  color:#E2BF8A !important;
+  border-color:#6A5032 !important;
+}
+
+/* Links e destaques */
+a,.text-primary,.text-blue,.primary-text,.text-accent{
+  color:#CD9F66 !important;
+}
+
+a:hover{
+  color:#E2BF8A !important;
+}
+
+/* Modal */
+.modal-content{
+  background:#121212 !important;
+  border-color:#4A3825 !important;
+}
+
+.modal,.modal-overlay{
+  background:rgba(0,0,0,.82) !important;
+}
+
+/* Divisores */
+hr,.divider{
+  border-color:#2E2E2E !important;
+}
+
+/* Texto secundário */
+.text-muted,.muted,.subtitle,.helper-text{
+  color:#918C84 !important;
+}
+
+/* Footer */
+footer{
+  background:#090909 !important;
+  border-top-color:#2D2D2D !important;
+  color:#858078 !important;
+}
+
+/* Scroll */
+*{
+  scrollbar-color:#5C5C5C #0A0A0A;
+}
+
+/* Mantém as prioridades das O.S. com suas cores próprias */
 </style>
 
 </head>
