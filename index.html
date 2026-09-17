@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=ncUGUYhpLw8MZIqw7PqJhYhBwcWOIY5jRN7qU836F8i98ycgJZCcM4II194Sd8dx7nHPG76zqNhZDFqIlRrA5R_6k1WPleh2roVOhf1AktO-vI7HA1REh5Yp4esoOwqNiso1z66v4g2V25PWAVvMWMI4AoQA1aLjEyA6yV1Uq_TRVdoR7d5pZJgsHhV2BXRL55WK4Lsm2IZ9RRCRRgN4mXBGHEbBsI690rY82JEqb7ob6QyxXiXg6eAnK6s6jJjAHentxpkEXHWokBU6O3S61QzgrQiXvoWsNap3v9p-fOIeju9laKOF515xT1qV9XQv" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=p6l-k1sriaFBDxrgEkAZYS5R4uPInawZNPrJPQhYWIVGaKfXDs9viXc9zota_SrgTgMLpqYRp4hBqrsV4L-4qUk8Mr7BaOsuQuixGeRtJCCPMwNkd5ylBwZZySiiTZF4kPPe0rQSbi7huWW_jORZ8rYE37P2Pr9JZXr3coVo9IwB_dHA9VrTpWhx8FShiqw8rFKQdDW5CabWzJBziZ3GTAdTl_bhoGDJrtlDYuSVcjLJkvu9PVyTyGRhYlyT2KlHaqeGq80F-9PvhfOPDTruuSwg98Fmurw8iK-sAhf4Ngq4Iflxtx89sdhixPrRCaxM" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -2298,9 +2298,88 @@ body:not(.login-active){overflow-x:hidden!important;}
   .sidebar{display:none!important;}
 }
 </style>
+
+<style id="AB-FLORESTAS-MOBILE-SAFE-FINAL">
+/* ===== AB FLORESTAS — CORREÇÃO DEFINITIVA CELULAR ===== */
+html,body{width:100%!important;max-width:100%!important;margin:0!important;padding:0!important;overflow-x:hidden!important;-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;}
+body{background:#080808!important;color:#f4f4f4!important;}
+*,*:before,*:after{box-sizing:border-box!important;}
+img,svg,video,canvas{max-width:100%!important;}
+button,input,select,textarea{max-width:100%!important;}
+
+/* Login sempre visível enquanto o usuário não entrou. */
+body.login-active{overflow:hidden!important;position:relative!important;}
+body.login-active #loginScreen{
+  display:flex!important;
+  position:relative!important;
+  z-index:99999!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:100svh!important;
+  height:auto!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+body.login-active #loginScreen .os-login-bg{z-index:0!important;}
+body.login-active #loginScreen .os-brand-side,
+body.login-active #loginScreen .os-login-side{position:relative!important;z-index:2!important;min-width:0!important;}
+
+/* Cores AB: preto + dourado, sem azul no acesso. */
+#loginScreen.os-login-modern{background:#080808!important;color:#f4f4f4!important;}
+#loginScreen.os-login-modern .os-login-bg{background:linear-gradient(135deg,#050505,#101010 52%,#050505)!important;}
+#loginScreen.os-login-modern .os-grid{opacity:.08!important;background-image:linear-gradient(rgba(205,159,102,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(205,159,102,.10) 1px,transparent 1px)!important;}
+#loginScreen.os-login-modern .os-glow{background:rgba(205,159,102,.08)!important;}
+#loginScreen.os-login-modern .os-eyebrow,#loginScreen.os-login-modern .os-kicker{color:#CD9F66!important;}
+#loginScreen.os-login-modern .os-brand-line{background:linear-gradient(90deg,#CD9F66,transparent)!important;}
+#loginScreen.os-login-modern .os-card-icon{background:rgba(205,159,102,.10)!important;border-color:rgba(205,159,102,.28)!important;}
+#loginScreen.os-login-modern .os-card-icon svg{stroke:#E2BF8A!important;}
+#loginScreen.os-login-modern .os-login-btn{color:#090909!important;background:linear-gradient(135deg,#E2BF8A,#CD9F66)!important;box-shadow:0 12px 30px rgba(205,159,102,.18)!important;}
+#loginScreen.os-login-modern select:focus,#loginScreen.os-login-modern input:focus{border-color:rgba(205,159,102,.70)!important;box-shadow:0 0 0 3px rgba(205,159,102,.10)!important;}
+
+/* Ao entrar, o login some completamente e o sistema ocupa a tela. */
+body:not(.login-active) #loginScreen{display:none!important;}
+body:not(.login-active) #app{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important;}
+body:not(.login-active){overflow-x:hidden!important;overflow-y:auto!important;position:relative!important;}
+#app .main,#app .content,#app .page-content,#app .app-view{min-width:0!important;max-width:100%!important;}
+
+@media(max-width:900px){
+  body.login-active #loginScreen{flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;}
+  #loginScreen.os-login-modern .os-brand-side{width:100%!important;padding:24px 16px 10px!important;}
+  #loginScreen.os-login-modern .os-login-side{width:100%!important;padding:10px 14px 28px!important;align-items:flex-start!important;}
+  #loginScreen.os-login-modern .os-brand-content{width:100%!important;max-width:520px!important;margin:0 auto!important;text-align:center!important;}
+  #loginScreen.os-login-modern .os-brand-top{justify-content:center!important;}
+  #loginScreen.os-login-modern .os-feature-list{grid-template-columns:repeat(3,minmax(0,1fr))!important;width:100%!important;}
+  #loginScreen.os-login-modern .os-login-card{width:100%!important;max-width:430px!important;margin:0 auto!important;padding:20px 16px!important;}
+}
+@media(max-width:420px){
+  #loginScreen.os-login-modern .os-brand-side{padding-top:16px!important;}
+  #loginScreen.os-login-modern .os-feature-list{gap:6px!important;margin-top:14px!important;}
+  #loginScreen.os-login-modern .os-feature{padding:9px 5px!important;}
+  #loginScreen.os-login-modern .os-login-card{padding:18px 14px!important;}
+}
+</style>
 </head>
 
 <body class="login-active">
+<script id="AB-FLORESTAS-SAFE-BOOT">
+(function(){
+  function resetPage(){
+    try{document.documentElement.scrollLeft=0;document.documentElement.scrollTop=0;document.body.scrollLeft=0;document.body.scrollTop=0;}catch(e){}
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    document.body.classList.add('login-active');
+    var login=document.getElementById('loginScreen');
+    var app=document.getElementById('app');
+    if(login){login.classList.remove('hidden');login.style.display='';login.style.visibility='visible';}
+    if(app){app.classList.add('hidden');}
+    resetPage();
+  },{once:true});
+})();
+</script>
+
 <script>try{history.scrollRestoration="manual";}catch(e){}</script>
 <!-- BOOT MOBILE: a interface abre antes do Supabase -->
 <!-- Fallback visual: se algum erro de JavaScript ocorrer no celular, nunca deixa uma tela preta sem explicação. -->
