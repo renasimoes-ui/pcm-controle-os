@@ -19,7 +19,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=t4gkeKgyNk0EiqI1NVCTdzOiaq80403Fz9LX08kuCWLzzg6fjaiyAY6LNXxVhHljJE4Dr8l5_AvtwF_4kpbAiXutYw8VQfPHT9kuLK7ggVspajIlPqmZhk5cet5Ybx_b_xvjsVDob8PIqGBEdmW_c4e4Z4tq8dGrU5K4eox95vPIF5YyT5sMVzrk7XBbwh3z1YDYeEV1iftwaqoLHhdy_1H5wva0J5DPSlfEYfVGGqzbhEXXB8Ju-7ZQ4Pc-fq-7O1XOv1jtmU5k1EiVIuWEPScTlTFvwDZggxI0KagGS5H1GEQ56uYnNL3gPiFXQyxHjLlTKoIJ_wxJhFKDQd4R_g" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -523,6 +523,11 @@ td{
 .status-finalizada{
     background:#334155;
     color:#cbd5e1;
+}
+
+.status-cancelada{
+    background:#4a1d1d;
+    color:#fecaca;
 }
 
 /* FORM */
@@ -4164,6 +4169,10 @@ function priorityClass(priority){
 
 function statusClass(status){
 
+    if(status === "CANCELADA"){
+        return "status-cancelada";
+    }
+
     if(status === "O.S. ABERTA"){
         return "status-aberta";
     }
@@ -4616,6 +4625,9 @@ function createAdminOSCard(order){
     const responsible=order.active_employee||order.responsible||"Não atribuído";
     let actions="";
     actions += `<button class="action-btn" style="background:#334155;color:#f8fafc" onclick="adminEditOS(${order.id})">✏️ EDITAR O.S.</button>`;
+    if(!["FINALIZADA","FINALIZADA - AGUARDANDO PCM","FINALIZADA - OBSERVAÇÃO","CANCELADA"].includes(order.status)){
+        actions += `<button class="action-btn" style="background:#7f1d1d;color:#fee2e2;border:1px solid #991b1b" onclick="adminCancelOS(${order.id})">✖ CANCELAR O.S.</button>`;
+    }
     actions += `<button class="action-btn btn-material" onclick="showPauseHistory(${order.id})">⏸ MOTIVOS DE PAUSA</button>`;
 
     if(order.status === "O.S. ABERTA" && order.responsible){
@@ -4944,6 +4956,115 @@ window.adminEditOS = async function(osId){
         alert("Não foi possível abrir a edição da O.S.\n\n" + (error.message || error));
     }
 };
+
+/* =========================================================
+   CANCELAR O.S. PELO ADMINISTRADOR
+   Usa o status existente e registra motivo/usuário/data no histórico.
+   Não cria colunas novas e não altera o mecanismo de acesso mobile.
+========================================================= */
+
+window.adminCancelOS = async function(osId){
+    if(!isAdmin){
+        alert("Somente o PCM / Administrador pode cancelar O.S.");
+        return;
+    }
+
+    try{
+        const {data:order,error} = await db
+            .from("os_orders")
+            .select("*")
+            .eq("id",osId)
+            .single();
+
+        if(error || !order){
+            console.error("Erro ao localizar O.S. para cancelamento:",error);
+            alert("Não foi possível localizar a O.S.");
+            return;
+        }
+
+        if(["FINALIZADA","FINALIZADA - AGUARDANDO PCM","FINALIZADA - OBSERVAÇÃO"].includes(order.status)){
+            alert("Uma O.S. já finalizada não pode ser cancelada.");
+            return;
+        }
+
+        if(order.status === "CANCELADA"){
+            alert("Esta O.S. já está cancelada.");
+            return;
+        }
+
+        const fields = `
+            <div class="factory-note" style="margin-bottom:12px">
+                <b>O.S.:</b> ${escapeHtml(order.os_number || "-")}<br>
+                <b>Máquina:</b> ${escapeHtml(order.machine || "-")}<br>
+                <b>Responsável:</b> ${escapeHtml(order.active_employee || order.responsible || "Não atribuído")}
+            </div>
+            <label class="form-label">Motivo do cancelamento *</label>
+            <textarea id="cancelOsReason" class="form-textarea" style="min-height:140px" placeholder="Informe por que esta O.S. está sendo cancelada..."></textarea>
+        `;
+
+        adminEditOSModal(
+            "adminCancelOSModal",
+            `✖ Cancelar O.S. ${escapeHtml(order.os_number)}`,
+            "A O.S. não será apagada. Ela ficará registrada como CANCELADA no histórico do sistema.",
+            fields,
+            "CONFIRMAR CANCELAMENTO",
+            async el=>{
+                const reason=el.querySelector("#cancelOsReason").value.trim();
+                if(!reason){
+                    alert("Informe o motivo do cancelamento.");
+                    return false;
+                }
+
+                const now=new Date().toISOString();
+                const total=getTotalTime(order);
+
+                const {error:updateError}=await db
+                    .from("os_orders")
+                    .update({
+                        status:"CANCELADA",
+                        active_employee:null,
+                        started_at:null,
+                        paused_at:null,
+                        total_service_seconds:Number(total||0)
+                    })
+                    .eq("id",osId)
+                    .not("status","eq","CANCELADA");
+
+                if(updateError){
+                    console.error("Erro ao cancelar O.S.:",updateError);
+                    if(updateError.code === "42501"){
+                        alert("O Supabase bloqueou o cancelamento por permissão/RLS.\n\n" + updateError.message);
+                    }else{
+                        alert("Não foi possível cancelar a O.S.\n\n" + (updateError.message || ""));
+                    }
+                    return false;
+                }
+
+                await insertExecutionHistory({
+                    os_id:order.id,
+                    os_number:order.os_number,
+                    employee:"PCM / Administrador",
+                    action:"O.S. CANCELADA PELO PCM",
+                    reason:reason,
+                    started_at:null,
+                    ended_at:now,
+                    duration_seconds:Number(total||0)
+                });
+
+                showPcmToast(`O.S. ${order.os_number} cancelada com sucesso!`,"success");
+                await loadDashboardData();
+                if(typeof loadHistory === "function"){
+                    try{ await loadHistory(); }catch(e){ console.warn(e); }
+                }
+                return true;
+            }
+        );
+    }catch(error){
+        console.error("Falha ao cancelar O.S.:",error);
+        alert("Não foi possível cancelar a O.S.\n\n" + (error.message || error));
+    }
+};
+
 
 /* =========================================================
    INICIAR O.S. PELO ADMIN
@@ -6592,7 +6713,7 @@ async function exportHistoryPDF(){
     if(p==='BAIXA') return 2;
     return 1;
   };
-  const statusRank=s=>({"EM PRODUÇÃO":0,"PAUSADA":1,"AGUARDANDO MATERIAL":2,"O.S. ABERTA":3,"FINALIZADA - AGUARDANDO PCM":4,"FINALIZADA - OBSERVAÇÃO":5,"FINALIZADA":6}[s]??7);
+  const statusRank=s=>({"EM PRODUÇÃO":0,"PAUSADA":1,"AGUARDANDO MATERIAL":2,"O.S. ABERTA":3,"FINALIZADA - AGUARDANDO PCM":4,"FINALIZADA - OBSERVAÇÃO":5,"FINALIZADA":6,"CANCELADA":7}[s]??8);
   const sortOS=(a,b)=>priorityRank(a.priority)-priorityRank(b.priority)||statusRank(a.status)-statusRank(b.status)||String(a.os_number||'').localeCompare(String(b.os_number||''),undefined,{numeric:true});
 
   function getResponsibleName(o){return String(o.active_employee||o.responsible||'Não atribuído').trim()||'Não atribuído'}
@@ -6603,6 +6724,7 @@ async function exportHistoryPDF(){
     const actions=[];
     if(o.status==='PAUSADA' && typeof window.adminResumePausedOS==='function') actions.push("<button class=\"action-btn btn-start\" onclick=\"adminResumePausedOS("+Number(o.id)+")\">RETOMAR</button>");
     if(o.status==='AGUARDANDO MATERIAL' && typeof window.openReleaseModal==='function') actions.push("<button class=\"action-btn btn-material\" onclick=\"openReleaseModal("+(o.material_request_id||'null')+","+Number(o.id)+")\">MATERIAL</button>");
+    if(!['FINALIZADA','FINALIZADA - AGUARDANDO PCM','FINALIZADA - OBSERVAÇÃO','CANCELADA'].includes(o.status) && typeof window.adminCancelOS==='function') actions.push("<button class=\"action-btn\" style=\"background:#7f1d1d;color:#fee2e2;border:1px solid #991b1b\" onclick=\"adminCancelOS("+Number(o.id)+")\">✖ CANCELAR</button>");
     if(typeof window.showPauseHistory==='function') actions.push("<button class=\"action-btn btn-material\" onclick=\"showPauseHistory("+Number(o.id)+")\">PAUSAS</button>");
     return '<div class="pcm-mini-os '+(high?'is-high':'')+'">'+
       '<div class="pcm-mini-top"><div class="pcm-mini-number">O.S. '+escapeHtml(o.os_number||'-')+'</div><span class="pcm-mini-priority '+(high?'high':'')+'">'+escapeHtml(p)+'</span></div>'+      '<div class="pcm-mini-info"><b>Máquina:</b> '+escapeHtml(o.machine||'-')+'<br><b>TAG:</b> '+escapeHtml(o.tag||'-')+'<br><b>Setor:</b> '+escapeHtml(o.sector||'-')+'</div>'+      '<div class="pcm-mini-status">'+escapeHtml(o.status||'-')+'</div>'+      (actions.length?'<div class="pcm-mini-actions">'+actions.join('')+'</div>':'')+      '</div>';
