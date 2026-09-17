@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=8wr1vQc4n6UT7bwv-eY6y5HUPI7je2wPJwc9VByPV3hxHCsxGdYTDgQ9G1qtmrULyOvMPnjJIj6oeApGw-BKSIXiC0uN_OKufoC_1u43EkJnploqRYHhF5-IaVGoLioxZOm2kuR0pv4oaIZEJwKChea9NRg9Wn9VdAjbwQ9x7HCYV4H_jMsCFT9jCDE6icLp635E-dC90jAk7rGPr7IUP4QT11RMDDqizYukjFBOGmfOijcSD0Sm62S6nM9yJl-ulSoB71fDDrsdZr-4vctnUp1h0SAX8Lcqey2Wb_a-ua18suC02B5emuR4SCR6EPRnQKah1xbfAeF8qiMSD1T52A" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=YsbLZPKJDp-rOvuvDSPCRT6-O57pKU69Hv5ZijjBbd8ttsbmY883MpU9d4zLWEn8O3Brf5g0-N7U7xrJ9PiHKUb0vzx3XQTT7CSdcwcevgKbAHuNxu_Lp4QveY3bkyhoo7xB5Sw6v5lS2vpnwWUPlGDc3fCAr8ABXDTLV07GeCaZbp6onEBce_QYkbDGoh8VfvXoX_Mu3J-R0KZfhW8_eIagMegR416_F18okO0pFqHPEdD0De-i1Y_jIOew3rckxz5qukEv7ROfhbt-WINprNY_RqgocFMWTU9uEgxszsGI_hsyEDZkwUAH2QOwlauInzUyt0xCMZsp70xbawk-buNhehKJbbdcqP-2HM72vhY" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -1596,19 +1596,33 @@ input, select, textarea, button {
 @media(max-width:900px){#loginScreen.os-login-modern{grid-template-columns:1fr;min-height:100vh;min-height:100svh}#loginScreen.os-login-modern .os-brand-side{padding:28px 18px 10px}#loginScreen.os-login-modern .os-brand-content{text-align:center}#loginScreen.os-login-modern .os-brand-top{justify-content:center;margin-bottom:19px}#loginScreen.os-login-modern h1{font-size:32px}#loginScreen.os-login-modern .os-brand-subtitle{margin:10px auto 0;font-size:12px;max-width:340px}#loginScreen.os-login-modern .os-brand-line{margin:15px auto 0}#loginScreen.os-login-modern .os-feature-list{margin:20px auto 0;max-width:430px;gap:7px}#loginScreen.os-login-modern .os-feature{padding:10px 7px}#loginScreen.os-login-modern .os-feature strong{font-size:9px}#loginScreen.os-login-modern .os-feature span{font-size:8px}#loginScreen.os-login-modern .os-login-side{padding:12px 14px 28px;align-items:flex-start}#loginScreen.os-login-modern .os-login-card{padding:22px 18px;border-radius:20px}}
 @media(max-width:420px){#loginScreen.os-login-modern .os-brand-side{padding-top:20px}#loginScreen.os-login-modern .os-brand-mark{width:48px;height:48px;flex-basis:48px;border-radius:14px}#loginScreen.os-login-modern .os-brand-mark:before{width:21px;height:21px}#loginScreen.os-login-modern h1{font-size:28px}#loginScreen.os-login-modern .os-login-card{padding:20px 15px}}
 </style>
-
-<style id="controle-os-final-mobile-fix">
-html,body{width:100%;min-width:0;max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
-body{min-height:100vh;background:#020617;}
-#loginScreen.os-login-modern{display:grid!important;visibility:visible!important;opacity:1!important;width:100%!important;min-width:0!important;}
-@media(max-width:900px){#loginScreen.os-login-modern{display:grid!important;grid-template-columns:1fr!important;min-height:100vh!important;min-height:100svh!important;overflow-x:hidden!important;overflow-y:auto!important;}#loginScreen.os-login-modern .os-brand-side,#loginScreen.os-login-modern .os-login-side,#loginScreen.os-login-modern .os-login-card{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}#loginScreen.os-login-modern input,#loginScreen.os-login-modern select,#loginScreen.os-login-modern button{font-size:16px!important;}}
+<style id="controle-os-final-mobile-navigation">
+html,body{width:100%;max-width:100%;margin:0;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+#app{width:100%;max-width:100vw;min-height:100vh;overflow-x:hidden;}
+#app .main{min-width:0;max-width:100%;overflow-x:hidden;}
+#app .app-view{min-width:0;max-width:100%;}
+@media(max-width:800px){
+ body{padding-bottom:78px!important;overflow-x:hidden!important;}
+ #app{display:block!important;width:100%!important;overflow-x:hidden!important;}
+ #app .main{width:100%!important;max-width:100%!important;margin:0!important;padding:12px 10px 90px!important;overflow-x:hidden!important;}
+ #app .app-view{width:100%!important;max-width:100%!important;margin:0!important;}
+ #view-dashboard{width:100%!important;max-width:100%!important;}
+ #view-dashboard .dashboard-hero{width:100%!important;max-width:100%!important;}
+ #view-dashboard .stats-grid{width:100%!important;max-width:100%!important;}
+}
+@media(max-width:520px){
+ #app .main{padding:10px 9px 92px!important;}
+ .topbar{width:100%!important;max-width:100%!important;}
+ .dashboard-hero-content{display:block!important;}
+ .dashboard-date{margin-top:12px!important;}
+}
 </style>
 </head>
 
 <body>
 <!-- BOOT MOBILE: a interface abre antes do Supabase -->
 <!-- Fallback visual: se algum erro de JavaScript ocorrer no celular, nunca deixa uma tela preta sem explicação. -->
-<div id="pcmBootError" style="display:none!important;position:fixed;inset:0;z-index:999999;background:#020617;color:#e5e7eb;padding:28px 20px;font-family:Arial,sans-serif;align-items:center;justify-content:center;text-align:center;">
+<div id="pcmBootError" style="display:none!important;">
   <div style="width:min(430px,100%);border:1px solid #334155;border-radius:18px;padding:24px;background:#0f172a;box-shadow:0 20px 60px rgba(0,0,0,.45);">
     <div style="font-size:34px;margin-bottom:12px;">⚠️</div>
     <div style="font-size:20px;font-weight:800;margin-bottom:8px;">O.S. não conseguiu iniciar</div>
@@ -1616,6 +1630,10 @@ body{min-height:100vh;background:#020617;}
     <button type="button" onclick="location.reload()" style="margin-top:18px;border:0;border-radius:12px;padding:13px 20px;font-weight:800;cursor:pointer;">RECARREGAR</button>
   </div>
 </div>
+
+
+
+
 <div id="pcmToastContainer" aria-live="polite" aria-atomic="true"></div>
 
 <!-- LOGIN -->
@@ -2586,6 +2604,15 @@ async function login(){
         .getElementById("app")
         .classList.remove("hidden");
 
+    // Entra direto no início do painel: sem deslocamento horizontal/vertical residual.
+    requestAnimationFrame(()=>{
+        window.scrollTo({top:0,left:0,behavior:"instant"});
+        document.documentElement.scrollLeft=0;
+        document.body.scrollLeft=0;
+        const main=document.querySelector("#app .main");
+        if(main){ main.scrollTop=0; main.scrollLeft=0; }
+    });
+
     document
         .getElementById("currentUserBadge")
         .textContent = currentUser;
@@ -2695,6 +2722,15 @@ function navigateTo(viewId, button = null){
     if(viewId === "view-machines" && isAdmin) loadMachines();
 
     if(typeof window.refreshFactoryNavigation === "function") window.refreshFactoryNavigation();
+
+    // Toda navegação começa no topo da tela, inclusive no celular.
+    requestAnimationFrame(()=>{
+        window.scrollTo({top:0,left:0,behavior:"instant"});
+        document.documentElement.scrollLeft=0;
+        document.body.scrollLeft=0;
+        const main=document.querySelector("#app .main");
+        if(main){ main.scrollTop=0; main.scrollLeft=0; }
+    });
 }
 
 
