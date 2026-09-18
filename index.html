@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=8NJRFLtLq6NYCbPxgWxVPWfDeaozf1boPtX4WLXkiRC0AlGz-b2HDsmCxIL6DE1NiLW48y2L68hRYBMARZLRNxeN91eDWSQSdSAeyhEZKqQqXzFo1dA5r_04cnV0VYpANaCCQZYYxNdMCeqVfr9IE5xaApzEHCPf4POk-69IdZF7vkBXhE9YG_n91mCofAqFDxv_miHNn5OGq7RPoKs84QzX9f_gLHDxdwkNROw08nacj0m4iz3fTi3UMkyurInT__9FZlAJMq7SXgfT1fMGpnDYEeIof6sv1mIpoxS5_ACIxUVRcleXAtdR5VEsbAi65ZoceWo76P51_PMY-l0YQN97HoL9SvlaM4Rj7yMR8-YuEQBlbJzLN-aEGZTuA5tt" charset="UTF-8"></script><style>
+<style>
 *{
     box-sizing:border-box;
 }
@@ -3799,7 +3799,7 @@ function ensureSupabase(){
     if(supabaseLoading) return supabaseLoading;
     /*
        O HTML é AUTOSSUFICIENTE.
-       Não depende de main.js para iniciar no celular.
+       Carregamento interno do sistema para uso no celular.
        O Supabase é carregado diretamente aqui.
     */
     supabaseLoading = new Promise((resolve,reject)=>{
