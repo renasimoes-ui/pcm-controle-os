@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=j5URnUWBGYdPjLIqzEzjrvxXukqvjP8leb3an3X7vhSaKr-fArXK5oMTH0mtG8wYo_hH9SKcdJxt_0myVk2sDLTgG1_AcBhHSKxLWBCo7D1HkIDkI3ZE9JjFq5CWHjBDHqTnq2QxJvKY506C4Rc69p7jFeUPAIyvEc9klS5Q7m0_s5-cU40qBl17alS2OCriPxC_AtFW_9TOlqvWd0tiDHhyLWV5XLD9_TIVv5X0xz810JsDKxGpQ4VxsF-NSUF65Iv7UVD4W-qk8GHFcFR2DBIXRjOzDzNYZ1N9O57FIqLbcoIpx9TNcNz5SeJeESH7qXfYUQtPm3rhloqR0zDiKCmYk_46teat4liZmja5-OY" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=AcRtAxxqMiVhIFul_x2QndHb6ZSzvwkLyp6h7-OnoErfpiWkqWBqaHytuEHmB21-QeHQ_etR6jA--Mp_RPCnRnRhtWCYD9_nZVNb-Nh6dFG5jwzh0ZC0h0RoI2cyflsGxA-jXDfjcLpjrtQ71qwj35oIgR0xH9hrWTZjwZyVWaswqIzEd_wODEfHPcZkOialgy72O2DKmgs7Lv0-UUAayFtpAYgD3Ixz1tyb8iM6yL0Q9Sz0zeZ-pdGyh48qpSmMIfzWXsjVStXSkwT9ZEgO_JOzOl14df0YbZuJhRQQrd6MWmyoB7OwLzu0-l0MtJ7DKzjZrfKvO6eVJ3mJXF8ULA" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -6680,6 +6680,197 @@ async function exportHistoryPDF(){
   }
 })();
 <\/script>
+
+<style id="pcm-v7-admin-os">
+/* ===== CONTROLE O.S. V7 — painel compacto e ações do ADM ===== */
+#pcmAdminOSWrap{margin-top:14px;border:1px solid #26364d;border-radius:14px;background:#0b1728;overflow:hidden}
+#pcmAdminOSWrap .pcm-os-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #26364d}
+#pcmAdminOSWrap .pcm-os-search{flex:1;min-width:220px;background:#07111f;border:1px solid #34465e;color:#fff;border-radius:9px;padding:10px 12px;font-size:12px;outline:none}
+#pcmAdminOSWrap .pcm-os-count{font-size:11px;color:#94a3b8;display:flex;align-items:center;padding:0 4px}
+#pcmAdminOSWrap .pcm-os-scroll{overflow-x:auto}
+#pcmAdminOSWrap table{width:100%;min-width:1050px;border-collapse:collapse}
+#pcmAdminOSWrap th{background:#101f33;color:#94a3b8;font-size:10px;text-transform:uppercase;text-align:left;padding:9px 8px;white-space:nowrap}
+#pcmAdminOSWrap td{border-top:1px solid #1d2c40;padding:8px;color:#e5edf7;font-size:11px;vertical-align:middle}
+#pcmAdminOSWrap tr:hover td{background:#101d2d}
+#pcmAdminOSWrap .osid{font-weight:800;color:#fff;white-space:nowrap}
+#pcmAdminOSWrap .machine{font-weight:700;max-width:190px}
+#pcmAdminOSWrap .muted{color:#94a3b8}
+#pcmAdminOSWrap .deadline.late{color:#f87171;font-weight:800}
+#pcmAdminOSWrap .deadline.today{color:#fbbf24;font-weight:800}
+#pcmAdminOSWrap .status{font-size:9px;font-weight:800;padding:4px 7px;border-radius:999px;white-space:nowrap;border:1px solid #334155}
+#pcmAdminOSWrap .st-open{background:#172554;color:#93c5fd}.st-prod{background:#052e1b;color:#86efac}.st-pause{background:#3b2500;color:#fdba74}.st-mat{background:#3b2500;color:#fdba74}.st-fin{background:#052e1b;color:#86efac}.st-cancel{background:#3f1010;color:#fca5a5}
+#pcmAdminOSWrap .actions{display:flex;gap:5px;flex-wrap:wrap;min-width:260px}
+#pcmAdminOSWrap .pcm-a{border:0;border-radius:7px;padding:7px 8px;color:#fff;font-size:9px;font-weight:800;cursor:pointer;white-space:nowrap}
+#pcmAdminOSWrap .pcm-edit{background:#334155}.pcm-cancel{background:#991b1b}.pcm-history{background:#475569}.pcm-start{background:#166534}.pcm-resume{background:#166534}.pcm-material{background:#9a6700}.pcm-finish{background:#047857}.pcm-time{background:#075985}
+#pcmAdminOSWrap .empty{padding:22px;text-align:center;color:#94a3b8}
+#pcmAdminOSModal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200000;display:none;align-items:center;justify-content:center;padding:10px}
+#pcmAdminOSModal.show{display:flex}
+#pcmAdminOSModal .box{width:min(850px,100%);max-height:94vh;overflow:auto;background:#0b1728;color:#fff;border:1px solid #334155;border-radius:16px;padding:16px;box-shadow:0 30px 90px #000}
+#pcmAdminOSModal h3{margin:0 0 5px;font-size:17px}.pcm-sub{color:#94a3b8;font-size:11px;margin-bottom:14px}
+.pcm-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcm-edit-grid .full{grid-column:1/-1}
+.pcm-edit-grid label{display:block;color:#cbd5e1;font-size:10px;font-weight:700;margin-bottom:4px}
+.pcm-edit-grid input,.pcm-edit-grid select,.pcm-edit-grid textarea{width:100%;box-sizing:border-box;background:#07111f;color:#fff;border:1px solid #34465e;border-radius:8px;padding:9px;font-size:12px;outline:none}
+.pcm-edit-grid textarea{min-height:90px;resize:vertical}
+.pcm-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pcm-modal-actions button{border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}
+.pcm-save{background:#16a34a;color:#fff}.pcm-close{background:#475569;color:#fff}.pcm-danger{background:#b91c1c;color:#fff}
+.pcm-note{background:#111f32;border:1px solid #2d4059;border-radius:8px;padding:9px;color:#94a3b8;font-size:10px}
+@media(max-width:600px){
+ #pcmAdminOSWrap .pcm-os-toolbar{padding:9px}.pcm-edit-grid{grid-template-columns:1fr}.pcm-edit-grid .full{grid-column:auto}
+ #pcmAdminOSModal{padding:6px}.pcm-edit-grid input,.pcm-edit-grid select,.pcm-edit-grid textarea{font-size:16px;padding:11px}
+ #pcmAdminOSModal .box{max-height:96vh;border-radius:12px;padding:12px}
+ #pcmAdminOSWrap .pcm-a{padding:9px 10px;font-size:10px}
+}
+</style>
+<script id="pcm-v7-admin-os-js">
+(function(){
+"use strict";
+const URL="https://omttcgtkhtvyxwutxppc.supabase.co";
+const KEY="sb_publishable_HMD1Yow_uEbE-9fy6P0ATg_BqfNstx5";
+let client=null;
+function getClient(){
+  if(client)return client;
+  if(!window.supabase||typeof window.supabase.createClient!=="function") throw new Error("Biblioteca Supabase não carregou.");
+  client=window.supabase.createClient(URL,KEY);
+  return client;
+}
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const isAdminUI=()=>document.getElementById("currentUserBadge")?.textContent?.trim()==="PCM / Administrador" && !document.getElementById("adminMenu")?.classList.contains("hidden");
+const fmtDate=v=>{if(!v)return "-";const s=String(v).slice(0,10),p=s.split("-");return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:"-"};
+function markerObs(obs){return String(obs||"").replace(/\[\[PCM_PRAZO_HORA:\d{2}:\d{2}\]\]/g,"").trim()}
+function deadlineTime(obs){const m=String(obs||"").match(/\[\[PCM_PRAZO_HORA:(\d{2}):(\d{2})\]\]/);return m?`${m[1]}:${m[2]}`:"17:00"}
+function deadlineDateTime(o){if(!o.deadline)return null;const t=deadlineTime(o.observations);const d=new Date(`${String(o.deadline).slice(0,10)}T${t}:00`);return isNaN(d)?null:d}
+function overdue(o){if(["FINALIZADA","FINALIZADA - OBSERVAÇÃO","FINALIZADA - AGUARDANDO PCM","CANCELADA"].includes(o.status))return false;const d=deadlineDateTime(o);return d&&d<new Date()}
+function todayDeadline(o){if(!o.deadline)return false;const d=deadlineDateTime(o),n=new Date();return d&&d.toDateString()===n.toDateString()&&!overdue(o)}
+function statusClass(s){s=String(s||"");if(s==="CANCELADA")return"st-cancel";if(s.includes("FINALIZADA"))return"st-fin";if(s==="EM PRODUÇÃO")return"st-prod";if(s==="PAUSADA")return"st-pause";if(s==="AGUARDANDO MATERIAL")return"st-mat";return"st-open"}
+function actionBtn(label,cls,fn){return `<button type="button" class="pcm-a ${cls}" onclick="${fn}">${label}</button>`}
+
+function ensureBoard(){
+  if(!isAdminUI())return;
+  const dash=document.getElementById("view-dashboard"); if(!dash)return;
+  const old=dash.querySelector(".kanban"); if(!old)return;
+  let wrap=document.getElementById("pcmAdminOSWrap");
+  if(!wrap){
+    wrap=document.createElement("div");wrap.id="pcmAdminOSWrap";
+    old.parentNode.insertBefore(wrap,old);
+    old.style.display="none";
+  }
+  return wrap;
+}
+function renderBoard(){
+  if(!isAdminUI())return;
+  const wrap=ensureBoard();if(!wrap)return;
+  const orders=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];
+  const q=(document.getElementById("pcmAdminSearch")?.value||"").toLowerCase().trim();
+  const filtered=orders.filter(o=>[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.status,o.description].join(" ").toLowerCase().includes(q));
+  wrap.innerHTML=`<div class="pcm-os-toolbar"><input id="pcmAdminSearch" class="pcm-os-search" placeholder="🔎 Pesquisar O.S., máquina, TAG, setor ou responsável..." value="${esc(q)}"><span class="pcm-os-count">${filtered.length} O.S.</span></div><div class="pcm-os-scroll"><table><thead><tr><th>O.S.</th><th>Máquina / TAG</th><th>Setor</th><th>Responsável</th><th>Prioridade</th><th>Prazo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="pcmAdminRows"></tbody></table></div>`;
+  const tbody=wrap.querySelector("#pcmAdminRows");
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="8" class="empty">Nenhuma O.S. encontrada.</td></tr>`;return}
+  tbody.innerHTML=filtered.map(o=>{
+    const responsible=o.active_employee||o.responsible||"Não atribuído";
+    const late=overdue(o), today=todayDeadline(o);
+    let actions=actionBtn("✏️ EDITAR","pcm-edit",`pcmEditOS(${Number(o.id)})`)+actionBtn("📋 HISTÓRICO","pcm-history",`pcmHistoryOS(${Number(o.id)})`);
+    if(o.status==="O.S. ABERTA"&&o.responsible)actions+=actionBtn("▶ INICIAR","pcm-start",`adminStartOS(${Number(o.id)})`);
+    if(o.status==="PAUSADA"&&o.responsible)actions+=actionBtn("▶ RETOMAR","pcm-resume",`adminResumePausedOS(${Number(o.id)})`);
+    if(o.status==="AGUARDANDO MATERIAL")actions+=actionBtn("📦 LIBERAR","pcm-material",`openReleaseModal(${o.material_request_id||"null"},${Number(o.id)})`);
+    if(o.status==="FINALIZADA - AGUARDANDO PCM")actions+=actionBtn("✓ FINALIZAR","pcm-finish",`finalizeDefinitively(${Number(o.id)})`)+actionBtn("⏱ TEMPO","pcm-time",`adminEditFinalizedTime(${Number(o.id)})`);
+    if(["FINALIZADA","FINALIZADA - OBSERVAÇÃO"].includes(o.status))actions+=actionBtn("⏱ TEMPO","pcm-time",`adminEditFinalizedTime(${Number(o.id)})`);
+    if(!["FINALIZADA","FINALIZADA - OBSERVAÇÃO","FINALIZADA - AGUARDANDO PCM","CANCELADA"].includes(o.status))actions+=actionBtn("🛑 CANCELAR","pcm-cancel",`pcmCancelOS(${Number(o.id)})`);
+    return `<tr><td class="osid">${esc(o.os_number)}</td><td><div class="machine">${esc(o.machine||"-")}</div><div class="muted">${esc(o.tag||"-")}</div></td><td>${esc(o.sector||"-")}</td><td>${esc(responsible)}</td><td>${esc(o.priority||"MODERADA")}</td><td class="deadline ${late?"late":today?"today":""}">${fmtDate(o.deadline)} ${late?"⚠ ATRASADA":today?"• HOJE":""}<div class="muted">${o.deadline?deadlineTime(o.observations):""}</div></td><td><span class="status ${statusClass(o.status)}">${esc(o.status||"-")}</span></td><td><div class="actions">${actions}</div></td></tr>`;
+  }).join("");
+  wrap.querySelector("#pcmAdminSearch").oninput=()=>renderBoard();
+}
+
+function ensureModal(){
+  let m=document.getElementById("pcmAdminOSModal");if(m)return m;
+  m=document.createElement("div");m.id="pcmAdminOSModal";document.body.appendChild(m);
+  m.addEventListener("click",e=>{if(e.target===m)closeModal()});return m;
+}
+function closeModal(){const m=document.getElementById("pcmAdminOSModal");if(m)m.classList.remove("show")}
+window.pcmCloseAdminModal=closeModal;
+function showModal(title,sub,body,buttons){
+  const m=ensureModal();m.innerHTML=`<div class="box"><h3>${title}</h3><div class="pcm-sub">${sub}</div>${body}<div class="pcm-modal-actions">${buttons}</div></div>`;m.classList.add("show");return m;
+}
+
+window.pcmEditOS=async function(id){
+  if(!isAdminUI()){alert("Somente o PCM / Administrador pode editar O.S.");return}
+  try{
+    const {data:o,error}=await getClient().from("os_orders").select("*").eq("id",id).single();
+    if(error||!o)throw error||new Error("O.S. não encontrada.");
+    const body=`<div class="pcm-edit-grid">
+      <div><label>Nº O.S. — WK</label><input value="${esc(o.os_number)}" disabled></div>
+      <div><label>Data de abertura</label><input id="v7_opening" type="date" value="${esc(String(o.opening_date||"").slice(0,10))}"></div>
+      <div><label>Máquina / Equipamento *</label><input id="v7_machine" value="${esc(o.machine)}"></div>
+      <div><label>TAG</label><input id="v7_tag" value="${esc(o.tag||"")}"></div>
+      <div><label>Setor *</label><select id="v7_sector">${["TMM","LINHA SCHIFFER","MENDES","FÁBRICA DE COMPONENTES"].map(x=>`<option ${String(o.sector||"")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Tipo de manutenção *</label><select id="v7_type">${["CORRETIVA","PREVENTIVA","PREDITIVA","INSPEÇÃO","MELHORIA","OUTRA"].map(x=>`<option value="${x}" ${String(o.maintenance_type||"")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Prioridade</label><select id="v7_priority">${["ALTA","MÉDIA","MODERADA"].map(x=>`<option ${String(o.priority||"MODERADA")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Responsável</label><select id="v7_resp"><option value="">Não atribuído</option>${["Adryan","Fabio","Rodrigo","Leonardo","Vilmar","Rafael","Danilo"].map(x=>`<option ${String(o.responsible||"")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Prazo — data</label><input id="v7_deadline" type="date" value="${esc(String(o.deadline||"").slice(0,10))}"></div>
+      <div><label>Prazo — horário</label><input id="v7_deadtime" type="time" value="${deadlineTime(o.observations)}"></div>
+      <div class="full"><label>Descrição da O.S. *</label><textarea id="v7_desc">${esc(o.description||"")}</textarea></div>
+      <div class="full"><label>Observações</label><textarea id="v7_obs">${esc(markerObs(o.observations))}</textarea></div>
+      <div class="full pcm-note"><b>Status atual:</b> ${esc(o.status||"-")}<br>Alterar dados não reinicia o cronômetro da O.S.</div>
+    </div>`;
+    const m=showModal(`✏️ Editar O.S. ${esc(o.os_number)}`,"Somente o PCM / Administrador pode alterar estes dados.",body,`<button type="button" class="pcm-close" onclick="pcmCloseAdminModal()">FECHAR</button><button type="button" class="pcm-save" id="v7_save">SALVAR ALTERAÇÕES</button>`);
+    m.querySelector("#v7_save").onclick=async()=>{
+      const machine=m.querySelector("#v7_machine").value.trim(),desc=m.querySelector("#v7_desc").value.trim(),sector=m.querySelector("#v7_sector").value,type=m.querySelector("#v7_type").value;
+      if(!machine||!desc||!sector||!type){alert("Preencha máquina, setor, tipo de manutenção e descrição.");return}
+      let obs=m.querySelector("#v7_obs").value.trim();const dt=m.querySelector("#v7_deadtime").value||"17:00";
+      obs=obs.replace(/\[\[PCM_PRAZO_HORA:\d{2}:\d{2}\]\]/g,"").trim()+`\n[[PCM_PRAZO_HORA:${dt}]]`;
+      const payload={opening_date:m.querySelector("#v7_opening").value||null,machine,tag:m.querySelector("#v7_tag").value.trim()||null,sector,maintenance_type:type,priority:m.querySelector("#v7_priority").value,responsible:m.querySelector("#v7_resp").value||null,deadline:m.querySelector("#v7_deadline").value||null,description:desc,observations:obs};
+      const r=await getClient().from("os_orders").update(payload).eq("id",id);if(r.error){alert("Não foi possível salvar a O.S.: "+r.error.message);return}
+      closeModal();alert("O.S. alterada com sucesso.");await reloadDashboard();};
+  }catch(e){console.error(e);alert("Não foi possível abrir a O.S. para edição.") }
+};
+
+window.pcmCancelOS=async function(id){
+  if(!isAdminUI()){alert("Somente o PCM / Administrador pode cancelar O.S.");return}
+  try{
+    const r=await getClient().from("os_orders").select("*").eq("id",id).single();if(r.error||!r.data)throw r.error||new Error();
+    const o=r.data;
+    const body=`<div class="pcm-edit-grid"><div class="full"><label>Motivo do cancelamento *</label><select id="v7_reason"><option value="">Selecione...</option><option>Solicitação cancelada pelo solicitante</option><option>Serviço não será mais realizado</option><option>O.S. duplicada</option><option>Erro no cadastro da O.S.</option><option>Equipamento indisponível</option><option>Outro motivo</option></select></div><div class="full"><label>Observação do cancelamento</label><textarea id="v7_cancelobs" placeholder="Informe algum detalhe, se necessário."></textarea></div><div class="full pcm-note">A O.S. será mantida no banco, mas ficará com status <b>CANCELADA</b>. O cancelamento também será registrado no histórico.</div></div>`;
+    const m=showModal(`🛑 Cancelar O.S. ${esc(o.os_number)}`,"Esta ação é exclusiva do PCM / Administrador.",body,`<button type="button" class="pcm-close" onclick="pcmCloseAdminModal()">VOLTAR</button><button type="button" class="pcm-danger" id="v7_cancelSave">CONFIRMAR CANCELAMENTO</button>`);
+    m.querySelector("#v7_cancelSave").onclick=async()=>{
+      const reason=m.querySelector("#v7_reason").value;if(!reason){alert("Selecione o motivo.");return}
+      if(!confirm(`Confirma o cancelamento da O.S. ${o.os_number}?`))return;
+      const note=m.querySelector("#v7_cancelobs").value.trim(),now=new Date(),stamp=now.toLocaleString("pt-BR");
+      const oldObs=markerObs(o.observations);const newObs=`${oldObs?oldObs+"\n":""}[${stamp}] CANCELAMENTO — ${reason}${note?" — "+note:""}`;
+      const u=await getClient().from("os_orders").update({status:"CANCELADA",observations:newObs}).eq("id",id);
+      if(u.error){alert("Não foi possível cancelar: "+u.error.message);return}
+      await getClient().from("os_execution_history").insert({os_id:o.id,os_number:o.os_number,employee:"PCM / Administrador",action:"O.S. CANCELADA",reason,started_at:null,ended_at:now.toISOString(),duration_seconds:0});
+      closeModal();alert("O.S. cancelada com sucesso.");await reloadDashboard();
+    };
+  }catch(e){console.error(e);alert("Não foi possível carregar a O.S. para cancelamento.")}
+};
+
+window.pcmHistoryOS=async function(id){
+  try{
+    const r=await getClient().from("os_execution_history").select("*").eq("os_id",id).order("started_at",{ascending:false});
+    if(r.error)throw r.error;
+    const rows=r.data||[];const html=rows.length?rows.map(x=>`<div class="pcm-note" style="margin-bottom:7px"><b>${esc(x.action||"EVENTO")}</b><br><span class="muted">${esc(x.employee||"-")} • ${x.started_at?new Date(x.started_at).toLocaleString("pt-BR"):""}${x.ended_at?" → "+new Date(x.ended_at).toLocaleString("pt-BR"):""}</span>${x.reason?`<br>${esc(x.reason)}`:""}</div>`).join(""):`<div class="pcm-note">Nenhum registro encontrado.</div>`;
+    showModal("📋 Histórico da O.S.","Registros de execução e alterações.",html,`<button type="button" class="pcm-close" onclick="pcmCloseAdminModal()">FECHAR</button>`);
+  }catch(e){alert("Não foi possível carregar o histórico.")}
+};
+
+async function reloadDashboard(){
+  try{if(typeof window.loadDashboardData==="function")await window.loadDashboardData();}catch(e){console.error(e)}
+  setTimeout(renderBoard,120);
+}
+const oldLoad=window.loadDashboardData;
+window.loadDashboardData=async function(){const r=typeof oldLoad==="function"?await oldLoad.apply(this,arguments):null;setTimeout(renderBoard,100);return r};
+
+function boot(){
+  setTimeout(()=>{if(isAdminUI())renderBoard()},500);
+}
+document.addEventListener("DOMContentLoaded",boot);
+const obs=new MutationObserver(()=>{if(isAdminUI()&&!document.getElementById("pcmAdminOSWrap"))renderBoard()});
+obs.observe(document.body,{childList:true,subtree:true});
+setInterval(()=>{if(isAdminUI()&&document.getElementById("pcmAdminOSWrap"))renderBoard()},15000);
+})();
+</script>
+
 </body></html>`);
         popup.document.close();
         showPCMToast("PDF preparado. Na tela de impressão, escolha Salvar como PDF.","success");
@@ -7602,6 +7793,197 @@ body{min-height:100vh;background:#050505!important;}
 })();
 <\/script>
 
+
+<style id="pcm-v7-admin-os">
+/* ===== CONTROLE O.S. V7 — painel compacto e ações do ADM ===== */
+#pcmAdminOSWrap{margin-top:14px;border:1px solid #26364d;border-radius:14px;background:#0b1728;overflow:hidden}
+#pcmAdminOSWrap .pcm-os-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #26364d}
+#pcmAdminOSWrap .pcm-os-search{flex:1;min-width:220px;background:#07111f;border:1px solid #34465e;color:#fff;border-radius:9px;padding:10px 12px;font-size:12px;outline:none}
+#pcmAdminOSWrap .pcm-os-count{font-size:11px;color:#94a3b8;display:flex;align-items:center;padding:0 4px}
+#pcmAdminOSWrap .pcm-os-scroll{overflow-x:auto}
+#pcmAdminOSWrap table{width:100%;min-width:1050px;border-collapse:collapse}
+#pcmAdminOSWrap th{background:#101f33;color:#94a3b8;font-size:10px;text-transform:uppercase;text-align:left;padding:9px 8px;white-space:nowrap}
+#pcmAdminOSWrap td{border-top:1px solid #1d2c40;padding:8px;color:#e5edf7;font-size:11px;vertical-align:middle}
+#pcmAdminOSWrap tr:hover td{background:#101d2d}
+#pcmAdminOSWrap .osid{font-weight:800;color:#fff;white-space:nowrap}
+#pcmAdminOSWrap .machine{font-weight:700;max-width:190px}
+#pcmAdminOSWrap .muted{color:#94a3b8}
+#pcmAdminOSWrap .deadline.late{color:#f87171;font-weight:800}
+#pcmAdminOSWrap .deadline.today{color:#fbbf24;font-weight:800}
+#pcmAdminOSWrap .status{font-size:9px;font-weight:800;padding:4px 7px;border-radius:999px;white-space:nowrap;border:1px solid #334155}
+#pcmAdminOSWrap .st-open{background:#172554;color:#93c5fd}.st-prod{background:#052e1b;color:#86efac}.st-pause{background:#3b2500;color:#fdba74}.st-mat{background:#3b2500;color:#fdba74}.st-fin{background:#052e1b;color:#86efac}.st-cancel{background:#3f1010;color:#fca5a5}
+#pcmAdminOSWrap .actions{display:flex;gap:5px;flex-wrap:wrap;min-width:260px}
+#pcmAdminOSWrap .pcm-a{border:0;border-radius:7px;padding:7px 8px;color:#fff;font-size:9px;font-weight:800;cursor:pointer;white-space:nowrap}
+#pcmAdminOSWrap .pcm-edit{background:#334155}.pcm-cancel{background:#991b1b}.pcm-history{background:#475569}.pcm-start{background:#166534}.pcm-resume{background:#166534}.pcm-material{background:#9a6700}.pcm-finish{background:#047857}.pcm-time{background:#075985}
+#pcmAdminOSWrap .empty{padding:22px;text-align:center;color:#94a3b8}
+#pcmAdminOSModal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200000;display:none;align-items:center;justify-content:center;padding:10px}
+#pcmAdminOSModal.show{display:flex}
+#pcmAdminOSModal .box{width:min(850px,100%);max-height:94vh;overflow:auto;background:#0b1728;color:#fff;border:1px solid #334155;border-radius:16px;padding:16px;box-shadow:0 30px 90px #000}
+#pcmAdminOSModal h3{margin:0 0 5px;font-size:17px}.pcm-sub{color:#94a3b8;font-size:11px;margin-bottom:14px}
+.pcm-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcm-edit-grid .full{grid-column:1/-1}
+.pcm-edit-grid label{display:block;color:#cbd5e1;font-size:10px;font-weight:700;margin-bottom:4px}
+.pcm-edit-grid input,.pcm-edit-grid select,.pcm-edit-grid textarea{width:100%;box-sizing:border-box;background:#07111f;color:#fff;border:1px solid #34465e;border-radius:8px;padding:9px;font-size:12px;outline:none}
+.pcm-edit-grid textarea{min-height:90px;resize:vertical}
+.pcm-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pcm-modal-actions button{border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}
+.pcm-save{background:#16a34a;color:#fff}.pcm-close{background:#475569;color:#fff}.pcm-danger{background:#b91c1c;color:#fff}
+.pcm-note{background:#111f32;border:1px solid #2d4059;border-radius:8px;padding:9px;color:#94a3b8;font-size:10px}
+@media(max-width:600px){
+ #pcmAdminOSWrap .pcm-os-toolbar{padding:9px}.pcm-edit-grid{grid-template-columns:1fr}.pcm-edit-grid .full{grid-column:auto}
+ #pcmAdminOSModal{padding:6px}.pcm-edit-grid input,.pcm-edit-grid select,.pcm-edit-grid textarea{font-size:16px;padding:11px}
+ #pcmAdminOSModal .box{max-height:96vh;border-radius:12px;padding:12px}
+ #pcmAdminOSWrap .pcm-a{padding:9px 10px;font-size:10px}
+}
+</style>
+<script id="pcm-v7-admin-os-js">
+(function(){
+"use strict";
+const URL="https://omttcgtkhtvyxwutxppc.supabase.co";
+const KEY="sb_publishable_HMD1Yow_uEbE-9fy6P0ATg_BqfNstx5";
+let client=null;
+function getClient(){
+  if(client)return client;
+  if(!window.supabase||typeof window.supabase.createClient!=="function") throw new Error("Biblioteca Supabase não carregou.");
+  client=window.supabase.createClient(URL,KEY);
+  return client;
+}
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const isAdminUI=()=>document.getElementById("currentUserBadge")?.textContent?.trim()==="PCM / Administrador" && !document.getElementById("adminMenu")?.classList.contains("hidden");
+const fmtDate=v=>{if(!v)return "-";const s=String(v).slice(0,10),p=s.split("-");return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:"-"};
+function markerObs(obs){return String(obs||"").replace(/\[\[PCM_PRAZO_HORA:\d{2}:\d{2}\]\]/g,"").trim()}
+function deadlineTime(obs){const m=String(obs||"").match(/\[\[PCM_PRAZO_HORA:(\d{2}):(\d{2})\]\]/);return m?`${m[1]}:${m[2]}`:"17:00"}
+function deadlineDateTime(o){if(!o.deadline)return null;const t=deadlineTime(o.observations);const d=new Date(`${String(o.deadline).slice(0,10)}T${t}:00`);return isNaN(d)?null:d}
+function overdue(o){if(["FINALIZADA","FINALIZADA - OBSERVAÇÃO","FINALIZADA - AGUARDANDO PCM","CANCELADA"].includes(o.status))return false;const d=deadlineDateTime(o);return d&&d<new Date()}
+function todayDeadline(o){if(!o.deadline)return false;const d=deadlineDateTime(o),n=new Date();return d&&d.toDateString()===n.toDateString()&&!overdue(o)}
+function statusClass(s){s=String(s||"");if(s==="CANCELADA")return"st-cancel";if(s.includes("FINALIZADA"))return"st-fin";if(s==="EM PRODUÇÃO")return"st-prod";if(s==="PAUSADA")return"st-pause";if(s==="AGUARDANDO MATERIAL")return"st-mat";return"st-open"}
+function actionBtn(label,cls,fn){return `<button type="button" class="pcm-a ${cls}" onclick="${fn}">${label}</button>`}
+
+function ensureBoard(){
+  if(!isAdminUI())return;
+  const dash=document.getElementById("view-dashboard"); if(!dash)return;
+  const old=dash.querySelector(".kanban"); if(!old)return;
+  let wrap=document.getElementById("pcmAdminOSWrap");
+  if(!wrap){
+    wrap=document.createElement("div");wrap.id="pcmAdminOSWrap";
+    old.parentNode.insertBefore(wrap,old);
+    old.style.display="none";
+  }
+  return wrap;
+}
+function renderBoard(){
+  if(!isAdminUI())return;
+  const wrap=ensureBoard();if(!wrap)return;
+  const orders=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];
+  const q=(document.getElementById("pcmAdminSearch")?.value||"").toLowerCase().trim();
+  const filtered=orders.filter(o=>[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.status,o.description].join(" ").toLowerCase().includes(q));
+  wrap.innerHTML=`<div class="pcm-os-toolbar"><input id="pcmAdminSearch" class="pcm-os-search" placeholder="🔎 Pesquisar O.S., máquina, TAG, setor ou responsável..." value="${esc(q)}"><span class="pcm-os-count">${filtered.length} O.S.</span></div><div class="pcm-os-scroll"><table><thead><tr><th>O.S.</th><th>Máquina / TAG</th><th>Setor</th><th>Responsável</th><th>Prioridade</th><th>Prazo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="pcmAdminRows"></tbody></table></div>`;
+  const tbody=wrap.querySelector("#pcmAdminRows");
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="8" class="empty">Nenhuma O.S. encontrada.</td></tr>`;return}
+  tbody.innerHTML=filtered.map(o=>{
+    const responsible=o.active_employee||o.responsible||"Não atribuído";
+    const late=overdue(o), today=todayDeadline(o);
+    let actions=actionBtn("✏️ EDITAR","pcm-edit",`pcmEditOS(${Number(o.id)})`)+actionBtn("📋 HISTÓRICO","pcm-history",`pcmHistoryOS(${Number(o.id)})`);
+    if(o.status==="O.S. ABERTA"&&o.responsible)actions+=actionBtn("▶ INICIAR","pcm-start",`adminStartOS(${Number(o.id)})`);
+    if(o.status==="PAUSADA"&&o.responsible)actions+=actionBtn("▶ RETOMAR","pcm-resume",`adminResumePausedOS(${Number(o.id)})`);
+    if(o.status==="AGUARDANDO MATERIAL")actions+=actionBtn("📦 LIBERAR","pcm-material",`openReleaseModal(${o.material_request_id||"null"},${Number(o.id)})`);
+    if(o.status==="FINALIZADA - AGUARDANDO PCM")actions+=actionBtn("✓ FINALIZAR","pcm-finish",`finalizeDefinitively(${Number(o.id)})`)+actionBtn("⏱ TEMPO","pcm-time",`adminEditFinalizedTime(${Number(o.id)})`);
+    if(["FINALIZADA","FINALIZADA - OBSERVAÇÃO"].includes(o.status))actions+=actionBtn("⏱ TEMPO","pcm-time",`adminEditFinalizedTime(${Number(o.id)})`);
+    if(!["FINALIZADA","FINALIZADA - OBSERVAÇÃO","FINALIZADA - AGUARDANDO PCM","CANCELADA"].includes(o.status))actions+=actionBtn("🛑 CANCELAR","pcm-cancel",`pcmCancelOS(${Number(o.id)})`);
+    return `<tr><td class="osid">${esc(o.os_number)}</td><td><div class="machine">${esc(o.machine||"-")}</div><div class="muted">${esc(o.tag||"-")}</div></td><td>${esc(o.sector||"-")}</td><td>${esc(responsible)}</td><td>${esc(o.priority||"MODERADA")}</td><td class="deadline ${late?"late":today?"today":""}">${fmtDate(o.deadline)} ${late?"⚠ ATRASADA":today?"• HOJE":""}<div class="muted">${o.deadline?deadlineTime(o.observations):""}</div></td><td><span class="status ${statusClass(o.status)}">${esc(o.status||"-")}</span></td><td><div class="actions">${actions}</div></td></tr>`;
+  }).join("");
+  wrap.querySelector("#pcmAdminSearch").oninput=()=>renderBoard();
+}
+
+function ensureModal(){
+  let m=document.getElementById("pcmAdminOSModal");if(m)return m;
+  m=document.createElement("div");m.id="pcmAdminOSModal";document.body.appendChild(m);
+  m.addEventListener("click",e=>{if(e.target===m)closeModal()});return m;
+}
+function closeModal(){const m=document.getElementById("pcmAdminOSModal");if(m)m.classList.remove("show")}
+window.pcmCloseAdminModal=closeModal;
+function showModal(title,sub,body,buttons){
+  const m=ensureModal();m.innerHTML=`<div class="box"><h3>${title}</h3><div class="pcm-sub">${sub}</div>${body}<div class="pcm-modal-actions">${buttons}</div></div>`;m.classList.add("show");return m;
+}
+
+window.pcmEditOS=async function(id){
+  if(!isAdminUI()){alert("Somente o PCM / Administrador pode editar O.S.");return}
+  try{
+    const {data:o,error}=await getClient().from("os_orders").select("*").eq("id",id).single();
+    if(error||!o)throw error||new Error("O.S. não encontrada.");
+    const body=`<div class="pcm-edit-grid">
+      <div><label>Nº O.S. — WK</label><input value="${esc(o.os_number)}" disabled></div>
+      <div><label>Data de abertura</label><input id="v7_opening" type="date" value="${esc(String(o.opening_date||"").slice(0,10))}"></div>
+      <div><label>Máquina / Equipamento *</label><input id="v7_machine" value="${esc(o.machine)}"></div>
+      <div><label>TAG</label><input id="v7_tag" value="${esc(o.tag||"")}"></div>
+      <div><label>Setor *</label><select id="v7_sector">${["TMM","LINHA SCHIFFER","MENDES","FÁBRICA DE COMPONENTES"].map(x=>`<option ${String(o.sector||"")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Tipo de manutenção *</label><select id="v7_type">${["CORRETIVA","PREVENTIVA","PREDITIVA","INSPEÇÃO","MELHORIA","OUTRA"].map(x=>`<option value="${x}" ${String(o.maintenance_type||"")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Prioridade</label><select id="v7_priority">${["ALTA","MÉDIA","MODERADA"].map(x=>`<option ${String(o.priority||"MODERADA")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Responsável</label><select id="v7_resp"><option value="">Não atribuído</option>${["Adryan","Fabio","Rodrigo","Leonardo","Vilmar","Rafael","Danilo"].map(x=>`<option ${String(o.responsible||"")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Prazo — data</label><input id="v7_deadline" type="date" value="${esc(String(o.deadline||"").slice(0,10))}"></div>
+      <div><label>Prazo — horário</label><input id="v7_deadtime" type="time" value="${deadlineTime(o.observations)}"></div>
+      <div class="full"><label>Descrição da O.S. *</label><textarea id="v7_desc">${esc(o.description||"")}</textarea></div>
+      <div class="full"><label>Observações</label><textarea id="v7_obs">${esc(markerObs(o.observations))}</textarea></div>
+      <div class="full pcm-note"><b>Status atual:</b> ${esc(o.status||"-")}<br>Alterar dados não reinicia o cronômetro da O.S.</div>
+    </div>`;
+    const m=showModal(`✏️ Editar O.S. ${esc(o.os_number)}`,"Somente o PCM / Administrador pode alterar estes dados.",body,`<button type="button" class="pcm-close" onclick="pcmCloseAdminModal()">FECHAR</button><button type="button" class="pcm-save" id="v7_save">SALVAR ALTERAÇÕES</button>`);
+    m.querySelector("#v7_save").onclick=async()=>{
+      const machine=m.querySelector("#v7_machine").value.trim(),desc=m.querySelector("#v7_desc").value.trim(),sector=m.querySelector("#v7_sector").value,type=m.querySelector("#v7_type").value;
+      if(!machine||!desc||!sector||!type){alert("Preencha máquina, setor, tipo de manutenção e descrição.");return}
+      let obs=m.querySelector("#v7_obs").value.trim();const dt=m.querySelector("#v7_deadtime").value||"17:00";
+      obs=obs.replace(/\[\[PCM_PRAZO_HORA:\d{2}:\d{2}\]\]/g,"").trim()+`\n[[PCM_PRAZO_HORA:${dt}]]`;
+      const payload={opening_date:m.querySelector("#v7_opening").value||null,machine,tag:m.querySelector("#v7_tag").value.trim()||null,sector,maintenance_type:type,priority:m.querySelector("#v7_priority").value,responsible:m.querySelector("#v7_resp").value||null,deadline:m.querySelector("#v7_deadline").value||null,description:desc,observations:obs};
+      const r=await getClient().from("os_orders").update(payload).eq("id",id);if(r.error){alert("Não foi possível salvar a O.S.: "+r.error.message);return}
+      closeModal();alert("O.S. alterada com sucesso.");await reloadDashboard();};
+  }catch(e){console.error(e);alert("Não foi possível abrir a O.S. para edição.") }
+};
+
+window.pcmCancelOS=async function(id){
+  if(!isAdminUI()){alert("Somente o PCM / Administrador pode cancelar O.S.");return}
+  try{
+    const r=await getClient().from("os_orders").select("*").eq("id",id).single();if(r.error||!r.data)throw r.error||new Error();
+    const o=r.data;
+    const body=`<div class="pcm-edit-grid"><div class="full"><label>Motivo do cancelamento *</label><select id="v7_reason"><option value="">Selecione...</option><option>Solicitação cancelada pelo solicitante</option><option>Serviço não será mais realizado</option><option>O.S. duplicada</option><option>Erro no cadastro da O.S.</option><option>Equipamento indisponível</option><option>Outro motivo</option></select></div><div class="full"><label>Observação do cancelamento</label><textarea id="v7_cancelobs" placeholder="Informe algum detalhe, se necessário."></textarea></div><div class="full pcm-note">A O.S. será mantida no banco, mas ficará com status <b>CANCELADA</b>. O cancelamento também será registrado no histórico.</div></div>`;
+    const m=showModal(`🛑 Cancelar O.S. ${esc(o.os_number)}`,"Esta ação é exclusiva do PCM / Administrador.",body,`<button type="button" class="pcm-close" onclick="pcmCloseAdminModal()">VOLTAR</button><button type="button" class="pcm-danger" id="v7_cancelSave">CONFIRMAR CANCELAMENTO</button>`);
+    m.querySelector("#v7_cancelSave").onclick=async()=>{
+      const reason=m.querySelector("#v7_reason").value;if(!reason){alert("Selecione o motivo.");return}
+      if(!confirm(`Confirma o cancelamento da O.S. ${o.os_number}?`))return;
+      const note=m.querySelector("#v7_cancelobs").value.trim(),now=new Date(),stamp=now.toLocaleString("pt-BR");
+      const oldObs=markerObs(o.observations);const newObs=`${oldObs?oldObs+"\n":""}[${stamp}] CANCELAMENTO — ${reason}${note?" — "+note:""}`;
+      const u=await getClient().from("os_orders").update({status:"CANCELADA",observations:newObs}).eq("id",id);
+      if(u.error){alert("Não foi possível cancelar: "+u.error.message);return}
+      await getClient().from("os_execution_history").insert({os_id:o.id,os_number:o.os_number,employee:"PCM / Administrador",action:"O.S. CANCELADA",reason,started_at:null,ended_at:now.toISOString(),duration_seconds:0});
+      closeModal();alert("O.S. cancelada com sucesso.");await reloadDashboard();
+    };
+  }catch(e){console.error(e);alert("Não foi possível carregar a O.S. para cancelamento.")}
+};
+
+window.pcmHistoryOS=async function(id){
+  try{
+    const r=await getClient().from("os_execution_history").select("*").eq("os_id",id).order("started_at",{ascending:false});
+    if(r.error)throw r.error;
+    const rows=r.data||[];const html=rows.length?rows.map(x=>`<div class="pcm-note" style="margin-bottom:7px"><b>${esc(x.action||"EVENTO")}</b><br><span class="muted">${esc(x.employee||"-")} • ${x.started_at?new Date(x.started_at).toLocaleString("pt-BR"):""}${x.ended_at?" → "+new Date(x.ended_at).toLocaleString("pt-BR"):""}</span>${x.reason?`<br>${esc(x.reason)}`:""}</div>`).join(""):`<div class="pcm-note">Nenhum registro encontrado.</div>`;
+    showModal("📋 Histórico da O.S.","Registros de execução e alterações.",html,`<button type="button" class="pcm-close" onclick="pcmCloseAdminModal()">FECHAR</button>`);
+  }catch(e){alert("Não foi possível carregar o histórico.")}
+};
+
+async function reloadDashboard(){
+  try{if(typeof window.loadDashboardData==="function")await window.loadDashboardData();}catch(e){console.error(e)}
+  setTimeout(renderBoard,120);
+}
+const oldLoad=window.loadDashboardData;
+window.loadDashboardData=async function(){const r=typeof oldLoad==="function"?await oldLoad.apply(this,arguments):null;setTimeout(renderBoard,100);return r};
+
+function boot(){
+  setTimeout(()=>{if(isAdminUI())renderBoard()},500);
+}
+document.addEventListener("DOMContentLoaded",boot);
+const obs=new MutationObserver(()=>{if(isAdminUI()&&!document.getElementById("pcmAdminOSWrap"))renderBoard()});
+obs.observe(document.body,{childList:true,subtree:true});
+setInterval(()=>{if(isAdminUI()&&document.getElementById("pcmAdminOSWrap"))renderBoard()},15000);
+})();
+</script>
+
 </body></html>`);win.document.close();setTimeout(()=>win.print(),400);
   };
 
@@ -7877,6 +8259,197 @@ body{min-height:100vh;background:#050505!important;}
   .pcm-os-filter{max-width:none;width:100%;min-height:44px}
 }
 </style>
+
+
+<style id="pcm-v7-admin-os">
+/* ===== CONTROLE O.S. V7 — painel compacto e ações do ADM ===== */
+#pcmAdminOSWrap{margin-top:14px;border:1px solid #26364d;border-radius:14px;background:#0b1728;overflow:hidden}
+#pcmAdminOSWrap .pcm-os-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #26364d}
+#pcmAdminOSWrap .pcm-os-search{flex:1;min-width:220px;background:#07111f;border:1px solid #34465e;color:#fff;border-radius:9px;padding:10px 12px;font-size:12px;outline:none}
+#pcmAdminOSWrap .pcm-os-count{font-size:11px;color:#94a3b8;display:flex;align-items:center;padding:0 4px}
+#pcmAdminOSWrap .pcm-os-scroll{overflow-x:auto}
+#pcmAdminOSWrap table{width:100%;min-width:1050px;border-collapse:collapse}
+#pcmAdminOSWrap th{background:#101f33;color:#94a3b8;font-size:10px;text-transform:uppercase;text-align:left;padding:9px 8px;white-space:nowrap}
+#pcmAdminOSWrap td{border-top:1px solid #1d2c40;padding:8px;color:#e5edf7;font-size:11px;vertical-align:middle}
+#pcmAdminOSWrap tr:hover td{background:#101d2d}
+#pcmAdminOSWrap .osid{font-weight:800;color:#fff;white-space:nowrap}
+#pcmAdminOSWrap .machine{font-weight:700;max-width:190px}
+#pcmAdminOSWrap .muted{color:#94a3b8}
+#pcmAdminOSWrap .deadline.late{color:#f87171;font-weight:800}
+#pcmAdminOSWrap .deadline.today{color:#fbbf24;font-weight:800}
+#pcmAdminOSWrap .status{font-size:9px;font-weight:800;padding:4px 7px;border-radius:999px;white-space:nowrap;border:1px solid #334155}
+#pcmAdminOSWrap .st-open{background:#172554;color:#93c5fd}.st-prod{background:#052e1b;color:#86efac}.st-pause{background:#3b2500;color:#fdba74}.st-mat{background:#3b2500;color:#fdba74}.st-fin{background:#052e1b;color:#86efac}.st-cancel{background:#3f1010;color:#fca5a5}
+#pcmAdminOSWrap .actions{display:flex;gap:5px;flex-wrap:wrap;min-width:260px}
+#pcmAdminOSWrap .pcm-a{border:0;border-radius:7px;padding:7px 8px;color:#fff;font-size:9px;font-weight:800;cursor:pointer;white-space:nowrap}
+#pcmAdminOSWrap .pcm-edit{background:#334155}.pcm-cancel{background:#991b1b}.pcm-history{background:#475569}.pcm-start{background:#166534}.pcm-resume{background:#166534}.pcm-material{background:#9a6700}.pcm-finish{background:#047857}.pcm-time{background:#075985}
+#pcmAdminOSWrap .empty{padding:22px;text-align:center;color:#94a3b8}
+#pcmAdminOSModal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200000;display:none;align-items:center;justify-content:center;padding:10px}
+#pcmAdminOSModal.show{display:flex}
+#pcmAdminOSModal .box{width:min(850px,100%);max-height:94vh;overflow:auto;background:#0b1728;color:#fff;border:1px solid #334155;border-radius:16px;padding:16px;box-shadow:0 30px 90px #000}
+#pcmAdminOSModal h3{margin:0 0 5px;font-size:17px}.pcm-sub{color:#94a3b8;font-size:11px;margin-bottom:14px}
+.pcm-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcm-edit-grid .full{grid-column:1/-1}
+.pcm-edit-grid label{display:block;color:#cbd5e1;font-size:10px;font-weight:700;margin-bottom:4px}
+.pcm-edit-grid input,.pcm-edit-grid select,.pcm-edit-grid textarea{width:100%;box-sizing:border-box;background:#07111f;color:#fff;border:1px solid #34465e;border-radius:8px;padding:9px;font-size:12px;outline:none}
+.pcm-edit-grid textarea{min-height:90px;resize:vertical}
+.pcm-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pcm-modal-actions button{border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}
+.pcm-save{background:#16a34a;color:#fff}.pcm-close{background:#475569;color:#fff}.pcm-danger{background:#b91c1c;color:#fff}
+.pcm-note{background:#111f32;border:1px solid #2d4059;border-radius:8px;padding:9px;color:#94a3b8;font-size:10px}
+@media(max-width:600px){
+ #pcmAdminOSWrap .pcm-os-toolbar{padding:9px}.pcm-edit-grid{grid-template-columns:1fr}.pcm-edit-grid .full{grid-column:auto}
+ #pcmAdminOSModal{padding:6px}.pcm-edit-grid input,.pcm-edit-grid select,.pcm-edit-grid textarea{font-size:16px;padding:11px}
+ #pcmAdminOSModal .box{max-height:96vh;border-radius:12px;padding:12px}
+ #pcmAdminOSWrap .pcm-a{padding:9px 10px;font-size:10px}
+}
+</style>
+<script id="pcm-v7-admin-os-js">
+(function(){
+"use strict";
+const URL="https://omttcgtkhtvyxwutxppc.supabase.co";
+const KEY="sb_publishable_HMD1Yow_uEbE-9fy6P0ATg_BqfNstx5";
+let client=null;
+function getClient(){
+  if(client)return client;
+  if(!window.supabase||typeof window.supabase.createClient!=="function") throw new Error("Biblioteca Supabase não carregou.");
+  client=window.supabase.createClient(URL,KEY);
+  return client;
+}
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const isAdminUI=()=>document.getElementById("currentUserBadge")?.textContent?.trim()==="PCM / Administrador" && !document.getElementById("adminMenu")?.classList.contains("hidden");
+const fmtDate=v=>{if(!v)return "-";const s=String(v).slice(0,10),p=s.split("-");return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:"-"};
+function markerObs(obs){return String(obs||"").replace(/\[\[PCM_PRAZO_HORA:\d{2}:\d{2}\]\]/g,"").trim()}
+function deadlineTime(obs){const m=String(obs||"").match(/\[\[PCM_PRAZO_HORA:(\d{2}):(\d{2})\]\]/);return m?`${m[1]}:${m[2]}`:"17:00"}
+function deadlineDateTime(o){if(!o.deadline)return null;const t=deadlineTime(o.observations);const d=new Date(`${String(o.deadline).slice(0,10)}T${t}:00`);return isNaN(d)?null:d}
+function overdue(o){if(["FINALIZADA","FINALIZADA - OBSERVAÇÃO","FINALIZADA - AGUARDANDO PCM","CANCELADA"].includes(o.status))return false;const d=deadlineDateTime(o);return d&&d<new Date()}
+function todayDeadline(o){if(!o.deadline)return false;const d=deadlineDateTime(o),n=new Date();return d&&d.toDateString()===n.toDateString()&&!overdue(o)}
+function statusClass(s){s=String(s||"");if(s==="CANCELADA")return"st-cancel";if(s.includes("FINALIZADA"))return"st-fin";if(s==="EM PRODUÇÃO")return"st-prod";if(s==="PAUSADA")return"st-pause";if(s==="AGUARDANDO MATERIAL")return"st-mat";return"st-open"}
+function actionBtn(label,cls,fn){return `<button type="button" class="pcm-a ${cls}" onclick="${fn}">${label}</button>`}
+
+function ensureBoard(){
+  if(!isAdminUI())return;
+  const dash=document.getElementById("view-dashboard"); if(!dash)return;
+  const old=dash.querySelector(".kanban"); if(!old)return;
+  let wrap=document.getElementById("pcmAdminOSWrap");
+  if(!wrap){
+    wrap=document.createElement("div");wrap.id="pcmAdminOSWrap";
+    old.parentNode.insertBefore(wrap,old);
+    old.style.display="none";
+  }
+  return wrap;
+}
+function renderBoard(){
+  if(!isAdminUI())return;
+  const wrap=ensureBoard();if(!wrap)return;
+  const orders=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];
+  const q=(document.getElementById("pcmAdminSearch")?.value||"").toLowerCase().trim();
+  const filtered=orders.filter(o=>[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.status,o.description].join(" ").toLowerCase().includes(q));
+  wrap.innerHTML=`<div class="pcm-os-toolbar"><input id="pcmAdminSearch" class="pcm-os-search" placeholder="🔎 Pesquisar O.S., máquina, TAG, setor ou responsável..." value="${esc(q)}"><span class="pcm-os-count">${filtered.length} O.S.</span></div><div class="pcm-os-scroll"><table><thead><tr><th>O.S.</th><th>Máquina / TAG</th><th>Setor</th><th>Responsável</th><th>Prioridade</th><th>Prazo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="pcmAdminRows"></tbody></table></div>`;
+  const tbody=wrap.querySelector("#pcmAdminRows");
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="8" class="empty">Nenhuma O.S. encontrada.</td></tr>`;return}
+  tbody.innerHTML=filtered.map(o=>{
+    const responsible=o.active_employee||o.responsible||"Não atribuído";
+    const late=overdue(o), today=todayDeadline(o);
+    let actions=actionBtn("✏️ EDITAR","pcm-edit",`pcmEditOS(${Number(o.id)})`)+actionBtn("📋 HISTÓRICO","pcm-history",`pcmHistoryOS(${Number(o.id)})`);
+    if(o.status==="O.S. ABERTA"&&o.responsible)actions+=actionBtn("▶ INICIAR","pcm-start",`adminStartOS(${Number(o.id)})`);
+    if(o.status==="PAUSADA"&&o.responsible)actions+=actionBtn("▶ RETOMAR","pcm-resume",`adminResumePausedOS(${Number(o.id)})`);
+    if(o.status==="AGUARDANDO MATERIAL")actions+=actionBtn("📦 LIBERAR","pcm-material",`openReleaseModal(${o.material_request_id||"null"},${Number(o.id)})`);
+    if(o.status==="FINALIZADA - AGUARDANDO PCM")actions+=actionBtn("✓ FINALIZAR","pcm-finish",`finalizeDefinitively(${Number(o.id)})`)+actionBtn("⏱ TEMPO","pcm-time",`adminEditFinalizedTime(${Number(o.id)})`);
+    if(["FINALIZADA","FINALIZADA - OBSERVAÇÃO"].includes(o.status))actions+=actionBtn("⏱ TEMPO","pcm-time",`adminEditFinalizedTime(${Number(o.id)})`);
+    if(!["FINALIZADA","FINALIZADA - OBSERVAÇÃO","FINALIZADA - AGUARDANDO PCM","CANCELADA"].includes(o.status))actions+=actionBtn("🛑 CANCELAR","pcm-cancel",`pcmCancelOS(${Number(o.id)})`);
+    return `<tr><td class="osid">${esc(o.os_number)}</td><td><div class="machine">${esc(o.machine||"-")}</div><div class="muted">${esc(o.tag||"-")}</div></td><td>${esc(o.sector||"-")}</td><td>${esc(responsible)}</td><td>${esc(o.priority||"MODERADA")}</td><td class="deadline ${late?"late":today?"today":""}">${fmtDate(o.deadline)} ${late?"⚠ ATRASADA":today?"• HOJE":""}<div class="muted">${o.deadline?deadlineTime(o.observations):""}</div></td><td><span class="status ${statusClass(o.status)}">${esc(o.status||"-")}</span></td><td><div class="actions">${actions}</div></td></tr>`;
+  }).join("");
+  wrap.querySelector("#pcmAdminSearch").oninput=()=>renderBoard();
+}
+
+function ensureModal(){
+  let m=document.getElementById("pcmAdminOSModal");if(m)return m;
+  m=document.createElement("div");m.id="pcmAdminOSModal";document.body.appendChild(m);
+  m.addEventListener("click",e=>{if(e.target===m)closeModal()});return m;
+}
+function closeModal(){const m=document.getElementById("pcmAdminOSModal");if(m)m.classList.remove("show")}
+window.pcmCloseAdminModal=closeModal;
+function showModal(title,sub,body,buttons){
+  const m=ensureModal();m.innerHTML=`<div class="box"><h3>${title}</h3><div class="pcm-sub">${sub}</div>${body}<div class="pcm-modal-actions">${buttons}</div></div>`;m.classList.add("show");return m;
+}
+
+window.pcmEditOS=async function(id){
+  if(!isAdminUI()){alert("Somente o PCM / Administrador pode editar O.S.");return}
+  try{
+    const {data:o,error}=await getClient().from("os_orders").select("*").eq("id",id).single();
+    if(error||!o)throw error||new Error("O.S. não encontrada.");
+    const body=`<div class="pcm-edit-grid">
+      <div><label>Nº O.S. — WK</label><input value="${esc(o.os_number)}" disabled></div>
+      <div><label>Data de abertura</label><input id="v7_opening" type="date" value="${esc(String(o.opening_date||"").slice(0,10))}"></div>
+      <div><label>Máquina / Equipamento *</label><input id="v7_machine" value="${esc(o.machine)}"></div>
+      <div><label>TAG</label><input id="v7_tag" value="${esc(o.tag||"")}"></div>
+      <div><label>Setor *</label><select id="v7_sector">${["TMM","LINHA SCHIFFER","MENDES","FÁBRICA DE COMPONENTES"].map(x=>`<option ${String(o.sector||"")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Tipo de manutenção *</label><select id="v7_type">${["CORRETIVA","PREVENTIVA","PREDITIVA","INSPEÇÃO","MELHORIA","OUTRA"].map(x=>`<option value="${x}" ${String(o.maintenance_type||"")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Prioridade</label><select id="v7_priority">${["ALTA","MÉDIA","MODERADA"].map(x=>`<option ${String(o.priority||"MODERADA")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Responsável</label><select id="v7_resp"><option value="">Não atribuído</option>${["Adryan","Fabio","Rodrigo","Leonardo","Vilmar","Rafael","Danilo"].map(x=>`<option ${String(o.responsible||"")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Prazo — data</label><input id="v7_deadline" type="date" value="${esc(String(o.deadline||"").slice(0,10))}"></div>
+      <div><label>Prazo — horário</label><input id="v7_deadtime" type="time" value="${deadlineTime(o.observations)}"></div>
+      <div class="full"><label>Descrição da O.S. *</label><textarea id="v7_desc">${esc(o.description||"")}</textarea></div>
+      <div class="full"><label>Observações</label><textarea id="v7_obs">${esc(markerObs(o.observations))}</textarea></div>
+      <div class="full pcm-note"><b>Status atual:</b> ${esc(o.status||"-")}<br>Alterar dados não reinicia o cronômetro da O.S.</div>
+    </div>`;
+    const m=showModal(`✏️ Editar O.S. ${esc(o.os_number)}`,"Somente o PCM / Administrador pode alterar estes dados.",body,`<button type="button" class="pcm-close" onclick="pcmCloseAdminModal()">FECHAR</button><button type="button" class="pcm-save" id="v7_save">SALVAR ALTERAÇÕES</button>`);
+    m.querySelector("#v7_save").onclick=async()=>{
+      const machine=m.querySelector("#v7_machine").value.trim(),desc=m.querySelector("#v7_desc").value.trim(),sector=m.querySelector("#v7_sector").value,type=m.querySelector("#v7_type").value;
+      if(!machine||!desc||!sector||!type){alert("Preencha máquina, setor, tipo de manutenção e descrição.");return}
+      let obs=m.querySelector("#v7_obs").value.trim();const dt=m.querySelector("#v7_deadtime").value||"17:00";
+      obs=obs.replace(/\[\[PCM_PRAZO_HORA:\d{2}:\d{2}\]\]/g,"").trim()+`\n[[PCM_PRAZO_HORA:${dt}]]`;
+      const payload={opening_date:m.querySelector("#v7_opening").value||null,machine,tag:m.querySelector("#v7_tag").value.trim()||null,sector,maintenance_type:type,priority:m.querySelector("#v7_priority").value,responsible:m.querySelector("#v7_resp").value||null,deadline:m.querySelector("#v7_deadline").value||null,description:desc,observations:obs};
+      const r=await getClient().from("os_orders").update(payload).eq("id",id);if(r.error){alert("Não foi possível salvar a O.S.: "+r.error.message);return}
+      closeModal();alert("O.S. alterada com sucesso.");await reloadDashboard();};
+  }catch(e){console.error(e);alert("Não foi possível abrir a O.S. para edição.") }
+};
+
+window.pcmCancelOS=async function(id){
+  if(!isAdminUI()){alert("Somente o PCM / Administrador pode cancelar O.S.");return}
+  try{
+    const r=await getClient().from("os_orders").select("*").eq("id",id).single();if(r.error||!r.data)throw r.error||new Error();
+    const o=r.data;
+    const body=`<div class="pcm-edit-grid"><div class="full"><label>Motivo do cancelamento *</label><select id="v7_reason"><option value="">Selecione...</option><option>Solicitação cancelada pelo solicitante</option><option>Serviço não será mais realizado</option><option>O.S. duplicada</option><option>Erro no cadastro da O.S.</option><option>Equipamento indisponível</option><option>Outro motivo</option></select></div><div class="full"><label>Observação do cancelamento</label><textarea id="v7_cancelobs" placeholder="Informe algum detalhe, se necessário."></textarea></div><div class="full pcm-note">A O.S. será mantida no banco, mas ficará com status <b>CANCELADA</b>. O cancelamento também será registrado no histórico.</div></div>`;
+    const m=showModal(`🛑 Cancelar O.S. ${esc(o.os_number)}`,"Esta ação é exclusiva do PCM / Administrador.",body,`<button type="button" class="pcm-close" onclick="pcmCloseAdminModal()">VOLTAR</button><button type="button" class="pcm-danger" id="v7_cancelSave">CONFIRMAR CANCELAMENTO</button>`);
+    m.querySelector("#v7_cancelSave").onclick=async()=>{
+      const reason=m.querySelector("#v7_reason").value;if(!reason){alert("Selecione o motivo.");return}
+      if(!confirm(`Confirma o cancelamento da O.S. ${o.os_number}?`))return;
+      const note=m.querySelector("#v7_cancelobs").value.trim(),now=new Date(),stamp=now.toLocaleString("pt-BR");
+      const oldObs=markerObs(o.observations);const newObs=`${oldObs?oldObs+"\n":""}[${stamp}] CANCELAMENTO — ${reason}${note?" — "+note:""}`;
+      const u=await getClient().from("os_orders").update({status:"CANCELADA",observations:newObs}).eq("id",id);
+      if(u.error){alert("Não foi possível cancelar: "+u.error.message);return}
+      await getClient().from("os_execution_history").insert({os_id:o.id,os_number:o.os_number,employee:"PCM / Administrador",action:"O.S. CANCELADA",reason,started_at:null,ended_at:now.toISOString(),duration_seconds:0});
+      closeModal();alert("O.S. cancelada com sucesso.");await reloadDashboard();
+    };
+  }catch(e){console.error(e);alert("Não foi possível carregar a O.S. para cancelamento.")}
+};
+
+window.pcmHistoryOS=async function(id){
+  try{
+    const r=await getClient().from("os_execution_history").select("*").eq("os_id",id).order("started_at",{ascending:false});
+    if(r.error)throw r.error;
+    const rows=r.data||[];const html=rows.length?rows.map(x=>`<div class="pcm-note" style="margin-bottom:7px"><b>${esc(x.action||"EVENTO")}</b><br><span class="muted">${esc(x.employee||"-")} • ${x.started_at?new Date(x.started_at).toLocaleString("pt-BR"):""}${x.ended_at?" → "+new Date(x.ended_at).toLocaleString("pt-BR"):""}</span>${x.reason?`<br>${esc(x.reason)}`:""}</div>`).join(""):`<div class="pcm-note">Nenhum registro encontrado.</div>`;
+    showModal("📋 Histórico da O.S.","Registros de execução e alterações.",html,`<button type="button" class="pcm-close" onclick="pcmCloseAdminModal()">FECHAR</button>`);
+  }catch(e){alert("Não foi possível carregar o histórico.")}
+};
+
+async function reloadDashboard(){
+  try{if(typeof window.loadDashboardData==="function")await window.loadDashboardData();}catch(e){console.error(e)}
+  setTimeout(renderBoard,120);
+}
+const oldLoad=window.loadDashboardData;
+window.loadDashboardData=async function(){const r=typeof oldLoad==="function"?await oldLoad.apply(this,arguments):null;setTimeout(renderBoard,100);return r};
+
+function boot(){
+  setTimeout(()=>{if(isAdminUI())renderBoard()},500);
+}
+document.addEventListener("DOMContentLoaded",boot);
+const obs=new MutationObserver(()=>{if(isAdminUI()&&!document.getElementById("pcmAdminOSWrap"))renderBoard()});
+obs.observe(document.body,{childList:true,subtree:true});
+setInterval(()=>{if(isAdminUI()&&document.getElementById("pcmAdminOSWrap"))renderBoard()},15000);
+})();
+</script>
 
 </body>
 </html>
