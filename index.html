@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=9BVgu3t5HSCn0CoMqrcwPGeQs6ih5gQ16jP4AI_SDy9moDhQD761fdZEbF-l5gurmo0TGJEbNUyr9I-S-DX6QEcCBT2zxD_OMTZ5Mmczn2rfoPtGx8bDzq-moxKuK5tCJq-C6M7yjASPAEgkJdIwD0-ZjM_nXIOj8sj93_pIkWqaUjeLZ93TzRqLCd40sc9eAf0RxWwvQdQLiDLQwkh5WMUHNJHz3IcuNIWT5M-OpiriZjpI9gfYHvD3o088lmNzC1x6HFi4gMHB0AGeMm6-wSgBpjBSCcIGRk02K7lGpSPdJn2aQse2-uygdhFZk1YWWJp7fy7e6UAdVwUm6G1rPxOwl69Wk49ze67AyWgYQvY" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=oH7Mht0D8a5EGaH1f53e-2GhDUB6G4XfGk94zZgEryGavaHSlUM2PPpJ2a7TEcspLJNhcX6FEI5u5Ph35_WHJzVP4UQFVT_5kEpsM4TG17TJH9if3S16I1YeOAEtZkOAJ7ERaXTgwl2T10SY8lOeQZdGbYkCCir4I4HeoBZ4coWWitu11ZHVpZz_x6t3nam8ICsoW__60Nb4yPSu7VZkURr7gqzcKk4nrqeNO3kcH1nxFcu8dBsXjRoU9PI1dL9k9jd7myxDQwVM25TK2eHizExDzM-ScMwiZEqE1VDQJ-lFHFUAcPuxSY1qZ55wzk9JhIxTVUCqKHww51kVTJIvVFwly6GwCSvCKqPTouDhq-U" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -8019,6 +8019,15 @@ body{min-height:100vh;background:#050505!important;}
   const PCM_AJUSTES_SUPABASE_KEY = "sb_publishable_HMD1Yow_uEbE-9fy6P0ATg_BqfNstx5";
   let ajustesDb = null;
 
+  // O arquivo original usa `let isAdmin` (escopo interno do script),
+  // então ele não fica disponível como window.isAdmin. Identificamos o
+  // usuário administrador pelo mesmo badge que o app original atualiza após o login.
+  function isPcmAdmin(){
+    const badge = document.getElementById("currentUserBadge");
+    const name = (badge && badge.textContent || "").trim().toUpperCase();
+    return name === "PCM / ADMINISTRADOR" || name.includes("PCM / ADMINISTRADOR");
+  }
+
   async function getDb(){
     if(ajustesDb) return ajustesDb;
     if(!window.supabase || typeof window.supabase.createClient !== "function"){
@@ -8203,7 +8212,7 @@ body{min-height:100vh;background:#050505!important;}
   }
 
   async function refreshBoard(){
-    if(!window.isAdmin) return;
+    if(!isPcmAdmin()) return;
     installBoard();
     const host = document.getElementById("pcmCompactOSBoard");
     if(!host) return;
@@ -8233,7 +8242,7 @@ body{min-height:100vh;background:#050505!important;}
   }
 
   window.cancelOS = async function(osId){
-    if(!window.isAdmin){
+    if(!isPcmAdmin()){
       alert("Somente o PCM / Administrador pode cancelar O.S.");
       return;
     }
@@ -8473,7 +8482,7 @@ body{min-height:100vh;background:#050505!important;}
   }
 
   function tick(){
-    if(!window.isAdmin) return;
+    if(!isPcmAdmin()) return;
     installBoard();
     refreshBoard();
   }
@@ -8490,7 +8499,7 @@ body{min-height:100vh;background:#050505!important;}
   // Observa modais/formulários criados dinamicamente.
   const mo=new MutationObserver(()=>{
     installBoard();
-    upgradeNewOS();
+    upgradeNewOSDeadline();
     hookNewOS();
     upgradeEditOS();
     observeEditSave();
@@ -8500,12 +8509,12 @@ body{min-height:100vh;background:#050505!important;}
   document.addEventListener("DOMContentLoaded",()=>{
     setTimeout(()=>{
       installBoard();
-      upgradeNewOS();
+      upgradeNewOSDeadline();
       hookNewOS();
-      if(window.isAdmin) refreshBoard();
+      if(isPcmAdmin()) refreshBoard();
     },250);
     compactTimer=setInterval(()=>{
-      if(window.isAdmin) refreshBoard();
+      if(isPcmAdmin()) refreshBoard();
     },60000);
   });
 })();
