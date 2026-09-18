@@ -1,6 +1,7 @@
 /* =========================================================
    PCM • CONTROLE DE O.S. — MAIN BOOT
    AB Florestas e Madeiras
+   Compatível com celular / Vercel
    ========================================================= */
 
 (function () {
@@ -15,6 +16,7 @@
 
     window.PCM_BOOT.loadSupabase = function () {
 
+        /* Se o Supabase já estiver carregado, não carrega novamente */
         if (
             window.supabase &&
             typeof window.supabase.createClient === 'function'
@@ -22,6 +24,8 @@
             return Promise.resolve(window.supabase);
         }
 
+        /* Se já existe uma tentativa em andamento,
+           reaproveita a mesma */
         if (supabaseLoading) {
             return supabaseLoading;
         }
@@ -38,6 +42,7 @@
 
             function tryNext() {
 
+                /* Verifica novamente antes de tentar outro CDN */
                 if (
                     window.supabase &&
                     typeof window.supabase.createClient === 'function'
@@ -46,6 +51,7 @@
                     return;
                 }
 
+                /* Acabaram as fontes */
                 if (index >= sources.length) {
                     reject(
                         new Error(
@@ -60,7 +66,31 @@
                 script.async = true;
                 script.src = sources[index++];
 
+                var finished = false;
+
+                /* Tempo máximo para cada CDN.
+                   Isso evita ficar travado no celular */
+                var timeout = setTimeout(function () {
+
+                    if (finished) {
+                        return;
+                    }
+
+                    finished = true;
+
+                    tryNext();
+
+                }, 12000);
+
                 script.onload = function () {
+
+                    if (finished) {
+                        return;
+                    }
+
+                    finished = true;
+
+                    clearTimeout(timeout);
 
                     if (
                         window.supabase &&
@@ -74,7 +104,17 @@
                 };
 
                 script.onerror = function () {
+
+                    if (finished) {
+                        return;
+                    }
+
+                    finished = true;
+
+                    clearTimeout(timeout);
+
                     tryNext();
+
                 };
 
                 document.head.appendChild(script);
@@ -84,6 +124,7 @@
 
         }).catch(function (error) {
 
+            /* Permite uma nova tentativa caso a conexão falhe */
             supabaseLoading = null;
 
             throw error;
@@ -91,6 +132,11 @@
 
         return supabaseLoading;
     };
+
+
+    /* =========================================================
+       CAPTURA DE ERROS
+       ========================================================= */
 
     window.addEventListener('error', function (event) {
 
@@ -101,6 +147,7 @@
 
     });
 
+
     window.addEventListener('unhandledrejection', function (event) {
 
         console.error(
@@ -109,6 +156,7 @@
         );
 
     });
+
 
     console.log('[PCM] main.js carregado com sucesso.');
 
