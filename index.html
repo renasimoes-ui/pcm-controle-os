@@ -4614,45 +4614,56 @@ function renderKanban(){
 function createAdminOSCard(order){
     const total=getTotalTime(order);
     const responsible=order.active_employee||order.responsible||"Não atribuído";
+    const finalStatuses=["FINALIZADA","FINALIZADA - OBSERVAÇÃO","FINALIZADA - AGUARDANDO PCM"];
+    const isCancelled=String(order.status||"").toUpperCase()==="CANCELADA";
     let actions="";
-    actions += `<button class="action-btn" style="background:#334155;color:#f8fafc" onclick="adminEditOS(${order.id})">✏️ EDITAR O.S.</button>`;
-    actions += `<button class="action-btn btn-material" onclick="showPauseHistory(${order.id})">⏸ MOTIVOS DE PAUSA</button>`;
+
+    /* AÇÕES ADMINISTRATIVAS — somente este painel usa esta função. */
+    if(!isCancelled){
+        actions += `<button type="button" class="action-btn pcm-admin-edit" onclick="adminEditOS(${Number(order.id)});return false;">✏️ EDITAR O.S.</button>`;
+        actions += `<button type="button" class="action-btn pcm-admin-cancel" onclick="cancelOSAdmin(${Number(order.id)});return false;">🛑 CANCELAR O.S.</button>`;
+    }
+    actions += `<button type="button" class="action-btn btn-material" onclick="showPauseHistory(${Number(order.id)});return false;">⏸ MOTIVOS DE PAUSA</button>`;
 
     if(order.status === "O.S. ABERTA" && order.responsible){
-        actions += `<button class="action-btn btn-start" onclick="adminStartOS(${order.id})">INICIAR / LIBERAR O.S.</button>`;
+        actions += `<button type="button" class="action-btn btn-start" onclick="adminStartOS(${Number(order.id)});return false;">▶ INICIAR / LIBERAR O.S.</button>`;
     }
     if(order.status === "PAUSADA" && order.responsible){
-        actions += `<button class="action-btn btn-start" onclick="adminResumePausedOS(${order.id})">LIBERAR / RETOMAR O.S.</button>`;
+        actions += `<button type="button" class="action-btn btn-start" onclick="adminResumePausedOS(${Number(order.id)});return false;">▶ LIBERAR / RETOMAR O.S.</button>`;
     }
     if(order.status === "AGUARDANDO MATERIAL"){
-        actions += `<button class="action-btn btn-material" onclick="openReleaseModal(${order.material_request_id || "null"},${order.id})">LIBERAR APÓS MATERIAL</button>`;
+        actions += `<button type="button" class="action-btn btn-material" onclick="openReleaseModal(${order.material_request_id || "null"},${Number(order.id)});return false;">📦 LIBERAR APÓS MATERIAL</button>`;
     }
     if(order.status === "FINALIZADA - AGUARDANDO PCM"){
-        actions += `<button class="action-btn btn-start" onclick="finalizeDefinitively(${order.id})">✓ FINALIZAR DEFINITIVAMENTE</button>`;
-        actions += `<button class="action-btn btn-material" onclick="adminEditFinalizedTime(${order.id})">⏱ EDITAR HORÁRIO / TEMPO</button>`;
+        actions += `<button type="button" class="action-btn btn-start" onclick="finalizeDefinitively(${Number(order.id)});return false;">✓ FINALIZAR DEFINITIVAMENTE</button>`;
+        actions += `<button type="button" class="action-btn btn-material" onclick="adminEditFinalizedTime(${Number(order.id)});return false;">⏱ EDITAR HORÁRIO / TEMPO</button>`;
     }
     if(order.status === "FINALIZADA" || order.status === "FINALIZADA - OBSERVAÇÃO"){
-        actions += `<button class="action-btn btn-material" onclick="adminEditFinalizedTime(${order.id})">⏱ EDITAR HORÁRIO / TEMPO</button>`;
+        actions += `<button type="button" class="action-btn btn-material" onclick="adminEditFinalizedTime(${Number(order.id)});return false;">⏱ EDITAR HORÁRIO / TEMPO</button>`;
     }
 
-    const statusLabel = order.status === "FINALIZADA - AGUARDANDO PCM" ? "FINALIZADA • AGUARDANDO PCM" : (order.status === "FINALIZADA - OBSERVAÇÃO" ? "FINALIZADA • AGUARDANDO OBSERVAÇÃO" : order.status);
+    const statusLabel = order.status === "FINALIZADA - AGUARDANDO PCM" ? "FINALIZADA • AGUARDANDO PCM" :
+        (order.status === "FINALIZADA - OBSERVAÇÃO" ? "FINALIZADA • AGUARDANDO OBSERVAÇÃO" : order.status);
+
     return `
-        <div class="os-card">
-            <div class="os-card-top"><div class="os-number">${escapeHtml(order.os_number)}</div><div class="priority ${priorityClass(order.priority)}">${escapeHtml(order.priority||"MODERADA")}</div></div>
+        <div class="os-card" data-os-id="${Number(order.id)}">
+            <div class="os-card-top">
+                <div class="os-number">${escapeHtml(order.os_number)}</div>
+                <div class="priority ${priorityClass(order.priority)}">${escapeHtml(order.priority||"MODERADA")}</div>
+            </div>
             <div class="os-info">
                 <div><strong>Máquina:</strong> ${escapeHtml(order.machine)}</div>
                 <div><strong>TAG:</strong> ${escapeHtml(order.tag||"-")}</div>
                 <div><strong>Setor:</strong> ${escapeHtml(order.sector)}</div>
                 <div><strong>Responsável:</strong> ${escapeHtml(responsible)}</div>
                 <div><strong>Status:</strong> ${escapeHtml(statusLabel)}</div>
+                ${order.deadline ? `<div><strong>Prazo:</strong> ${escapeHtml(order.deadline)}</div>` : ""}
                 ${order.status === "PAUSADA" ? `<div><strong>Motivo da pausa:</strong> ${escapeHtml(order.pause_reason||"-")}</div>` : ""}
             </div>
             ${["EM PRODUÇÃO","PAUSADA"].includes(order.status) ? `<div class="timer">⏱ ${formatSeconds(total)}</div>` : ""}
-            ${actions}
+            <div class="pcm-admin-actions">${actions}</div>
         </div>`;
 }
-
-
 
 
 /* Modal global exclusivo para a edição de O.S.
@@ -7848,83 +7859,73 @@ body{min-height:100vh;background:#050505!important;}
 })();
 </script>
 
-<style id="pcm-final-v9-style">
-#pcmCompactBoard{margin-top:14px;border:1px solid #1e293b;border-radius:14px;background:#020617;overflow:hidden}
-#pcmCompactBoard .pcm-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid #1e293b;flex-wrap:wrap}
-#pcmCompactBoard .pcm-search{flex:1 1 280px;min-height:44px;background:#0f172a;color:#f8fafc;border:1px solid #334155;border-radius:9px;padding:10px 12px}
-#pcmCompactBoard .pcm-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-#pcmCompactBoard table{min-width:1080px;width:100%;border-collapse:collapse}
-#pcmCompactBoard th{background:#0b1120;color:#94a3b8;padding:10px 9px;font-size:9px;text-align:left;white-space:nowrap}
-#pcmCompactBoard td{padding:9px;border-top:1px solid #1e293b;vertical-align:middle;font-size:10px}
-#pcmCompactBoard tr:hover td{background:rgba(30,41,59,.35)}
-#pcmCompactBoard .pcm-actions{display:flex;gap:5px;flex-wrap:wrap;min-width:250px}
-#pcmCompactBoard .pcm-actions button{min-height:38px;border:0;border-radius:7px;padding:7px 9px;font-size:9px;font-weight:800;cursor:pointer;color:#fff}
-#pcmCompactBoard .b-edit{background:#334155}.b-cancel{background:#991b1b}.b-hist{background:#92400e}.b-start{background:#166534}.b-resume{background:#166534}.b-material{background:#92400e}.b-finish{background:#1d4ed8}.b-time{background:#475569}
-#pcmCompactBoard .late{color:#fecaca;font-weight:900}.on-time{color:#bbf7d0;font-weight:800}
-#pcmCompactBoard .status-pill{display:inline-block;padding:5px 7px;border-radius:6px;background:#172033;color:#cbd5e1;font-weight:800;font-size:8px;white-space:nowrap}
-#pcmCancelModal{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(0,0,0,.76)}
-#pcmCancelModal .box{width:min(520px,96vw);max-height:90vh;overflow:auto;background:#0f172a;border:1px solid #334155;border-radius:16px;padding:18px}
-#pcmCancelModal label{display:block;color:#cbd5e1;font-size:11px;font-weight:800;margin:12px 0 6px}
-#pcmCancelModal select,#pcmCancelModal textarea{width:100%;background:#020617;color:#f8fafc;border:1px solid #334155;border-radius:9px;padding:12px;font-size:16px}
-#pcmCancelModal textarea{min-height:90px}
-#pcmCancelModal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
-#pcmCancelModal button{min-height:44px;border:0;border-radius:9px;padding:10px 15px;font-weight:800;cursor:pointer}
-#pcmCancelModal .no{background:#334155;color:#fff}.yes{background:#b91c1c;color:#fff}
-@media(max-width:700px){#pcmCompactBoard .pcm-toolbar{padding:10px}#pcmCompactBoard table{min-width:1000px}}
+<style id="pcm-v10-admin-actions">
+.pcm-admin-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.pcm-admin-actions .action-btn{margin-top:0!important;min-height:38px;white-space:normal;line-height:1.15}
+.pcm-admin-edit{background:#334155!important;color:#f8fafc!important;border:1px solid #475569!important}
+.pcm-admin-cancel{background:#7f1d1d!important;color:#fee2e2!important;border:1px solid #991b1b!important}
+.pcm-cancel-box{width:min(560px,100%);max-height:90vh;overflow:auto;background:#0f172a;border:1px solid #7f1d1d;border-radius:16px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.pcm-cancel-title{font-size:18px;font-weight:900;color:#fee2e2;margin-bottom:6px}
+.pcm-cancel-sub{font-size:11px;color:#94a3b8;margin-bottom:16px}
+.pcm-cancel-reasons{display:grid;gap:8px}
+.pcm-cancel-reason{width:100%;padding:12px;border:1px solid #334155;border-radius:9px;background:#020617;color:#cbd5e1;text-align:left;cursor:pointer;font-size:11px}
+.pcm-cancel-reason:hover,.pcm-cancel-reason.selected{border-color:#ef4444;background:#3f1111;color:#fff}
+@media(max-width:600px){.pcm-admin-actions{grid-template-columns:1fr 1fr}.pcm-admin-actions .action-btn{font-size:9px;min-height:42px;padding:7px 5px}.pcm-cancel-box{padding:17px}}
 </style>
-<script id="pcm-final-v9-js">
+<script id="pcm-v10-admin-actions-js">
 (function(){
 'use strict';
-function esc(v){return typeof escapeHtml==='function'?escapeHtml(v==null?'':String(v)):String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function isAdminNow(){return window.isAdmin===true;}
-function deadlineInfo(o){
-  if(!o.deadline)return {text:'Sem prazo',late:false};
-  const d=String(o.deadline).slice(0,10); const end=new Date(d+'T17:00:00'); const late=Date.now()>end.getTime() && !['FINALIZADA','FINALIZADA - OBSERVAÇÃO','FINALIZADA - AGUARDANDO PCM','CANCELADA'].includes(o.status);
-  const [y,m,day]=d.split('-'); return {text:(day+'/'+m+'/'+y)+' 17:00',late};
-}
-function statusLabel(o){if(o.status==='CANCELADA')return 'CANCELADA'; if(deadlineInfo(o).late)return 'ATRASADA'; return o.status==='FINALIZADA - AGUARDANDO PCM'?'FINALIZADA • AGUARDANDO PCM':(o.status||'-');}
-function actionButtons(o){
-  const id=Number(o.id), a=[];
-  a.push(`<button class="b-edit" onclick="window.pcmAdminEdit(${id})">✏️ EDITAR</button>`);
-  if(o.status!=='CANCELADA' && !String(o.status||'').startsWith('FINALIZADA')) a.push(`<button class="b-cancel" onclick="window.pcmCancelOS(${id})">🛑 CANCELAR</button>`);
-  if(typeof window.showPauseHistory==='function') a.push(`<button class="b-hist" onclick="window.showPauseHistory(${id})">📋 HISTÓRICO</button>`);
-  if(o.status==='O.S. ABERTA' && o.responsible && typeof window.adminStartOS==='function') a.push(`<button class="b-start" onclick="window.adminStartOS(${id})">▶ INICIAR</button>`);
-  if(o.status==='PAUSADA' && typeof window.adminResumePausedOS==='function') a.push(`<button class="b-resume" onclick="window.adminResumePausedOS(${id})">▶ RETOMAR</button>`);
-  if(o.status==='AGUARDANDO MATERIAL' && typeof window.openReleaseModal==='function') a.push(`<button class="b-material" onclick="window.openReleaseModal(${o.material_request_id||'null'},${id})">📦 LIBERAR MATERIAL</button>`);
-  if(o.status==='FINALIZADA - AGUARDANDO PCM' && typeof window.finalizeDefinitively==='function') a.push(`<button class="b-finish" onclick="window.finalizeDefinitively(${id})">✓ FINALIZAR</button>`);
-  if(['FINALIZADA','FINALIZADA - OBSERVAÇÃO','FINALIZADA - AGUARDANDO PCM'].includes(o.status) && typeof window.adminEditFinalizedTime==='function') a.push(`<button class="b-time" onclick="window.adminEditFinalizedTime(${id})">⏱ TEMPO</button>`);
-  return a.join('');
-}
-function renderCompact(){
-  const host=document.getElementById('pcmCompactBoard'); if(!host||!isAdminNow())return;
-  const orders=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];
-  const q=(host.querySelector('#pcmOSSearch')?.value||'').trim().toLowerCase();
-  const filtered=orders.filter(o=>[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.status,o.description].some(v=>String(v||'').toLowerCase().includes(q)));
-  const rows=filtered.map(o=>{const di=deadlineInfo(o);return `<tr>
-<td><b>${esc(o.os_number||'-')}</b></td><td><b>${esc(o.machine||'-')}</b><br><span style="color:#64748b">TAG: ${esc(o.tag||'-')}</span></td><td>${esc(o.sector||'-')}</td><td>${esc(o.active_employee||o.responsible||'Não atribuído')}</td><td>${esc(o.priority||'MODERADA')}</td><td><span class="status-pill">${esc(statusLabel(o))}</span></td><td class="${di.late?'late':'on-time'}">${esc(di.text)}</td><td title="${esc(o.description||'')}">${esc(o.description||'-')}</td><td><div class="pcm-actions">${actionButtons(o)}</div></td></tr>`}).join('');
-  host.querySelector('#pcmOSBody').innerHTML=rows||'<tr><td colspan="9" style="padding:18px;color:#64748b">Nenhuma O.S. encontrada.</td></tr>';
-}
-function ensureBoard(){
-  if(!isAdminNow())return;
-  let host=document.getElementById('pcmCompactBoard');
-  if(!host){const old=document.querySelector('#view-dashboard .kanban'); if(!old)return; host=document.createElement('div');host.id='pcmCompactBoard';old.parentNode.insertBefore(host,old);old.style.display='none';}
-  host.innerHTML=`<div class="pcm-toolbar"><div><b style="font-size:13px">📋 Controle das O.S.</b><div style="font-size:10px;color:#64748b;margin-top:3px">Somente o Administrador pode modificar as O.S.</div></div><input id="pcmOSSearch" class="pcm-search" placeholder="🔎 Pesquisar O.S., máquina, TAG, setor ou responsável..."></div><div class="pcm-table-wrap"><table><thead><tr><th>O.S.</th><th>Máquina / TAG</th><th>Setor</th><th>Responsável</th><th>Prioridade</th><th>Status</th><th>Prazo</th><th>Serviço</th><th>Ações</th></tr></thead><tbody id="pcmOSBody"></tbody></table></div>`;
-  host.querySelector('#pcmOSSearch').addEventListener('input',renderCompact); renderCompact();
-}
-window.pcmAdminEdit=async function(id){if(!isAdminNow()){alert('Somente o PCM / Administrador pode editar O.S.');return;} if(typeof window.adminEditOS==='function')return window.adminEditOS(id); alert('A função de edição não está disponível.');};
-let cancelId=null;
-window.pcmCancelOS=function(id){
-  if(!isAdminNow()){alert('Somente o PCM / Administrador pode cancelar O.S.');return;}
-  cancelId=id; let old=document.getElementById('pcmCancelModal');if(old)old.remove();
-  const o=(window.dashboardOrders||[]).find(x=>Number(x.id)===Number(id)); if(!o)return alert('O.S. não encontrada.');
-  const m=document.createElement('div');m.id='pcmCancelModal';m.innerHTML=`<div class="box"><h3 style="margin:0;color:#fff">🛑 Cancelar O.S. ${esc(o.os_number)}</h3><p style="color:#94a3b8;font-size:12px">A O.S. será mantida no banco e marcada como CANCELADA.</p><label>Motivo do cancelamento *</label><select id="pcmCancelReason"><option value="">Selecione...</option><option>Solicitação cancelada pelo solicitante</option><option>Serviço não será mais realizado</option><option>O.S. duplicada</option><option>Erro no cadastro da O.S.</option><option>Equipamento indisponível</option><option>Outro motivo</option></select><label>Observação</label><textarea id="pcmCancelObs" placeholder="Informe detalhes, se necessário..."></textarea><div class="actions"><button class="no" id="pcmCancelNo">VOLTAR</button><button class="yes" id="pcmCancelYes">CONFIRMAR CANCELAMENTO</button></div></div>`;document.body.appendChild(m);
-  m.querySelector('#pcmCancelNo').onclick=()=>m.remove();m.querySelector('#pcmCancelYes').onclick=async()=>{const reason=m.querySelector('#pcmCancelReason').value;const obs=m.querySelector('#pcmCancelObs').value.trim();if(!reason){alert('Selecione o motivo do cancelamento.');return;}try{const now=new Date();const stamp=now.toLocaleString('pt-BR');const note=`[${stamp}] CANCELAMENTO — ${reason}${obs?' — '+obs:''}`;const existing=String(o.observations||'').trim();const combined=existing?(existing+'\n'+note):note;const {error}=await db.from('os_orders').update({status:'CANCELADA',observations:combined}).eq('id',id);if(error)throw error;try{await insertExecutionHistory({os_id:o.id,os_number:o.os_number,employee:'PCM / Administrador',action:'O.S. CANCELADA',reason:reason+(obs?' — '+obs:''),started_at:null,ended_at:now.toISOString(),duration_seconds:Number(o.total_service_seconds||0)});}catch(e){console.warn('Histórico de cancelamento não registrado',e)}m.remove();alert('O.S. '+o.os_number+' cancelada com sucesso.');if(typeof window.loadDashboardData==='function')await window.loadDashboardData();else{const idx=(window.dashboardOrders||[]).findIndex(x=>Number(x.id)===Number(id));if(idx>=0)window.dashboardOrders[idx].status='CANCELADA';renderCompact();}}catch(e){console.error(e);alert('Não foi possível cancelar a O.S.\n\n'+(e.message||e));}};
+function getOrderDirect(id){return db.from('os_orders').select('*').eq('id',id).single()}
+window.cancelOSAdmin=async function(osId){
+    if(!isAdmin){alert('Somente o PCM / Administrador pode cancelar O.S.');return;}
+    const r=await getOrderDirect(osId);
+    if(r.error||!r.data){alert('Não foi possível localizar a O.S.');return;}
+    const order=r.data;
+    if(String(order.status||'').toUpperCase()==='CANCELADA'){alert('Esta O.S. já está cancelada.');return;}
+    const old=document.getElementById('pcmCancelModal');if(old)old.remove();
+    const el=document.createElement('div');el.id='pcmCancelModal';el.className='modal';el.style.display='flex';
+    el.innerHTML=`<div class="pcm-cancel-box">
+      <div class="pcm-cancel-title">🛑 Cancelar O.S. ${escapeHtml(order.os_number||'')}</div>
+      <div class="pcm-cancel-sub">O cancelamento será registrado no histórico e a O.S. ficará como CANCELADA. Esta ação é exclusiva do administrador.</div>
+      <label class="form-label">Motivo do cancelamento *</label>
+      <div class="pcm-cancel-reasons">
+        <button type="button" class="pcm-cancel-reason">Solicitação cancelada pelo solicitante</button>
+        <button type="button" class="pcm-cancel-reason">Serviço não será mais realizado</button>
+        <button type="button" class="pcm-cancel-reason">O.S. duplicada</button>
+        <button type="button" class="pcm-cancel-reason">Erro no cadastro da O.S.</button>
+        <button type="button" class="pcm-cancel-reason">Equipamento indisponível</button>
+        <button type="button" class="pcm-cancel-reason">Outro motivo</button>
+      </div>
+      <label class="form-label" style="margin-top:14px">Observação do cancelamento</label>
+      <textarea id="pcmCancelObs" class="form-textarea" style="min-height:90px" placeholder="Detalhe o motivo, se necessário..."></textarea>
+      <div class="modal-buttons">
+        <button type="button" class="btn-secondary" id="pcmCancelClose">VOLTAR</button>
+        <button type="button" class="action-btn pcm-admin-cancel" id="pcmCancelConfirm" style="width:auto;margin:0;padding:11px 17px">🛑 CONFIRMAR CANCELAMENTO</button>
+      </div>
+    </div>`;
+    document.body.appendChild(el);
+    let reason='';
+    el.querySelectorAll('.pcm-cancel-reason').forEach(b=>b.onclick=()=>{el.querySelectorAll('.pcm-cancel-reason').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');reason=b.textContent.trim();});
+    const close=()=>el.remove();
+    el.querySelector('#pcmCancelClose').onclick=close;
+    el.onclick=e=>{if(e.target===el)close()};
+    el.querySelector('#pcmCancelConfirm').onclick=async()=>{
+      if(!reason){alert('Selecione o motivo do cancelamento.');return;}
+      const obs=el.querySelector('#pcmCancelObs').value.trim();
+      if(reason==='Outro motivo'&&!obs){alert('Informe qual foi o motivo.');return;}
+      const now=new Date().toISOString();
+      const stamp=new Date().toLocaleString('pt-BR');
+      const entry=`[${stamp}] CANCELAMENTO — ${reason}${obs?' — '+obs:''}`;
+      const oldObs=String(order.observations||'').trim();
+      const observations=oldObs?(oldObs+'\n'+entry):entry;
+      const up=await db.from('os_orders').update({status:'CANCELADA',observations}).eq('id',osId);
+      if(up.error){alert('Não foi possível cancelar a O.S.\\n\\n'+up.error.message);return;}
+      try{await insertExecutionHistory({os_id:order.id,os_number:order.os_number,employee:'PCM / Administrador',action:'O.S. CANCELADA',reason:reason+(obs?' — '+obs:''),started_at:null,ended_at:now,duration_seconds:Number(order.total_service_seconds||0)})}catch(e){console.warn('Histórico do cancelamento:',e)}
+      close();
+      alert('O.S. '+order.os_number+' cancelada com sucesso.');
+      await loadDashboardData();
+    };
 };
-const oldLoad=window.loadDashboardData;
-if(typeof oldLoad==='function'&&!oldLoad.__pcmV9){const wrapped=async function(){const r=await oldLoad.apply(this,arguments);setTimeout(()=>{ensureBoard();renderCompact();},50);return r;};wrapped.__pcmV9=true;window.loadDashboardData=wrapped;}
-const oldEdit=window.adminEditOS;
-if(typeof oldEdit==='function'&&!oldEdit.__pcmV9){window.adminEditOS=async function(id){if(!isAdminNow()){alert('Somente o PCM / Administrador pode editar O.S.');return;}return oldEdit.call(this,id);};window.adminEditOS.__pcmV9=true;}
-document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{if(isAdminNow())ensureBoard();},500));
 })();
 </script>
 </body>
