@@ -1,7 +1,6 @@
 /* =========================================================
    PCM • CONTROLE DE O.S. — MAIN BOOT
    AB Florestas e Madeiras
-   Compatível com celular / Vercel
    ========================================================= */
 
 (function () {
@@ -16,7 +15,7 @@
 
     window.PCM_BOOT.loadSupabase = function () {
 
-        /* Se o Supabase já estiver carregado, não carrega novamente */
+        /* Se já estiver carregado, não carrega novamente */
         if (
             window.supabase &&
             typeof window.supabase.createClient === 'function'
@@ -24,8 +23,7 @@
             return Promise.resolve(window.supabase);
         }
 
-        /* Se já existe uma tentativa em andamento,
-           reaproveita a mesma */
+        /* Se já existe uma tentativa, reutiliza */
         if (supabaseLoading) {
             return supabaseLoading;
         }
@@ -34,15 +32,14 @@
 
             var sources = [
                 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-                'https://unpkg.com/@supabase/supabase-js@2',
-                'https://esm.sh/@supabase/supabase-js@2'
+                'https://unpkg.com/@supabase/supabase-js@2'
             ];
 
             var index = 0;
 
-            function tryNext() {
+            function tentarProximo() {
 
-                /* Verifica novamente antes de tentar outro CDN */
+                /* Verifica se carregou */
                 if (
                     window.supabase &&
                     typeof window.supabase.createClient === 'function'
@@ -51,11 +48,11 @@
                     return;
                 }
 
-                /* Acabaram as fontes */
+                /* Não há mais opções */
                 if (index >= sources.length) {
                     reject(
                         new Error(
-                            'Não foi possível carregar a conexão do sistema. Verifique a internet e tente novamente.'
+                            'Não foi possível carregar a conexão com o sistema. Verifique a internet e tente novamente.'
                         )
                     );
                     return;
@@ -63,32 +60,30 @@
 
                 var script = document.createElement('script');
 
-                script.async = true;
                 script.src = sources[index++];
+                script.async = true;
 
-                var finished = false;
+                var finalizado = false;
 
-                /* Tempo máximo para cada CDN.
-                   Isso evita ficar travado no celular */
                 var timeout = setTimeout(function () {
 
-                    if (finished) {
+                    if (finalizado) {
                         return;
                     }
 
-                    finished = true;
+                    finalizado = true;
 
-                    tryNext();
+                    tentarProximo();
 
-                }, 12000);
+                }, 10000);
 
                 script.onload = function () {
 
-                    if (finished) {
+                    if (finalizado) {
                         return;
                     }
 
-                    finished = true;
+                    finalizado = true;
 
                     clearTimeout(timeout);
 
@@ -98,46 +93,39 @@
                     ) {
                         resolve(window.supabase);
                     } else {
-                        tryNext();
+                        tentarProximo();
                     }
-
                 };
 
                 script.onerror = function () {
 
-                    if (finished) {
+                    if (finalizado) {
                         return;
                     }
 
-                    finished = true;
+                    finalizado = true;
 
                     clearTimeout(timeout);
 
-                    tryNext();
-
+                    tentarProximo();
                 };
 
                 document.head.appendChild(script);
             }
 
-            tryNext();
+            tentarProximo();
 
-        }).catch(function (error) {
+        }).catch(function (erro) {
 
-            /* Permite uma nova tentativa caso a conexão falhe */
             supabaseLoading = null;
 
-            throw error;
+            throw erro;
         });
 
         return supabaseLoading;
     };
 
-
-    /* =========================================================
-       CAPTURA DE ERROS
-       ========================================================= */
-
+    /* Captura erros sem impedir o sistema de abrir */
     window.addEventListener('error', function (event) {
 
         console.error(
@@ -147,7 +135,6 @@
 
     });
 
-
     window.addEventListener('unhandledrejection', function (event) {
 
         console.error(
@@ -156,7 +143,6 @@
         );
 
     });
-
 
     console.log('[PCM] main.js carregado com sucesso.');
 
