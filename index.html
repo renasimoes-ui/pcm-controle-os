@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=Q5hGF9zYYWaThE3JxeB-IiZoNRSaJWvHiSB0T-tD9uOA4bsofRFpVJ0YwbnlpTrUX5pWpE18b5az23xZ54-bu6oo9ulf-3pmFlHsUN2swvMi5uxR76p3VaFaB43FK-TEIxHaz7bJKAMByebkGOo0ovv8ZuK-9PbJgIOljepZyJ_fl8ohifql5ilAA1SRHnN4zNwrkOh8r9XdhdGuqVne3NVPwewzjOuEJMveWbc7mwc4UaVbc1VGm-V8kDdkQch3CON8ZNGHebyw4FotQVCAXNDjzp7wownr9WJAzAEJZmo9HMBfzmDyMqLmPlPfEwidfTgZICTE1CYC1ItiBafKS3F9Lvg3HGsQWO7EG-9d548" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=8NJRFLtLq6NYCbPxgWxVPWfDeaozf1boPtX4WLXkiRC0AlGz-b2HDsmCxIL6DE1NiLW48y2L68hRYBMARZLRNxeN91eDWSQSdSAeyhEZKqQqXzFo1dA5r_04cnV0VYpANaCCQZYYxNdMCeqVfr9IE5xaApzEHCPf4POk-69IdZF7vkBXhE9YG_n91mCofAqFDxv_miHNn5OGq7RPoKs84QzX9f_gLHDxdwkNROw08nacj0m4iz3fTi3UMkyurInT__9FZlAJMq7SXgfT1fMGpnDYEeIof6sv1mIpoxS5_ACIxUVRcleXAtdR5VEsbAi65ZoceWo76P51_PMY-l0YQN97HoL9SvlaM4Rj7yMR8-YuEQBlbJzLN-aEGZTuA5tt" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -2662,7 +2662,7 @@ html,body{width:100%;max-width:100%;margin:0;padding:0;overflow-x:hidden}
 <style id="pcm-mobile-no-scroll-final">
 /* =========================================================
    CORREÇÃO FINAL — LOGIN CELULAR SEM ROLAGEM
-   SOMENTE CSS. NÃO ALTERA main.js, Supabase ou regras de O.S.
+   SOMENTE CSS. NÃO ALTERA regras de O.S.
    ========================================================= */
 html,body{
   width:100%!important;
@@ -3797,30 +3797,53 @@ let supabaseLoading = null;
 function ensureSupabase(){
     if(db) return Promise.resolve(db);
     if(supabaseLoading) return supabaseLoading;
-    supabaseLoading = (window.PCM_BOOT && typeof window.PCM_BOOT.loadSupabase === "function"
-        ? window.PCM_BOOT.loadSupabase()
-        : new Promise((resolve,reject)=>{
-            const sources=[
-                "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
-                "https://unpkg.com/@supabase/supabase-js@2",
-                "https://esm.sh/@supabase/supabase-js@2"
-            ];
-            let i=0;
-            const next=()=>{
-                if(window.supabase && typeof window.supabase.createClient === "function"){ resolve(window.supabase); return; }
-                if(i>=sources.length){ reject(new Error("Não foi possível carregar a conexão do sistema. Verifique a internet do celular.")); return; }
-                const script=document.createElement("script");
-                script.async=true;
-                script.src=sources[i++];
-                script.onload=()=>{
-                    if(window.supabase && typeof window.supabase.createClient === "function") resolve(window.supabase);
-                    else next();
-                };
-                script.onerror=next;
-                document.head.appendChild(script);
+    /*
+       O HTML é AUTOSSUFICIENTE.
+       Não depende de main.js para iniciar no celular.
+       O Supabase é carregado diretamente aqui.
+    */
+    supabaseLoading = new Promise((resolve,reject)=>{
+        const sources=[
+            "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+            "https://unpkg.com/@supabase/supabase-js@2",
+            "https://esm.sh/@supabase/supabase-js@2"
+        ];
+        let i=0;
+        const next=()=>{
+            if(window.supabase && typeof window.supabase.createClient === "function"){
+                resolve(window.supabase);
+                return;
+            }
+            if(i>=sources.length){
+                reject(new Error("Não foi possível carregar a conexão do sistema. Verifique a internet do celular."));
+                return;
+            }
+            const script=document.createElement("script");
+            script.async=true;
+            script.src=sources[i++];
+            let done=false;
+            const timer=setTimeout(()=>{
+                if(done)return;
+                done=true;
+                next();
+            },10000);
+            script.onload=()=>{
+                if(done)return;
+                done=true;
+                clearTimeout(timer);
+                if(window.supabase && typeof window.supabase.createClient === "function") resolve(window.supabase);
+                else next();
             };
-            next();
-        })).then(()=>{
+            script.onerror=()=>{
+                if(done)return;
+                done=true;
+                clearTimeout(timer);
+                next();
+            };
+            document.head.appendChild(script);
+        };
+        next();
+    }).then(()=>{
             if(!window.supabase || typeof window.supabase.createClient !== "function") throw new Error("Supabase não carregou.");
             db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
             return db;
