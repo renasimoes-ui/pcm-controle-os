@@ -19,7 +19,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=Q5hGF9zYYWaThE3JxeB-IiZoNRSaJWvHiSB0T-tD9uOA4bsofRFpVJ0YwbnlpTrUX5pWpE18b5az23xZ54-bu6oo9ulf-3pmFlHsUN2swvMi5uxR76p3VaFaB43FK-TEIxHaz7bJKAMByebkGOo0ovv8ZuK-9PbJgIOljepZyJ_fl8ohifql5ilAA1SRHnN4zNwrkOh8r9XdhdGuqVne3NVPwewzjOuEJMveWbc7mwc4UaVbc1VGm-V8kDdkQch3CON8ZNGHebyw4FotQVCAXNDjzp7wownr9WJAzAEJZmo9HMBfzmDyMqLmPlPfEwidfTgZICTE1CYC1ItiBafKS3F9Lvg3HGsQWO7EG-9d548" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -4626,7 +4626,7 @@ function createAdminOSCard(order){
     actions += `<button type="button" class="action-btn btn-material" onclick="showPauseHistory(${Number(order.id)});return false;">⏸ MOTIVOS DE PAUSA</button>`;
 
     if(order.status === "O.S. ABERTA" && order.responsible){
-        actions += `<button type="button" class="action-btn btn-start" onclick="adminStartOS(${Number(order.id)});return false;">▶ INICIAR / LIBERAR O.S.</button>`;
+        actions += `<button type="button" class="action-btn btn-start" onclick="adminStartOS(${Number(order.id)});return false;">📤 LIBERAR O.S. PARA O USUÁRIO</button>`;
     }
     if(order.status === "PAUSADA" && order.responsible){
         actions += `<button type="button" class="action-btn btn-start" onclick="adminResumePausedOS(${Number(order.id)});return false;">▶ LIBERAR / RETOMAR O.S.</button>`;
@@ -4831,6 +4831,12 @@ window.adminEditOS = async function(osId){
                 </div>
 
                 <div class="form-group full">
+                    <label class="form-label">Justificativa da alteração <span style="color:#ef4444">*</span></label>
+                    <textarea id="editOsJustification" class="form-textarea" style="min-height:95px" placeholder="Explique exatamente o que foi alterado e por qual motivo..."></textarea>
+                    <div style="font-size:10px;color:#64748b;margin-top:5px">Obrigatória. Essa justificativa ficará disponível para consulta do PCM no campo <b>Justificativas / Ocorrências</b>.</div>
+                </div>
+
+                <div class="form-group full">
                     <div class="factory-note">
                         <b>Status atual:</b> ${esc(order.status || "-")}<br>
                         A edição altera os dados cadastrais da mesma O.S. e não reinicia o cronômetro.
@@ -4858,9 +4864,14 @@ window.adminEditOS = async function(osId){
                 const deadline = el.querySelector("#editOsDeadline").value || null;
                 const description = el.querySelector("#editOsDescription").value.trim();
                 const observations = el.querySelector("#editOsObservations").value.trim();
+                const justification = el.querySelector("#editOsJustification").value.trim();
 
                 if(!machine || !sector || !type || !description){
                     alert("Preencha máquina, setor, tipo de manutenção e descrição.");
+                    return false;
+                }
+                if(!justification){
+                    alert("Informe a justificativa da alteração.");
                     return false;
                 }
 
@@ -4897,18 +4908,31 @@ window.adminEditOS = async function(osId){
                     return false;
                 }
 
-                // Registra a alteração sem alterar o schema existente.
+                // Registra exatamente o que mudou + a justificativa informada pelo PCM.
                 try{
+                    const changes=[];
+                    const compare=(label,before,after)=>{
+                        const b=String(before ?? "").trim();
+                        const a=String(after ?? "").trim();
+                        if(b!==a) changes.push(`${label}: "${b || "-"}" → "${a || "-"}"`);
+                    };
+                    compare("Data de abertura",order.opening_date,openingDate || order.opening_date || null);
+                    compare("Máquina",order.machine,machine);
+                    compare("TAG",order.tag,tag || null);
+                    compare("Setor",order.sector,sector);
+                    compare("Tipo de manutenção",order.maintenance_type,type);
+                    compare("Prioridade",order.priority,priority);
+                    compare("Responsável",order.responsible,responsible || null);
+                    compare("Prazo",order.deadline,deadline);
+                    compare("Descrição",order.description,description);
+                    compare("Observações",order.observations,observations || null);
+                    const whatChanged=changes.length ? changes.join(" | ") : "Nenhum campo cadastral foi alterado.";
                     await insertExecutionHistory({
                         os_id: order.id,
                         os_number: order.os_number,
                         employee: "PCM / Administrador",
                         action: "O.S. EDITADA PELO PCM",
-                        reason:
-                            `Dados cadastrais alterados. ` +
-                            `Máquina: ${machine}; Setor: ${sector}; ` +
-                            `Tipo: ${type}; Prioridade: ${priority}; ` +
-                            `Responsável: ${responsible || "Não atribuído"}.`,
+                        reason: `JUSTIFICATIVA: ${justification} | ALTERAÇÕES: ${whatChanged}`,
                         started_at: null,
                         ended_at: new Date().toISOString(),
                         duration_seconds: Number(order.total_service_seconds || 0)
@@ -4962,6 +4986,11 @@ window.adminEditOS = async function(osId){
 
 async function adminStartOS(osId){
 
+    if(!isAdmin){
+        alert("Somente o PCM / Administrador pode liberar a O.S.");
+        return;
+    }
+
     const {data:order,error} =
         await db
             .from("os_orders")
@@ -4969,108 +4998,62 @@ async function adminStartOS(osId){
             .eq("id",osId)
             .single();
 
-
     if(error || !order){
-
         alert("Não foi possível localizar a O.S.");
-
         return;
     }
 
+    if(order.status !== "O.S. ABERTA"){
+        alert("Esta O.S. não está disponível para liberação.");
+        return;
+    }
 
     if(!order.responsible){
-
-        alert(
-            "A O.S. precisa ter um responsável definido."
-        );
-
+        alert("A O.S. precisa ter um responsável definido antes da liberação.");
         return;
     }
 
-
-    const employee =
-        normalizeEmployee(order.responsible);
-
-
-    const {data:active,error:activeError} =
-        await db
-            .from("os_orders")
-            .select("id,os_number")
-            .eq("active_employee",employee)
-            .eq("status","EM PRODUÇÃO");
-
-
-    if(activeError){
-
-        console.error(activeError);
-
-        return;
-    }
-
-
-    if(active && active.length > 0){
-
-        alert(
-            employee +
-            " já possui uma O.S. em produção."
-        );
-
-        return;
-    }
-
-
-    const now =
-        new Date().toISOString();
-
-
+    /*
+       LIBERAÇÃO PELO PCM:
+       A O.S. continua ABERTA.
+       O PCM apenas disponibiliza a O.S. para o responsável.
+       Quem inicia o atendimento é o próprio usuário, pelo botão
+       "INICIAR O.S." na tela dele.
+    */
     const {error:updateError} =
         await db
             .from("os_orders")
             .update({
-
-                status:"EM PRODUÇÃO",
-
-                started_at:now,
-
+                status:"O.S. ABERTA",
+                started_at:null,
                 paused_at:null,
-
                 pause_reason:null,
-
-                active_employee:employee
-
+                active_employee:null
             })
-            .eq("id",osId);
-
+            .eq("id",osId)
+            .eq("status","O.S. ABERTA");
 
     if(updateError){
-
-        alert(updateError.message);
-
+        alert("Erro ao liberar O.S.:\n" + updateError.message);
         return;
     }
 
-
     await insertExecutionHistory({
-
         os_id:osId,
-
         os_number:order.os_number,
-
-        employee:employee,
-
-        action:"INICIADA",
-
-        started_at:now,
-
+        employee:order.responsible,
+        action:"LIBERADA PELO PCM",
+        started_at:null,
         ended_at:null,
-
         duration_seconds:0
-
     });
 
+    showPcmToast(
+        "O.S. " + order.os_number + " liberada para " + order.responsible + ". O usuário deverá iniciar o atendimento.",
+        "success"
+    );
 
     await loadDashboardData();
-
 }
 
 
@@ -7859,6 +7842,19 @@ body{min-height:100vh;background:#050505!important;}
 })();
 </script>
 
+<style id="pcm-justifications-css">
+.pcm-just-panel{margin-top:18px}
+.pcm-just-sub{font-size:11px;color:#64748b;margin-top:4px;margin-bottom:12px}
+.pcm-just-tools{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.pcm-just-tools .pcm-filter{flex:1}
+.pcm-just-body{display:grid;gap:8px;max-height:520px;overflow:auto;padding-right:2px}
+.pcm-just-item{border:1px solid #22304a;background:#091321;border-radius:11px;padding:11px}
+.pcm-just-top{display:flex;justify-content:space-between;gap:10px;color:#f8fafc;font-size:11px}
+.pcm-just-top span{color:#64748b;font-size:9px}
+.pcm-just-meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:#94a3b8;font-size:10px;margin-top:7px}
+.pcm-just-reason{margin-top:8px;padding:9px;border-radius:8px;background:#050b14;color:#cbd5e1;font-size:10px;line-height:1.55;word-break:break-word}
+@media(max-width:600px){.pcm-just-tools{align-items:stretch;flex-direction:column}.pcm-just-tools .pcm-filter,.pcm-just-tools .pcm-chip{width:100%}.pcm-just-top{flex-direction:column;gap:3px}}
+</style>
 <style id="pcm-v10-admin-actions">
 .pcm-admin-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
 .pcm-admin-actions .action-btn{margin-top:0!important;min-height:38px;white-space:normal;line-height:1.15}
@@ -7926,6 +7922,47 @@ window.cancelOSAdmin=async function(osId){
       await loadDashboardData();
     };
 };
+
+/* =========================================================
+   JUSTIFICATIVAS / OCORRÊNCIAS — VISÃO DO ADMINISTRADOR
+   Lê o histórico já existente e apresenta quem fez, o que fez,
+   quando fez e a justificativa/motivo informado.
+========================================================= */
+async function renderAdminJustifications(){
+  if(!isAdmin)return;
+  const dash=document.getElementById('view-dashboard'); if(!dash)return;
+  let panel=document.getElementById('pcmJustificationsPanel');
+  if(!panel){
+    panel=document.createElement('div'); panel.id='pcmJustificationsPanel'; panel.className='panel pcm-just-panel';
+    const kan=dash.querySelector('.kanban'); (kan||dash.lastElementChild)?.after(panel);
+  }
+  panel.innerHTML=`<div class="panel-title">📝 Justificativas / Ocorrências</div><div class="pcm-just-sub">Tudo que tiver motivo ou justificativa fica registrado aqui para o PCM acompanhar o que aconteceu em cada O.S.</div><div class="pcm-just-tools"><input id="pcmJustSearch" class="pcm-filter" placeholder="Pesquisar O.S., funcionário, ação ou justificativa..." autocomplete="off"><button type="button" class="pcm-chip active" id="pcmJustRefresh">↻ ATUALIZAR</button></div><div id="pcmJustBody" class="pcm-just-body"><div class="pcm-empty">Carregando...</div></div>`;
+  const body=panel.querySelector('#pcmJustBody');
+  try{
+    const {data,error}=await db.from('os_execution_history').select('id,os_id,os_number,employee,action,reason,created_at').not('reason','is',null).order('created_at',{ascending:false}).limit(500);
+    if(error)throw error;
+    const rows=(data||[]).filter(x=>String(x.reason||'').trim());
+    const draw=()=>{
+      const q=(panel.querySelector('#pcmJustSearch')?.value||'').toLowerCase().trim();
+      const filtered=rows.filter(x=>[x.os_number,x.employee,x.action,x.reason].join(' ').toLowerCase().includes(q));
+      body.innerHTML=filtered.length?filtered.map(x=>`<div class="pcm-just-item"><div class="pcm-just-top"><b>O.S. ${escapeHtml(x.os_number||'-')}</b><span>${escapeHtml(x.created_at?new Date(x.created_at).toLocaleString('pt-BR'):'-')}</span></div><div class="pcm-just-meta"><span><b>Quem:</b> ${escapeHtml(x.employee||'-')}</span><span><b>Ação:</b> ${escapeHtml(x.action||'-')}</span></div><div class="pcm-just-reason"><b>O que aconteceu / justificativa:</b><br>${escapeHtml(x.reason||'-').replace(/\n/g,'<br>')}</div></div>`).join(''):'<div class="pcm-empty">Nenhuma justificativa ou ocorrência encontrada.</div>';
+    };
+    panel.querySelector('#pcmJustSearch').oninput=draw;
+    panel.querySelector('#pcmJustRefresh').onclick=()=>renderAdminJustifications();
+    draw();
+  }catch(e){
+    console.error('Erro ao carregar justificativas:',e);
+    body.innerHTML='<div class="pcm-empty">Não foi possível carregar as justificativas.</div>';
+  }
+}
+window.renderAdminJustifications=renderAdminJustifications;
+
+const justBaseLoad=window.loadDashboardData;
+if(typeof justBaseLoad==='function'&&!justBaseLoad.__pcmJustifications){
+  const justLoad=async function(){const result=await justBaseLoad.apply(this,arguments);setTimeout(()=>renderAdminJustifications(),60);return result;};
+  justLoad.__pcmJustifications=true; window.loadDashboardData=justLoad;
+}
+document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>renderAdminJustifications(),500));
 })();
 </script>
 </body>
