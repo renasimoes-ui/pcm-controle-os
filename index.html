@@ -2931,6 +2931,22 @@ body:has(#loginScreen:not(.hidden)){
 }
 </style>
 
+
+<style id="pcm-cinematic-cover">
+/* Capa cinematográfica de madeira */
+#loginView, #loginScreen, .login-screen, .login-page {
+  background-image: linear-gradient(90deg, rgba(7,5,3,.62), rgba(7,5,3,.25), rgba(7,5,3,.48)), url("login-cinematic.png") !important;
+  background-position:center !important;
+  background-size:cover !important;
+  background-repeat:no-repeat !important;
+}
+#loginView::before, #loginScreen::before, .login-screen::before, .login-page::before {
+  background:radial-gradient(circle at 50% 45%, rgba(0,0,0,.02), rgba(0,0,0,.32) 80%) !important;
+}
+@media(max-width:700px){
+  #loginView, #loginScreen, .login-screen, .login-page { background-position:center center !important; }
+}
+</style>
 </head>
 
 <body>
@@ -7988,5 +8004,1222 @@ if(typeof justBaseLoad==='function'&&!justBaseLoad.__pcmJustifications){
 document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>renderAdminJustifications(),500));
 })();
 </script>
+
+<!-- =========================================================
+     PCM • AJUSTES FINAIS — FINALIZAÇÃO / MATERIAL / PAINEL
+========================================================= -->
+<style id="pcm-ajustes-finais-css">
+.pcm-compact-list{display:grid;gap:6px}
+.pcm-compact-row{
+    display:grid;
+    grid-template-columns:90px minmax(150px,1.5fr) minmax(120px,1fr) 150px 90px 105px;
+    gap:8px;align-items:center;
+    padding:9px 10px;border:1px solid #263449;border-radius:9px;
+    background:#08111f;font-size:10px;color:#cbd5e1;
+}
+.pcm-compact-row:hover{background:#0d1726;border-color:#475569}
+.pcm-compact-head{
+    display:grid;
+    grid-template-columns:90px minmax(150px,1.5fr) minmax(120px,1fr) 150px 90px 105px;
+    gap:8px;padding:5px 10px;color:#64748b;font-size:8px;
+    text-transform:uppercase;font-weight:800;
+}
+.pcm-compact-main{min-width:0}
+.pcm-compact-main b{display:block;color:#f8fafc;font-size:11px}
+.pcm-compact-sub{display:block;color:#64748b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcm-compact-status{font-size:9px;font-weight:800}
+.pcm-details-btn{width:100%;margin:0!important;background:#334155;color:#f8fafc}
+.pcm-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pcm-detail-item{padding:9px;border:1px solid #263449;border-radius:8px;background:#07101d}
+.pcm-detail-item span{display:block;color:#64748b;font-size:9px;text-transform:uppercase}
+.pcm-detail-item b{display:block;margin-top:3px;color:#f8fafc;font-size:11px;word-break:break-word}
+.pcm-detail-section{margin-top:14px;padding-top:12px;border-top:1px solid #263449}
+.pcm-detail-section-title{font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;margin-bottom:8px}
+.pcm-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.pcm-detail-actions .action-btn{margin:0!important}
+.pcm-material-item{border:1px solid #334155;border-radius:10px;padding:12px;background:#020617;margin-bottom:8px}
+.pcm-material-grid{display:grid;grid-template-columns:1.4fr .6fr;gap:8px;margin-top:8px}
+.pcm-material-label{color:#64748b;font-size:9px;text-transform:uppercase}
+.pcm-material-value{color:#e2e8f0;font-size:11px;margin-top:2px;word-break:break-word}
+.pcm-material-note{margin-top:8px;padding:8px;border-radius:7px;background:#0b1220;color:#cbd5e1;font-size:10px;line-height:1.5}
+.pcm-last-edit{border:1px solid #92400e;background:#1c1207;color:#fed7aa;padding:9px;border-radius:8px;font-size:10px;margin-top:10px}
+@media(max-width:900px){
+  .pcm-compact-head{display:none}
+  .pcm-compact-row{grid-template-columns:1fr 1fr;gap:7px}
+  .pcm-compact-main:first-child{grid-column:1/-1}
+  .pcm-detail-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .pcm-compact-row{grid-template-columns:1fr}
+  .pcm-detail-actions{grid-template-columns:1fr}
+  .pcm-material-grid{grid-template-columns:1fr}
+}
+</style>
+
+<script id="pcm-ajustes-finais-js">
+(function(){
+'use strict';
+
+function esc(v){
+  return typeof escapeHtml==='function'
+    ? escapeHtml(v==null?'':String(v))
+    : String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+function fmtLocal(v){
+  if(!v)return '-';
+  const d=new Date(v);
+  return Number.isNaN(d.getTime())?String(v):d.toLocaleString('pt-BR');
+}
+function isoToLocal(v){
+  if(!v)return '';
+  const d=new Date(v); if(Number.isNaN(d.getTime()))return '';
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function parseDur(v){
+  if(typeof parseDuration==='function')return parseDuration(v);
+  const m=String(v||'').trim().match(/^(\d+):([0-5]\d):([0-5]\d)$/);
+  return m?Number(m[1])*3600+Number(m[2])*60+Number(m[3]):null;
+}
+function dur(v){
+  if(typeof durInput==='function')return durInput(Number(v||0));
+  let s=Math.max(0,Number(v||0)),h=Math.floor(s/3600);s%=3600;
+  return String(h).padStart(2,'0')+':'+String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+}
+async function getO(id){
+  const {data,error}=await db.from('os_orders').select('*').eq('id',id).single();
+  if(error||!data)throw new Error('O.S. não encontrada.');
+  return data;
+}
+async function hist(id){
+  const {data,error}=await db.from('os_execution_history').select('*').eq('os_id',id).order('created_at',{ascending:false});
+  if(error)throw error;
+  return data||[];
+}
+
+/* =========================================================
+   1) FINALIZAÇÃO — UMA ÚNICA ALTERAÇÃO APÓS FINALIZAR
+========================================================= */
+
+window.finishOS=async function(osId){
+  if(!currentUser||isAdmin)return;
+  const order=await getO(osId);
+  if(order.status!=='EM PRODUÇÃO'||!isMine(order)){
+    alert('Esta O.S. não está ativa com você.');
+    return;
+  }
+
+  const startValue=order.started_at||'';
+  const now=new Date();
+  const endValue=now.toISOString();
+  const elapsed=typeof getCurrentElapsed==='function'?getCurrentElapsed(order):0;
+  const currentTotal=Number(order.total_service_seconds||0)+Number(elapsed||0);
+
+  const fields=`
+    <div class="factory-note">
+      Ao finalizar, o serviço será encerrado para você e ficará aguardando o PCM.
+      Depois da finalização haverá <b>somente 1 última alteração de horário</b>.
+    </div>
+    <label>Início do serviço</label>
+    <input id="pcmFinishStart" type="datetime-local" value="${isoToLocal(startValue)}">
+    <label>Fim do serviço</label>
+    <input id="pcmFinishEnd" type="datetime-local" value="${isoToLocal(endValue)}">
+    <label>Tempo total de serviço (HH:MM:SS)</label>
+    <input id="pcmFinishTotal" value="${dur(currentTotal)}" inputmode="numeric">
+    <div class="factory-note">Confira os horários antes de confirmar a finalização.</div>
+  `;
+
+  modal('pcmFinishModal','Finalizar O.S.','Confirme o período real trabalhado.',fields,'FINALIZAR O.S.',async el=>{
+    const start=el.querySelector('#pcmFinishStart').value;
+    const finish=el.querySelector('#pcmFinishEnd').value;
+    let total=parseDur(el.querySelector('#pcmFinishTotal').value);
+
+    if(!start||!finish){
+      alert('Informe o início e o fim do serviço.');
+      return false;
+    }
+    const a=new Date(start).getTime(),b=new Date(finish).getTime();
+    if(!Number.isFinite(a)||!Number.isFinite(b)||b<a){
+      alert('Confira os horários de início e fim.');
+      return false;
+    }
+
+    total=Math.floor((b-a)/1000);
+
+    const startIso=new Date(start).toISOString();
+    const finishIso=new Date(finish).toISOString();
+    const {error}=await db.from('os_orders').update({
+      status:'FINALIZADA - AGUARDANDO PCM',
+      finished_at:finishIso,
+      started_at:startIso,
+      active_employee:null,
+      paused_at:null,
+      total_service_seconds:total
+    }).eq('id',osId).eq('status','EM PRODUÇÃO');
+
+    if(error)throw error;
+
+    await insertExecutionHistory({
+      os_id:order.id,os_number:order.os_number,employee:currentUser,
+      action:'FINALIZADA',
+      reason:'O.S. finalizada pelo funcionário. Período conferido no encerramento.',
+      started_at:startIso,ended_at:finishIso,duration_seconds:total
+    });
+
+    await loadEmployeeOrders();
+    return true;
+  });
+};
+
+/* Substitui o cartão do funcionário para mostrar a 1 última alteração,
+   sem janela de 30 minutos. */
+window.renderEmployeeOrders=function(orders){
+  const container=document.getElementById('employeeOsContainer');
+  if(!container)return;
+  container.innerHTML='';
+  if(!orders||!orders.length){
+    container.innerHTML='<div class="panel" style="grid-column:1/-1"><div style="color:#64748b">Nenhuma O.S. atribuída a você.</div></div>';
+    return;
+  }
+  orders.forEach(order=>container.insertAdjacentHTML('beforeend',window.pcmCreateEmployeeCard(order)));
+};
+
+window.pcmCreateEmployeeCard=function(order){
+  const running=order.status==='EM PRODUÇÃO' &&
+    normalizeEmployee(order.active_employee)===normalizeEmployee(currentUser);
+
+  const history=employeeHistoryMeta.get(order.id)||[];
+  const lastEditUsed=history.some(h=>
+    h.action==='ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO' ||
+    h.action==='HORÁRIO AJUSTADO PELO FUNCIONÁRIO'
+  );
+
+  let buttons='';
+
+  if(order.status==='O.S. ABERTA')
+    buttons=`<button class="action-btn btn-start" onclick="startOS(${order.id})">▶ INICIAR O.S.</button>`;
+
+  if(order.status==='PAUSADA' && normalizeEmployee(order.responsible)===normalizeEmployee(currentUser)){
+    buttons=`<button class="action-btn btn-start" onclick="resumeOS(${order.id})">▶ RETOMAR O.S.</button>`;
+    buttons+=`<div class="factory-note">⏸ Pausada: ${esc(order.pause_reason||'Motivo não informado')}</div>`;
+  }
+
+  if(running){
+    buttons+=`<button class="action-btn btn-pause" onclick="pauseOS(${order.id})">⏸ PAUSAR</button>`;
+    buttons+=`<button class="action-btn btn-material" onclick="openMaterialModal(${order.id})">📦 REQUISITAR MATERIAL</button>`;
+    buttons+=`<button class="action-btn btn-finish" onclick="finishOS(${order.id})">✓ FINALIZAR O.S.</button>`;
+    buttons+=`<button class="action-btn btn-emergency" onclick="emergencyStopOS(${order.id})">▲ PARADA IMEDIATA</button>`;
+  }
+
+  if(order.status==='FINALIZADA - AGUARDANDO PCM'){
+    const start=order.started_at;
+    const finish=order.finished_at;
+    buttons=`<div class="factory-note success">
+      ✓ Serviço finalizado.<br>
+      <b>Início:</b> ${esc(fmtLocal(start))}<br>
+      <b>Fim:</b> ${esc(fmtLocal(finish))}<br>
+      <b>Tempo total:</b> ${esc(dur(order.total_service_seconds))}
+    </div>`;
+    if(!lastEditUsed){
+      buttons+=`<button class="action-btn btn-start" onclick="editFinalizedTime(${order.id})">✏️ MODIFICAR HORÁRIO — 1 ÚLTIMA VEZ</button>`;
+      buttons+=`<div class="factory-note warning">Você possui somente esta última alteração. Depois dela, qualquer correção será feita pelo PCM.</div>`;
+    }else{
+      buttons+=`<div class="factory-note">🔒 Última alteração já utilizada. Procure o PCM para qualquer correção adicional.</div>`;
+    }
+  }
+
+  if(order.status==='FINALIZADA')
+    buttons=`<div class="factory-note success">✓ O.S. finalizada definitivamente pelo PCM.</div>`;
+
+  if(order.status==='FINALIZADA - OBSERVAÇÃO')
+    buttons=`<div class="factory-note warning">📝 O PCM liberou esta O.S. para completar a observação.</div>
+      <button class="action-btn btn-start" onclick="openObservationModal(${order.id})">📝 ADICIONAR OBSERVAÇÃO</button>`;
+
+  return `<div class="employee-os">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+      <div class="number">O.S. ${esc(order.os_number)}</div>
+      <div class="priority ${priorityClass(order.priority)}">${esc(order.priority||'')}</div>
+    </div>
+    <div class="machine">${esc(order.machine)}</div>
+    <div style="color:#64748b;font-size:10px;margin-top:4px">${esc(order.tag||'')} • ${esc(order.sector||'')}</div>
+    <div class="description">${esc(order.description||'')}</div>
+    ${running?`<div class="timer" data-timer-id="${order.id}">⏱ ${formatSeconds(getTotalTime(order))}</div>`:`<div style="margin-top:12px;color:#64748b;font-size:10px">Tempo acumulado: ${dur(order.total_service_seconds)}</div>`}
+    ${order.observations?`<div class="factory-observation"><b>Observações:</b><br>${esc(order.observations)}</div>`:''}
+    <div class="employee-actions">${buttons}</div>
+  </div>`;
+};
+
+/* Uma única alteração depois da finalização. Sem prazo de 30 minutos. */
+window.editFinalizedTime=async function(osId){
+  if(!currentUser||isAdmin)return;
+  const order=await getO(osId);
+  if(order.status!=='FINALIZADA - AGUARDANDO PCM'||!isMine(order))return;
+
+  const history=await hist(osId);
+  const used=history.some(h=>
+    h.action==='ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO' ||
+    h.action==='HORÁRIO AJUSTADO PELO FUNCIONÁRIO'
+  );
+  if(used){
+    alert('A última alteração desta O.S. já foi utilizada. Procure o PCM.');
+    return;
+  }
+
+  const oldStart=order.started_at||'';
+  const oldFinish=order.finished_at||'';
+  const oldTotal=Number(order.total_service_seconds||0);
+
+  const fields=`
+    <div class="factory-note warning">
+      Esta é a <b>última alteração</b> permitida pelo funcionário.
+      Depois de salvar, somente o PCM poderá corrigir novamente.
+    </div>
+    <label>Início atual</label>
+    <input id="lastStartTime" type="datetime-local" value="${isoToLocal(oldStart)}">
+    <label>Fim atual</label>
+    <input id="lastFinishTime" type="datetime-local" value="${isoToLocal(oldFinish)}">
+    <label>Tempo total (HH:MM:SS)</label>
+    <input id="lastTotalTime" value="${dur(oldTotal)}" inputmode="numeric">
+    <label>Justificativa *</label>
+    <textarea id="lastTimeReason" placeholder="Explique o motivo desta última alteração..."></textarea>
+    <div class="pcm-last-edit">
+      Original: ${esc(fmtLocal(oldStart))} até ${esc(fmtLocal(oldFinish))} • ${esc(dur(oldTotal))}
+    </div>
+  `;
+
+  modal('pcmLastTimeModal','Última alteração de horário','Esta alteração poderá ser usada somente uma vez.',fields,'SALVAR ÚLTIMA ALTERAÇÃO',async el=>{
+    const start=el.querySelector('#lastStartTime').value;
+    const finish=el.querySelector('#lastFinishTime').value;
+    const reason=el.querySelector('#lastTimeReason').value.trim();
+
+    if(!reason){alert('Informe a justificativa.');return false;}
+    if(!start||!finish){alert('Informe o início e o fim.');return false;}
+
+    const a=new Date(start).getTime(),b=new Date(finish).getTime();
+    if(!Number.isFinite(a)||!Number.isFinite(b)||b<a){
+      alert('Confira os horários de início e fim.');
+      return false;
+    }
+
+    const total=Math.floor((b-a)/1000);
+    const startIso=new Date(start).toISOString();
+    const finishIso=new Date(finish).toISOString();
+    const now=new Date().toISOString();
+
+    const {error}=await db.from('os_orders').update({
+      started_at:startIso,
+      finished_at:finishIso,
+      total_service_seconds:total
+    }).eq('id',osId).eq('status','FINALIZADA - AGUARDANDO PCM');
+
+    if(error)throw error;
+
+    await insertExecutionHistory({
+      os_id:order.id,os_number:order.os_number,employee:currentUser,
+      action:'ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO',
+      reason:
+        `Horário original: ${fmtLocal(oldStart)} até ${fmtLocal(oldFinish)} | ${dur(oldTotal)}. `+
+        `Novo horário: ${fmtLocal(startIso)} até ${fmtLocal(finishIso)} | ${dur(total)}. `+
+        `Justificativa: ${reason}`,
+      started_at:startIso,ended_at:finishIso,duration_seconds:total
+    });
+
+    await loadEmployeeOrders();
+    return true;
+  });
+};
+
+/* =========================================================
+   2) MATERIAL — SOLICITAÇÃO NÃO PARA A O.S.
+========================================================= */
+
+window.openMaterialModal=function(osId){
+  const old=document.getElementById('pcmMaterialRequestModal');
+  if(old)old.remove();
+
+  const el=document.createElement('div');
+  el.id='pcmMaterialRequestModal';
+  el.className='modal';
+  el.innerHTML=`<div class="modal-box">
+    <div class="modal-title">📦 Requisitar material</div>
+    <div class="modal-description">
+      A requisição será enviada ao PCM, mas <b>não interrompe a O.S.</b>.
+      Você continuará trabalhando normalmente.
+    </div>
+    <label class="form-label">Material *</label>
+    <input id="pcmReqMaterial" class="form-input" placeholder="Ex.: rolamento 6205, correia, parafuso...">
+    <label class="form-label" style="margin-top:10px">Quantidade *</label>
+    <input id="pcmReqQuantity" class="form-input" inputmode="decimal" placeholder="Ex.: 2">
+    <label class="form-label" style="margin-top:10px">Observação</label>
+    <textarea id="pcmReqObservation" class="form-textarea" style="min-height:90px" placeholder="Detalhe a necessidade do material..."></textarea>
+    <div class="modal-buttons">
+      <button type="button" class="btn-secondary" id="pcmReqCancel">CONTINUAR O.S.</button>
+      <button type="button" class="btn-primary" id="pcmReqSend">ENVIAR REQUISIÇÃO</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+
+  const close=()=>el.remove();
+  el.querySelector('#pcmReqCancel').onclick=close;
+  el.onclick=e=>{if(e.target===el)close()};
+
+  el.querySelector('#pcmReqSend').onclick=async()=>{
+    const material=el.querySelector('#pcmReqMaterial').value.trim();
+    const quantity=el.querySelector('#pcmReqQuantity').value.trim();
+    const observation=el.querySelector('#pcmReqObservation').value.trim();
+
+    if(!material){alert('Informe o material.');return;}
+    if(!quantity){alert('Informe a quantidade.');return;}
+
+    const order=await getO(osId);
+    if(order.status!=='EM PRODUÇÃO'||normalizeEmployee(order.active_employee)!==normalizeEmployee(currentUser)){
+      alert('Esta O.S. não está mais em produção com você.');
+      return;
+    }
+
+    const now=new Date().toISOString();
+    const fallbackReason=`Material: ${material} | Quantidade: ${quantity}${observation?' | Observação: '+observation:''}`;
+
+    /* Primeiro tenta usar campos separados. Se a tabela atual ainda não tiver
+       esses campos, cai automaticamente no formato antigo sem quebrar o app. */
+    let ins=await db.from('os_material_requests').insert({
+      os_id:order.id,os_number:order.os_number,requested_by:currentUser,
+      material,quantity,observation,reason:fallbackReason,status:'PENDENTE',requested_at:now
+    });
+
+    if(ins.error){
+      ins=await db.from('os_material_requests').insert({
+        os_id:order.id,os_number:order.os_number,requested_by:currentUser,
+        reason:fallbackReason,status:'PENDENTE',requested_at:now
+      });
+    }
+
+    if(ins.error){
+      alert('Não foi possível registrar a requisição de material.\n\n'+ins.error.message);
+      return;
+    }
+
+    /* Apenas registra a data da solicitação. Não muda status, não zera início,
+       não remove funcionário e não para o cronômetro. */
+    const up=await db.from('os_orders').update({material_requested_at:now}).eq('id',order.id);
+    if(up.error)console.warn('Data da requisição não atualizada:',up.error);
+
+    await insertExecutionHistory({
+      os_id:order.id,os_number:order.os_number,employee:currentUser,
+      action:'REQUISITOU MATERIAL',
+      reason:fallbackReason,started_at:order.started_at,ended_at:now,
+      duration_seconds:0
+    });
+
+    close();
+    if(typeof showPCMToast==='function')showPCMToast('Material requisitado. A O.S. continua em produção.','success');
+    else if(typeof showPcmToast==='function')showPcmToast('Material requisitado. A O.S. continua em produção.','success');
+
+    await loadEmployeeOrders();
+  };
+};
+
+/* =========================================================
+   3) PCM — SOLICITAÇÕES DE MATERIAL SEM TIRAR A O.S. DE PRODUÇÃO
+========================================================= */
+
+function parseMaterialRequest(r){
+  let material=r.material||'';
+  let quantity=r.quantity||'';
+  let observation=r.observation||'';
+
+  if(!material && r.reason){
+    const s=String(r.reason);
+    const m=s.match(/Material:\s*(.*?)(?:\s*\|\s*Quantidade:|$)/i);
+    const q=s.match(/Quantidade:\s*(.*?)(?:\s*\|\s*Observação:|$)/i);
+    const o=s.match(/Observação:\s*(.*)$/i);
+    material=m?m[1].trim():'';
+    quantity=q?q[1].trim():'';
+    observation=o?o[1].trim():'';
+  }
+  return {material,quantity,observation};
+}
+
+window.loadMaterialRequests=async function(){
+  if(!isAdmin)return;
+
+  const {data,error}=await db.from('os_material_requests')
+    .select('*').eq('status','PENDENTE').order('requested_at',{ascending:false});
+
+  const container=document.getElementById('materialRequestsContainer');
+  if(!container)return;
+
+  if(error){
+    console.error(error);
+    container.innerHTML='<div style="color:#fca5a5;font-size:12px">Não foi possível carregar as requisições de material.</div>';
+    return;
+  }
+  if(!data||!data.length){
+    container.innerHTML='<div style="color:#64748b;font-size:12px">Nenhuma solicitação de material pendente.</div>';
+    return;
+  }
+
+  const ids=[...new Set(data.map(x=>x.os_id))];
+  const {data:orders}=await db.from('os_orders').select('*').in('id',ids);
+  const map={};(orders||[]).forEach(o=>map[o.id]=o);
+
+  container.innerHTML=data.map(r=>{
+    const o=map[r.os_id]; if(!o)return '';
+    const m=parseMaterialRequest(r);
+    return `<div class="pcm-material-item">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+        <b>O.S. ${esc(r.os_number||o.os_number)}</b>
+        <span class="priority priority-media">REQUISIÇÃO</span>
+      </div>
+      <div style="color:#64748b;font-size:10px;margin-top:5px">
+        ${esc(o.machine||'-')} • TAG ${esc(o.tag||'-')} • ${esc(o.sector||'-')}
+      </div>
+      <div class="pcm-material-grid">
+        <div><div class="pcm-material-label">Material</div><div class="pcm-material-value">${esc(m.material||'-')}</div></div>
+        <div><div class="pcm-material-label">Quantidade</div><div class="pcm-material-value">${esc(m.quantity||'-')}</div></div>
+      </div>
+      <div class="pcm-material-note"><b>Observação:</b> ${esc(m.observation||'Sem observação.')}</div>
+      <div style="color:#94a3b8;font-size:10px;margin-top:8px">
+        Solicitado por <b style="color:#e2e8f0">${esc(r.requested_by||'-')}</b> em ${esc(fmtLocal(r.requested_at))}
+      </div>
+      <button class="action-btn btn-start" onclick="resolveMaterialRequest(${Number(r.id)})">
+        ✓ MARCAR REQUISIÇÃO COMO ATENDIDA
+      </button>
+      <div style="color:#64748b;font-size:9px;margin-top:5px">
+        A O.S. permanece em produção com o funcionário. Esta ação não reinicia nem redistribui a O.S.
+      </div>
+    </div>`;
+  }).join('');
+};
+
+window.resolveMaterialRequest=async function(requestId){
+  if(!isAdmin)return;
+  const {data:r,error}=await db.from('os_material_requests').select('*').eq('id',requestId).single();
+  if(error||!r){alert('Requisição não encontrada.');return;}
+
+  const now=new Date().toISOString();
+  const up=await db.from('os_material_requests').update({
+    status:'ATENDIDA',resolved_by:'PCM / Administrador',resolved_at:now
+  }).eq('id',requestId);
+
+  if(up.error){alert('Não foi possível atender a requisição.\n\n'+up.error.message);return;}
+
+  try{
+    await insertExecutionHistory({
+      os_id:r.os_id,os_number:r.os_number,employee:'PCM / Administrador',
+      action:'REQUISIÇÃO DE MATERIAL ATENDIDA',
+      reason:`Requisição atendida pelo PCM. ${r.material||r.reason||''}`,
+      started_at:null,ended_at:now,duration_seconds:0
+    });
+  }catch(e){console.warn(e)}
+
+  if(typeof showPCMToast==='function')showPCMToast('Requisição marcada como atendida.','success');
+  await loadMaterialRequests();
+};
+
+/* =========================================================
+   4) PCM — LISTA COMPACTA + DETALHES
+========================================================= */
+
+function pcmActions(order){
+  const id=Number(order.id);
+  const cancelled=String(order.status||'').toUpperCase()==='CANCELADA';
+  let a='';
+
+  if(!cancelled){
+    a+=`<button type="button" class="action-btn pcm-admin-edit" onclick="adminEditOS(${id});return false;">✏️ EDITAR O.S.</button>`;
+    a+=`<button type="button" class="action-btn pcm-admin-cancel" onclick="cancelOSAdmin(${id});return false;">🛑 CANCELAR O.S.</button>`;
+  }
+  a+=`<button type="button" class="action-btn btn-material" onclick="showPauseHistory(${id});return false;">⏸ MOTIVOS DE PAUSA</button>`;
+
+  if(order.status==='O.S. ABERTA'&&order.responsible)
+    a+=`<button type="button" class="action-btn btn-start" onclick="adminStartOS(${id});return false;">📤 LIBERAR O.S. PARA O USUÁRIO</button>`;
+  if(order.status==='PAUSADA'&&order.responsible)
+    a+=`<button type="button" class="action-btn btn-start" onclick="adminResumePausedOS(${id});return false;">▶ LIBERAR / RETOMAR O.S.</button>`;
+  if(order.status==='AGUARDANDO MATERIAL')
+    a+=`<button type="button" class="action-btn btn-material" onclick="openReleaseModal(${order.material_request_id||'null'},${id});return false;">📦 LIBERAR APÓS MATERIAL</button>`;
+  if(order.status==='FINALIZADA - AGUARDANDO PCM'){
+    a+=`<button type="button" class="action-btn btn-start" onclick="finalizeDefinitively(${id});return false;">✓ FINALIZAR DEFINITIVAMENTE</button>`;
+    a+=`<button type="button" class="action-btn btn-material" onclick="adminEditFinalizedTime(${id});return false;">⏱ EDITAR HORÁRIO / TEMPO</button>`;
+  }
+  if(['FINALIZADA','FINALIZADA - OBSERVAÇÃO'].includes(order.status))
+    a+=`<button type="button" class="action-btn btn-material" onclick="adminEditFinalizedTime(${id});return false;">⏱ EDITAR HORÁRIO / TEMPO</button>`;
+
+  return a;
+}
+
+window.pcmShowOrderDetails=function(osId){
+  const order=(window.dashboardOrders||[]).find(o=>Number(o.id)===Number(osId));
+  if(!order)return;
+
+  const start=order.started_at||'';
+  const finish=order.finished_at||'';
+  const status=order.status==='FINALIZADA - AGUARDANDO PCM'?'FINALIZADA • AGUARDANDO PCM':order.status;
+
+  const old=document.getElementById('pcmOrderDetailsModal');
+  if(old)old.remove();
+
+  const el=document.createElement('div');
+  el.id='pcmOrderDetailsModal';
+  el.className='modal';
+  el.innerHTML=`<div class="modal-box" style="max-height:92vh;overflow:auto">
+    <div class="modal-title">O.S. ${esc(order.os_number)}</div>
+    <div class="modal-description">Detalhes completos e controles administrativos da O.S.</div>
+
+    <div class="pcm-detail-grid">
+      <div class="pcm-detail-item"><span>Máquina</span><b>${esc(order.machine||'-')}</b></div>
+      <div class="pcm-detail-item"><span>TAG</span><b>${esc(order.tag||'-')}</b></div>
+      <div class="pcm-detail-item"><span>Setor</span><b>${esc(order.sector||'-')}</b></div>
+      <div class="pcm-detail-item"><span>Responsável</span><b>${esc(order.active_employee||order.responsible||'Não atribuído')}</b></div>
+      <div class="pcm-detail-item"><span>Status</span><b>${esc(status||'-')}</b></div>
+      <div class="pcm-detail-item"><span>Prioridade</span><b>${esc(order.priority||'-')}</b></div>
+      <div class="pcm-detail-item"><span>Prazo</span><b>${esc(order.deadline||'-')}</b></div>
+      <div class="pcm-detail-item"><span>Tempo total</span><b>${esc(dur(order.total_service_seconds))}</b></div>
+    </div>
+
+    <div class="pcm-detail-section">
+      <div class="pcm-detail-section-title">Execução</div>
+      <div class="pcm-detail-grid">
+        <div class="pcm-detail-item"><span>Início</span><b>${esc(fmtLocal(start))}</b></div>
+        <div class="pcm-detail-item"><span>Fim</span><b>${esc(fmtLocal(finish))}</b></div>
+        <div class="pcm-detail-item"><span>Última solicitação de material</span><b>${esc(fmtLocal(order.material_requested_at))}</b></div>
+        <div class="pcm-detail-item"><span>Motivo de pausa</span><b>${esc(order.pause_reason||'-')}</b></div>
+      </div>
+      ${order.description?`<div class="pcm-detail-item" style="margin-top:8px"><span>Descrição</span><b>${esc(order.description)}</b></div>`:''}
+    </div>
+
+    <div class="pcm-detail-section">
+      <div class="pcm-detail-section-title">Controles / histórico</div>
+      <div class="pcm-detail-actions">${pcmActions(order)}</div>
+    </div>
+
+    <div class="modal-buttons">
+      <button type="button" class="btn-secondary" id="pcmCloseDetails">FECHAR</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+  const close=()=>el.remove();
+  el.querySelector('#pcmCloseDetails').onclick=close;
+  el.onclick=e=>{if(e.target===el)close()};
+};
+
+function compactRow(order){
+  const responsible=order.active_employee||order.responsible||'Não atribuído';
+  const status=order.status==='FINALIZADA - AGUARDANDO PCM'?'AGUARDANDO PCM':(order.status||'-');
+  return `<div class="pcm-compact-row" data-os-id="${Number(order.id)}">
+    <div class="pcm-compact-main"><b class="os-number">${esc(order.os_number)}</b><span class="pcm-compact-sub">${esc(order.tag||'-')}</span></div>
+    <div class="pcm-compact-main"><b>${esc(order.machine||'-')}</b><span class="pcm-compact-sub">${esc(order.sector||'-')}</span></div>
+    <div class="pcm-compact-main"><b>${esc(responsible)}</b><span class="pcm-compact-sub">${esc(order.deadline||'Sem prazo')}</span></div>
+    <div class="pcm-compact-status">${esc(status)}</div>
+    <div><span class="priority ${priorityClass(order.priority)}">${esc(order.priority||'MODERADA')}</span></div>
+    <div><button type="button" class="action-btn pcm-details-btn" onclick="pcmShowOrderDetails(${Number(order.id)});return false;">DETALHES</button></div>
+  </div>`;
+}
+
+window.renderKanban=function(){
+  const all=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];
+  const q=(document.getElementById('pcmDashFilter')?.value||'').toLowerCase().trim();
+  const status=document.querySelector('[data-pcm-status].active')?.dataset.pcmStatus||'TODAS';
+
+  const filtered=all.filter(o=>{
+    const text=[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.description,o.pause_reason].join(' ').toLowerCase();
+    return (!q||text.includes(q))&&(status==='TODAS'||o.status===status);
+  }).sort(typeof sortOS==='function'?sortOS:(a,b)=>Number(b.id)-Number(a.id));
+
+  const groups={
+    'O.S. ABERTA':document.getElementById('kanbanAberta'),
+    'EM PRODUÇÃO':document.getElementById('kanbanProducao'),
+    'PAUSADA':document.getElementById('kanbanPausada'),
+    'AGUARDANDO MATERIAL':document.getElementById('kanbanMaterial'),
+    'FINALIZADA':document.getElementById('kanbanFinalizada'),
+    'FINALIZADA - AGUARDANDO PCM':document.getElementById('kanbanFinalizada'),
+    'FINALIZADA - OBSERVAÇÃO':document.getElementById('kanbanFinalizada')
+  };
+
+  const seen=new Set();
+  Object.values(groups).forEach(c=>{if(c)c.innerHTML='';});
+
+  filtered.forEach(o=>{
+    const c=groups[o.status];
+    if(!c||seen.has(o.id))return;
+    seen.add(o.id);
+
+    if(!c.dataset.pcmCompactHead){
+      c.dataset.pcmCompactHead='1';
+      c.insertAdjacentHTML('beforeend',`
+        <div class="pcm-compact-head">
+          <div>O.S.</div><div>Máquina / Setor</div><div>Responsável / Prazo</div><div>Status</div><div>Prioridade</div><div></div>
+        </div>`);
+    }
+    c.insertAdjacentHTML('beforeend',compactRow(o));
+  });
+
+  Object.entries(groups).forEach(([st,c])=>{
+    if(!c)return;
+    if(!c.children.length)c.innerHTML='<div style="color:#475569;font-size:10px;padding:10px">Nenhuma O.S.</div>';
+  });
+};
+
+window.renderFilteredKanban=function(){
+  if(typeof window.renderKanban==='function')window.renderKanban();
+  if(typeof addDashboardFilter==='function')addDashboardFilter();
+};
+
+/* Re-renderiza a lista compacta depois que o dashboard carregar. */
+const baseDash=window.loadDashboardData;
+if(typeof baseDash==='function'&&!baseDash.__pcmAjustesFinais){
+  const wrapped=async function(){
+    const r=await baseDash.apply(this,arguments);
+    setTimeout(()=>{if(typeof window.renderKanban==='function')window.renderKanban();},60);
+    return r;
+  };
+  wrapped.__pcmAjustesFinais=true;
+  window.loadDashboardData=wrapped;
+}
+
+/* Atualiza o painel de funcionário com o novo cartão sem depender da função antiga. */
+const baseEmpLoad=window.loadEmployeeOrders;
+if(typeof baseEmpLoad==='function'&&!baseEmpLoad.__pcmAjustesFinais){
+  const wrappedEmp=async function(){
+    const r=await baseEmpLoad.apply(this,arguments);
+    const orders=[...document.querySelectorAll('#employeeOsContainer .employee-os')];
+    /* O carregamento antigo já colocou os dados; a nova renderização abaixo
+       usa os mesmos registros buscados pela função original quando possível. */
+    try{
+      const {data}=await db.from('os_orders').select('*').order('created_at',{ascending:false});
+      const mine=(data||[]).filter(o=>responsibleMatchesUser(o.responsible,currentUser));
+      employeeHistoryMeta=new Map();
+      const ids=mine.map(o=>o.id);
+      if(ids.length){
+        const {data:h}=await db.from('os_execution_history').select('os_id,action,created_at,reason').in('os_id',ids).order('created_at',{ascending:false});
+        (h||[]).forEach(x=>{if(!employeeHistoryMeta.has(x.os_id))employeeHistoryMeta.set(x.os_id,[]);employeeHistoryMeta.get(x.os_id).push(x);});
+      }
+      window.renderEmployeeOrders(mine);
+    }catch(e){console.warn('Atualização visual do painel do funcionário:',e)}
+    return r;
+  };
+  wrappedEmp.__pcmAjustesFinais=true;
+  window.loadEmployeeOrders=wrappedEmp;
+}
+
+})();
+</script>
+
+
+<!-- =========================================================
+     PCM • PAINEL ADMINISTRADOR — LAYOUT FINAL ORGANIZADO
+========================================================= -->
+<style id="pcm-admin-polished-css">
+/* Estrutura geral do administrador */
+#view-dashboard{
+    max-width:1500px;
+    margin:0 auto;
+}
+#view-dashboard .dashboard-hero{
+    border:1px solid #263449!important;
+    background:
+      radial-gradient(circle at 85% 15%,rgba(120,53,15,.12),transparent 28%),
+      linear-gradient(135deg,#0b1220,#0a101b)!important;
+    border-radius:18px!important;
+    overflow:hidden;
+    box-shadow:0 16px 40px rgba(0,0,0,.18);
+}
+#view-dashboard .dashboard-hero-content{
+    padding:22px 24px!important;
+}
+#view-dashboard .dashboard-heading{
+    letter-spacing:-.4px;
+}
+#view-dashboard .dashboard-actions{
+    margin-top:14px;
+}
+#view-dashboard .dashboard-refresh{
+    border:1px solid #475569!important;
+    background:#111827!important;
+    color:#f8fafc!important;
+    border-radius:9px!important;
+    padding:9px 13px!important;
+    font-weight:800!important;
+}
+
+/* Indicadores */
+#view-dashboard .stats-grid{
+    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    gap:10px!important;
+}
+#view-dashboard .stat-card{
+    min-height:108px;
+    position:relative;
+    overflow:hidden;
+    padding:14px!important;
+    border-radius:13px!important;
+    background:#0b1220!important;
+    border-color:#263449!important;
+    box-shadow:none!important;
+}
+#view-dashboard .stat-card .stat-icon{
+    font-size:17px;
+    margin-bottom:8px;
+}
+#view-dashboard .stat-card .stat-value{
+    font-size:25px!important;
+    margin-top:4px!important;
+}
+#view-dashboard .stat-card .stat-hint{
+    margin-top:3px;
+    color:#64748b;
+    font-size:9px;
+}
+#view-dashboard .stat-card:after{
+    content:"";
+    position:absolute;
+    right:-25px;
+    bottom:-35px;
+    width:85px;
+    height:85px;
+    border-radius:50%;
+    background:rgba(255,255,255,.025);
+}
+
+/* Cabeçalhos dos módulos */
+#view-dashboard .panel{
+    border-radius:14px!important;
+    border-color:#263449!important;
+    background:#0b1220!important;
+    box-shadow:0 10px 28px rgba(0,0,0,.12);
+}
+#view-dashboard .dashboard-section-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding-bottom:12px;
+    margin-bottom:12px;
+    border-bottom:1px solid #1e293b;
+}
+#view-dashboard .panel-title{
+    margin:0!important;
+    font-size:13px!important;
+    letter-spacing:.1px;
+}
+#view-dashboard .dashboard-kpis-note{
+    margin-top:4px;
+    color:#64748b;
+    font-size:10px;
+}
+
+/* Oculta o antigo conjunto de 5 colunas: o JS abaixo cria uma lista única */
+#view-dashboard .kanban{
+    display:block!important;
+}
+#view-dashboard .kanban-column{
+    display:none!important;
+}
+
+/* Lista administrativa única */
+#pcmAdminOrdersPanel{
+    padding:0!important;
+    overflow:hidden;
+}
+.pcm-admin-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:15px 17px;
+    border-bottom:1px solid #263449;
+}
+.pcm-admin-toolbar-title{
+    font-size:13px;
+    font-weight:900;
+    color:#f8fafc;
+}
+.pcm-admin-toolbar-sub{
+    margin-top:3px;
+    color:#64748b;
+    font-size:9px;
+}
+.pcm-admin-filter{
+    width:min(390px,42%);
+    min-width:220px;
+    border:1px solid #334155;
+    background:#020617;
+    color:#f8fafc;
+    border-radius:9px;
+    padding:10px 12px;
+    outline:none;
+    font-size:11px;
+}
+.pcm-admin-filter:focus{
+    border-color:#64748b;
+}
+.pcm-admin-chips{
+    display:flex;
+    gap:5px;
+    padding:10px 17px;
+    overflow-x:auto;
+    border-bottom:1px solid #1e293b;
+}
+.pcm-admin-chip{
+    border:1px solid #334155;
+    background:#0f172a;
+    color:#94a3b8;
+    border-radius:7px;
+    padding:7px 10px;
+    font-size:9px;
+    font-weight:800;
+    white-space:nowrap;
+    cursor:pointer;
+}
+.pcm-admin-chip.active{
+    background:#e2e8f0;
+    color:#020617;
+    border-color:#e2e8f0;
+}
+.pcm-admin-table-head,
+.pcm-admin-row{
+    display:grid;
+    grid-template-columns:82px minmax(150px,1.25fr) minmax(120px,1fr) 145px 82px 105px;
+    gap:10px;
+    align-items:center;
+}
+.pcm-admin-table-head{
+    padding:8px 17px;
+    background:#07101c;
+    color:#64748b;
+    font-size:8px;
+    font-weight:900;
+    text-transform:uppercase;
+    border-bottom:1px solid #1e293b;
+}
+.pcm-admin-row{
+    padding:10px 17px;
+    min-height:58px;
+    border-bottom:1px solid #172234;
+    background:#0b1220;
+    transition:background .15s ease;
+}
+.pcm-admin-row:hover{
+    background:#101a2a;
+}
+.pcm-admin-cell{
+    min-width:0;
+    font-size:10px;
+    color:#cbd5e1;
+}
+.pcm-admin-cell strong{
+    display:block;
+    color:#f8fafc;
+    font-size:10px;
+}
+.pcm-admin-muted{
+    display:block;
+    margin-top:3px;
+    color:#64748b;
+    font-size:8px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.pcm-admin-os-number{
+    font-size:11px!important;
+}
+.pcm-admin-status{
+    display:inline-flex;
+    align-items:center;
+    width:max-content;
+    max-width:100%;
+    padding:5px 7px;
+    border-radius:6px;
+    background:#172033;
+    color:#cbd5e1;
+    font-size:8px;
+    font-weight:900;
+}
+.pcm-admin-status.prod{background:#12331f;color:#bbf7d0}
+.pcm-admin-status.open{background:#172554;color:#bfdbfe}
+.pcm-admin-status.mat{background:#3a210b;color:#fed7aa}
+.pcm-admin-status.pause{background:#29221a;color:#fde68a}
+.pcm-admin-status.done{background:#263244;color:#cbd5e1}
+.pcm-admin-status.wait{background:#30200b;color:#fdba74}
+.pcm-admin-action{
+    width:100%;
+    margin:0!important;
+    padding:8px!important;
+    font-size:8px!important;
+    background:#1e293b!important;
+    color:#f8fafc!important;
+    border:1px solid #334155!important;
+}
+.pcm-admin-action:hover{
+    background:#334155!important;
+}
+.pcm-admin-empty{
+    padding:35px 18px;
+    text-align:center;
+    color:#64748b;
+    font-size:11px;
+}
+.pcm-admin-count{
+    color:#64748b;
+    font-size:9px;
+    white-space:nowrap;
+}
+
+/* Detalhes */
+#pcmOrderDetailsModal .modal-box{
+    width:min(760px,100%);
+    max-height:90vh;
+    overflow:auto;
+    background:#0b1220;
+    border-color:#334155;
+}
+#pcmOrderDetailsModal .modal-title{
+    font-size:19px;
+}
+#pcmOrderDetailsModal .pcm-detail-section{
+    background:#07101c;
+    border:1px solid #1e293b;
+    border-radius:10px;
+    padding:12px;
+    margin-top:12px;
+}
+#pcmOrderDetailsModal .pcm-detail-section-title{
+    color:#cbd5e1;
+}
+#pcmOrderDetailsModal .pcm-detail-item{
+    background:#0b1220;
+    border-color:#263449;
+}
+#pcmOrderDetailsModal .pcm-detail-actions{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+/* Produção ativa */
+#view-dashboard #activeJobsContainer{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+}
+#view-dashboard #activeJobsContainer > *{
+    margin:0!important;
+}
+
+/* Materiais */
+#view-dashboard #materialRequestsContainer{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+}
+#view-dashboard #materialRequestsContainer .pcm-material-item{
+    margin:0!important;
+    background:#07101c;
+    border-color:#29384c;
+}
+
+/* Responsivo */
+@media(max-width:1200px){
+    #view-dashboard .stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+    .pcm-admin-table-head,.pcm-admin-row{
+        grid-template-columns:75px minmax(130px,1.2fr) minmax(110px,1fr) 125px 75px 95px;
+    }
+}
+@media(max-width:850px){
+    .pcm-admin-toolbar{align-items:stretch;flex-direction:column}
+    .pcm-admin-filter{width:100%;min-width:0}
+    .pcm-admin-table-head{display:none}
+    .pcm-admin-row{
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        padding:12px;
+    }
+    .pcm-admin-cell:first-child{grid-column:1/-1}
+    .pcm-admin-cell:last-child{grid-column:1/-1}
+    .pcm-admin-action{width:100%}
+    #view-dashboard #activeJobsContainer,
+    #view-dashboard #materialRequestsContainer{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+    #view-dashboard .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    #view-dashboard .dashboard-hero-content{padding:18px!important}
+    .pcm-admin-chips{padding-left:12px;padding-right:12px}
+    .pcm-admin-row{padding:11px}
+    .pcm-admin-status{font-size:7px}
+    #pcmOrderDetailsModal .pcm-detail-actions{grid-template-columns:1fr}
+}
+</style>
+
+<script id="pcm-admin-polished-js">
+(function(){
+'use strict';
+
+function aEsc(v){
+    if(typeof escapeHtml==='function')return escapeHtml(v==null?'':String(v));
+    return String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+function aStatus(s){
+    const x=String(s||'');
+    if(x==='EM PRODUÇÃO')return ['prod','EM PRODUÇÃO'];
+    if(x==='O.S. ABERTA')return ['open','ABERTA'];
+    if(x==='AGUARDANDO MATERIAL')return ['mat','MATERIAL'];
+    if(x==='PAUSADA')return ['pause','PAUSADA'];
+    if(x==='FINALIZADA - AGUARDANDO PCM')return ['wait','AGUARDANDO PCM'];
+    if(x.indexOf('FINALIZADA')===0)return ['done','FINALIZADA'];
+    return ['',''+x];
+}
+function aPriority(p){
+    return String(p||'MODERADA').toUpperCase();
+}
+function aSort(a,b){
+    if(typeof sortOS==='function')return sortOS(a,b);
+    const rank={ALTA:0,MEDIA:1,MODERADA:2};
+    return (rank[aPriority(a.priority)]??9)-(rank[aPriority(b.priority)]??9);
+}
+
+function ensureAdminPanel(){
+    const dash=document.getElementById('view-dashboard');
+    if(!dash)return null;
+
+    let panel=document.getElementById('pcmAdminOrdersPanel');
+    if(panel)return panel;
+
+    const oldKan=dash.querySelector('.kanban');
+    if(!oldKan)return null;
+
+    panel=document.createElement('div');
+    panel.id='pcmAdminOrdersPanel';
+    panel.className='panel';
+
+    panel.innerHTML=`
+      <div class="pcm-admin-toolbar">
+        <div>
+          <div class="pcm-admin-toolbar-title">📋 Controle das O.S.</div>
+          <div class="pcm-admin-toolbar-sub">Lista operacional • clique em DETALHES para acessar todos os controles.</div>
+        </div>
+        <input id="pcmAdminSearch" class="pcm-admin-filter" placeholder="Pesquisar O.S., máquina, TAG, responsável..." autocomplete="off">
+      </div>
+      <div id="pcmAdminChips" class="pcm-admin-chips">
+        <button class="pcm-admin-chip active" data-adm-status="TODAS">TODAS</button>
+        <button class="pcm-admin-chip" data-adm-status="O.S. ABERTA">ABERTAS</button>
+        <button class="pcm-admin-chip" data-adm-status="EM PRODUÇÃO">PRODUÇÃO</button>
+        <button class="pcm-admin-chip" data-adm-status="PAUSADA">PAUSADAS</button>
+        <button class="pcm-admin-chip" data-adm-status="AGUARDANDO MATERIAL">MATERIAL</button>
+        <button class="pcm-admin-chip" data-adm-status="FINALIZADA">FINALIZADAS</button>
+      </div>
+      <div class="pcm-admin-table-head">
+        <div>O.S.</div><div>Máquina / TAG</div><div>Responsável / Setor</div><div>Status</div><div>Prioridade</div><div>Ação</div>
+      </div>
+      <div id="pcmAdminList"></div>
+    `;
+
+    oldKan.parentNode.insertBefore(panel,oldKan);
+    oldKan.style.display='none';
+
+    const search=panel.querySelector('#pcmAdminSearch');
+    search.addEventListener('input',renderAdminList);
+
+    panel.querySelectorAll('[data-adm-status]').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+            panel.querySelectorAll('[data-adm-status]').forEach(x=>x.classList.remove('active'));
+            btn.classList.add('active');
+            renderAdminList();
+        });
+    });
+
+    return panel;
+}
+
+function renderAdminList(){
+    const panel=ensureAdminPanel();
+    if(!panel)return;
+
+    const list=panel.querySelector('#pcmAdminList');
+    if(!list)return;
+
+    const q=(panel.querySelector('#pcmAdminSearch')?.value||'').toLowerCase().trim();
+    const status=panel.querySelector('[data-adm-status].active')?.dataset.admStatus||'TODAS';
+    const all=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];
+
+    let rows=all.filter(o=>{
+        const text=[
+            o.os_number,o.machine,o.tag,o.sector,o.responsible,
+            o.active_employee,o.description,o.priority,o.status
+        ].join(' ').toLowerCase();
+
+        return (!q||text.includes(q)) &&
+               (status==='TODAS' || o.status===status ||
+                (status==='FINALIZADA' && String(o.status||'').indexOf('FINALIZADA')===0));
+    }).sort(aSort);
+
+    if(!rows.length){
+        list.innerHTML='<div class="pcm-admin-empty">Nenhuma O.S. encontrada para os filtros selecionados.</div>';
+        return;
+    }
+
+    list.innerHTML=rows.map(o=>{
+        const [cls,label]=aStatus(o.status);
+        const responsible=o.active_employee||o.responsible||'Não atribuído';
+        const priority=aPriority(o.priority);
+        return `
+          <div class="pcm-admin-row">
+            <div class="pcm-admin-cell">
+              <strong class="pcm-admin-os-number">O.S. ${aEsc(o.os_number||'-')}</strong>
+              <span class="pcm-admin-muted">ID ${aEsc(o.id)}</span>
+            </div>
+            <div class="pcm-admin-cell">
+              <strong>${aEsc(o.machine||'-')}</strong>
+              <span class="pcm-admin-muted">TAG ${aEsc(o.tag||'-')}</span>
+            </div>
+            <div class="pcm-admin-cell">
+              <strong>${aEsc(responsible)}</strong>
+              <span class="pcm-admin-muted">${aEsc(o.sector||'-')}</span>
+            </div>
+            <div class="pcm-admin-cell">
+              <span class="pcm-admin-status ${cls}">${aEsc(label)}</span>
+            </div>
+            <div class="pcm-admin-cell">
+              <span class="priority ${typeof priorityClass==='function'?priorityClass(priority):''}">${aEsc(priority)}</span>
+            </div>
+            <div class="pcm-admin-cell">
+              <button type="button" class="action-btn pcm-admin-action" onclick="pcmShowOrderDetails(${Number(o.id)});return false;">DETALHES</button>
+            </div>
+          </div>`;
+    }).join('');
+}
+
+function refreshAdminLayout(){
+    if(!isAdmin)return;
+    ensureAdminPanel();
+    renderAdminList();
+
+    /* Mantém o painel de justificativas abaixo da lista, evitando ficar
+       misturado visualmente com o controle operacional. */
+    const just=document.getElementById('pcmJustificationsPanel');
+    const orders=document.getElementById('pcmAdminOrdersPanel');
+    if(just&&orders&&orders.nextElementSibling!==just)orders.parentNode.insertBefore(just,orders.nextElementSibling);
+}
+
+window.pcmRefreshAdminLayout=refreshAdminLayout;
+
+/* Faz o layout novo assumir o dashboard depois de qualquer atualização. */
+const oldLoad=window.loadDashboardData;
+if(typeof oldLoad==='function'&&!oldLoad.__pcmPolished){
+    const wrapped=async function(){
+        const result=await oldLoad.apply(this,arguments);
+        setTimeout(refreshAdminLayout,40);
+        return result;
+    };
+    wrapped.__pcmPolished=true;
+    window.loadDashboardData=wrapped;
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+    setTimeout(refreshAdminLayout,250);
+    setTimeout(refreshAdminLayout,1000);
+});
+
+})();
+</script>
+
 </body>
 </html>
