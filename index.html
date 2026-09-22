@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=17dR-tIpwlSpRgGrjKXhOx7TWd4VoGyHAU1MjXp-YhGO6ifjcZCI_cZoSZekEqeI_PUSwx_jmQSo_bItQysGtKvbSPqKOyevKUrDA4O9IqxLyfyeC2M-D_eZ0j2YQH1_B4RjiXFQXTNKNUNFk9YBQ-0GpumSlDkKZAWVNgkaptzMQ73tIohJDPyRS37u_KNDgOthvlTfLUc_EJFuDRaMMIzIGyp1FB2CCJ2gUdRVPlh1lTajPYo31aie1jg3TsHGpCrc_lQtPNK5k9SUUvUYUCWapQtIDL8TniODcj_j5xAJ2C1GaH9elJcNhJ_MUPgL9ldw4fIjK2sFG3BVhc-6p4g7OjEbtAF8E0FaLj7_Wv4" charset="UTF-8"></script><style>
+<style>
 *{
     box-sizing:border-box;
 }
@@ -6673,7 +6673,7 @@ async function exportHistoryPDF(){
 
   function refreshBoard(){
     addUserBoard();
-    renderUserBoard(window.dashboardOrders||[]);
+    renderUserBoard(dashboardOrders||[]);
   }
 
   // Ordenação de prioridade no Kanban atual.
@@ -6682,7 +6682,7 @@ async function exportHistoryPDF(){
     if(typeof oldFiltered==='function')oldFiltered();
     const q=(document.getElementById('pcmDashFilter')?.value||'').toLowerCase().trim();
     const status=document.querySelector('[data-pcm-status].active')?.dataset.pcmStatus||'TODAS';
-    const filtered=(window.dashboardOrders||[]).filter(o=>{
+    const filtered=(dashboardOrders||[]).filter(o=>{
       const text=[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.description,o.pause_reason].join(' ').toLowerCase();
       return (!q||text.includes(q))&&(status==='TODAS'||o.status===status);
     }).sort(sortOS);
@@ -8549,7 +8549,7 @@ function pcmActions(order){
 }
 
 window.pcmShowOrderDetails=function(osId){
-  const order=(window.dashboardOrders||[]).find(o=>Number(o.id)===Number(osId));
+  const order=(dashboardOrders||[]).find(o=>Number(o.id)===Number(osId));
   if(!order)return;
 
   const start=order.started_at||'';
@@ -9138,7 +9138,7 @@ function renderAdminList(){
 
     const q=(panel.querySelector('#pcmAdminSearch')?.value||'').toLowerCase().trim();
     const status=panel.querySelector('[data-adm-status].active')?.dataset.admStatus||'TODAS';
-    const all=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];
+    const all=Array.isArray(dashboardOrders)?dashboardOrders:[];
 
     let rows=all.filter(o=>{
         const text=[
