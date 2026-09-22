@@ -19,7 +19,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=17dR-tIpwlSpRgGrjKXhOx7TWd4VoGyHAU1MjXp-YhGO6ifjcZCI_cZoSZekEqeI_PUSwx_jmQSo_bItQysGtKvbSPqKOyevKUrDA4O9IqxLyfyeC2M-D_eZ0j2YQH1_B4RjiXFQXTNKNUNFk9YBQ-0GpumSlDkKZAWVNgkaptzMQ73tIohJDPyRS37u_KNDgOthvlTfLUc_EJFuDRaMMIzIGyp1FB2CCJ2gUdRVPlh1lTajPYo31aie1jg3TsHGpCrc_lQtPNK5k9SUUvUYUCWapQtIDL8TniODcj_j5xAJ2C1GaH9elJcNhJ_MUPgL9ldw4fIjK2sFG3BVhc-6p4g7OjEbtAF8E0FaLj7_Wv4" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -8617,7 +8617,7 @@ function compactRow(order){
 }
 
 window.renderKanban=function(){
-  const all=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];
+  const all=Array.isArray(dashboardOrders)?dashboardOrders:[];
   const q=(document.getElementById('pcmDashFilter')?.value||'').toLowerCase().trim();
   const status=document.querySelector('[data-pcm-status].active')?.dataset.pcmStatus||'TODAS';
 
