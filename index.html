@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=q9riS3uSJbZLKq2CC-yAO8myiHIuFKyk5UUi2Z6plj0xPNvkXiltc0F_1eH8B3Lnlk1UicBH6V10ibUDh7_x59iV7Keq9PJ_tiG_D6Pqs9OE-iYjy8CPZCKeOAN7ktVX2Al831ici241aZp706ujQVr1-P7087cStEBJGh9JhXJG5_LwQYb4XEVMXPcJSDYG_OP7lssFeAJME7151cbRhXH3WCPeMxRgC8gMtfAZDjL_4S3faDSWhaVrBIOAB82Xvd4KxgIxvyGl_Ni1SVIlsJQ4wCBKumvufbS5qZvjU-NAK0qwGFGmdRrsnqXS0CgPf8CB16SXho9UgIpwTh_dqC0hSKP5mWV4vNp8QpRiYUk" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=F5fgGlklZ2pqFUeU3vtyGA90hXIOxUf9bUovDSaVAKEMUwMtDkhWEKA1v-EIiQz6dDaotxmByZzr1W8g56Hc6enshTrcrhwnIr3ITzq_Ai4y69TyBdVxw8LBh_C0vyPjr_ZwwMoMT-zvQFYVLUhCPnlxQqIl3Y511_V9LrHNXxcCdECP4oS0NbT_2bvyx62PieMNlItDQVd4g_MkQE2jLS8CvoYleA8sWJCHHcjnANjISVm_emPC610GoMDKkpBAnQpzDhMrh-jvSaXKHaFXaguP2HXLmKhIFolJDBxH6RtXVRl34y7qLc1Pg0qYwUifaDe9vq_Z3zh8fthLpyAuA8GyVVUxd0mOoSpGNNkg4JI" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -9343,5 +9343,162 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 </script>
 
+
+<script>
+/* =========================================================
+   CORREÇÃO DEFINITIVA — ÚLTIMA ALTERAÇÃO DE HORÁRIO
+   Sem janela de 30 minutos. Uma única correção pelo funcionário.
+========================================================= */
+(function(){
+  const LAST_EDIT_ACTION='ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO';
+  const OLD_EDIT_ACTIONS=new Set([
+    'ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO',
+    'HORÁRIO AJUSTADO PELO FUNCIONÁRIO',
+    'TEMPO AJUSTADO NA FINALIZAÇÃO'
+  ]);
+
+  function fmtLocal2(v){
+    if(!v)return '—';
+    const d=new Date(v); if(Number.isNaN(d.getTime()))return String(v);
+    return d.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+  }
+  function isoLocal2(v){
+    if(!v)return '';
+    const d=new Date(v); if(Number.isNaN(d.getTime()))return '';
+    const p=n=>String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  function dur2(sec){
+    sec=Math.max(0,Number(sec)||0);
+    return `${String(Math.floor(sec/3600)).padStart(2,'0')}:${String(Math.floor(sec%3600/60)).padStart(2,'0')}:${String(Math.floor(sec%60)).padStart(2,'0')}`;
+  }
+  function parseDur2(v){
+    const m=String(v||'').trim().match(/^(\d{1,3}):([0-5]\d):([0-5]\d)$/);
+    return m?Number(m[1])*3600+Number(m[2])*60+Number(m[3]):null;
+  }
+  function esc2(v){
+    if(typeof escapeHtml==='function')return escapeHtml(v==null?'':String(v));
+    return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  }
+  async function order2(id){
+    const {data,error}=await db.from('os_orders').select('*').eq('id',id).single();
+    if(error||!data)throw new Error('O.S. não encontrada.');
+    return data;
+  }
+  async function history2(id){
+    const {data,error}=await db.from('os_execution_history').select('*').eq('os_id',id).order('created_at',{ascending:false});
+    if(error)throw error;
+    return data||[];
+  }
+  function mine2(o){
+    if(!currentUser||isAdmin)return false;
+    const norm=v=>String(v||'').split('—')[0].trim().toLowerCase();
+    return norm(o.responsible)===norm(currentUser) || norm(o.active_employee)===norm(currentUser);
+  }
+  function modal2(id,title,text,fields,ok,save){
+    const old=document.getElementById(id);if(old)old.remove();
+    const el=document.createElement('div');el.id=id;el.className='modal';el.style.cssText='display:flex;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;background:rgba(0,0,0,.72);padding:16px';
+    el.innerHTML=`<div class="factory-modal-box" style="width:min(620px,100%);max-height:90vh;overflow:auto;background:#0b1524;border:1px solid #475569;border-radius:16px;padding:20px;color:#e5e7eb"><h3 style="margin:0 0 8px">${esc2(title)}</h3><p style="color:#94a3b8;margin:0 0 16px">${esc2(text)}</p>${fields}<div class="factory-modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px"><button type="button" data-cancel class="factory-cancel">CANCELAR</button><button type="button" data-ok class="factory-ok">${esc2(ok)}</button></div></div>`;
+    document.body.appendChild(el);
+    const close=()=>el.remove();
+    el.querySelector('[data-cancel]').onclick=close;
+    el.onclick=e=>{if(e.target===el)close()};
+    el.querySelector('[data-ok]').onclick=async()=>{
+      const btn=el.querySelector('[data-ok]');btn.disabled=true;btn.textContent='SALVANDO...';
+      try{const result=await save(el);if(result!==false)close();}
+      catch(e){console.error(e);alert(e?.message||'Não foi possível salvar a alteração.');btn.disabled=false;btn.textContent=ok;}
+    };
+    return el;
+  }
+
+  window.editFinalizedTime=async function(osId){
+    try{
+      if(!currentUser||isAdmin){alert('Somente o funcionário responsável pode alterar este horário.');return;}
+      const o=await order2(osId);
+      if(o.status!=='FINALIZADA - AGUARDANDO PCM'){
+        alert('Esta O.S. não está aguardando a última alteração do funcionário.');return;
+      }
+      if(!mine2(o)){
+        alert('Esta O.S. não está atribuída a você.');return;
+      }
+
+      const h=await history2(osId);
+      const used=h.some(x=>OLD_EDIT_ACTIONS.has(String(x.action||'').trim().toUpperCase()));
+      if(used){
+        alert('A última alteração de horário desta O.S. já foi utilizada. Qualquer nova correção deve ser feita pelo PCM.');
+        return;
+      }
+
+      const oldStart=o.started_at||'';
+      const oldFinish=o.finished_at||'';
+      const oldTotal=Number(o.total_service_seconds||0);
+      const fields=`
+        <div style="background:#172033;border:1px solid #475569;border-radius:10px;padding:12px;margin-bottom:14px;color:#cbd5e1">
+          <b style="color:#f8fafc">ÚLTIMA alteração do funcionário</b><br>
+          Depois de salvar, somente o PCM poderá alterar novamente.
+        </div>
+        <label>Início do serviço</label>
+        <input id="lastStartTime2" type="datetime-local" value="${isoLocal2(oldStart)}" style="width:100%;margin:6px 0 12px">
+        <label>Fim do serviço</label>
+        <input id="lastFinishTime2" type="datetime-local" value="${isoLocal2(oldFinish)}" style="width:100%;margin:6px 0 12px">
+        <label>Tempo total (HH:MM:SS)</label>
+        <input id="lastTotalTime2" value="${dur2(oldTotal)}" inputmode="numeric" style="width:100%;margin:6px 0 12px">
+        <label>Justificativa *</label>
+        <textarea id="lastTimeReason2" style="width:100%;min-height:90px;margin-top:6px" placeholder="Explique o motivo da correção..."></textarea>
+        <div style="margin-top:12px;color:#94a3b8;font-size:12px">Original: ${esc2(fmtLocal2(oldStart))} → ${esc2(fmtLocal2(oldFinish))} • ${esc2(dur2(oldTotal))}</div>`;
+
+      modal2('pcmLastTimeModal2','Mudar horário da O.S.','Confira e corrija o horário real do serviço.',fields,'SALVAR ÚLTIMA ALTERAÇÃO',async el=>{
+        const start=el.querySelector('#lastStartTime2').value;
+        const finish=el.querySelector('#lastFinishTime2').value;
+        const reason=el.querySelector('#lastTimeReason2').value.trim();
+        if(!start||!finish){alert('Informe o início e o fim do serviço.');return false;}
+        if(!reason){alert('Informe a justificativa.');return false;}
+        const a=new Date(start).getTime(),b=new Date(finish).getTime();
+        if(!Number.isFinite(a)||!Number.isFinite(b)||b<a){alert('Confira os horários de início e fim.');return false;}
+        let total=parseDur2(el.querySelector('#lastTotalTime2').value);
+        if(total===null){alert('Informe o tempo no formato HH:MM:SS.');return false;}
+        const calculated=Math.floor((b-a)/1000);
+        if(total!==calculated){
+          const useCalc=confirm(`O tempo informado (${dur2(total)}) é diferente do período entre início e fim (${dur2(calculated)}).\n\nUsar o tempo calculado pelo horário?`);
+          if(useCalc)total=calculated;
+        }
+        const startIso=new Date(start).toISOString(),finishIso=new Date(finish).toISOString(),now=new Date().toISOString();
+        const {error}=await db.from('os_orders').update({started_at:startIso,finished_at:finishIso,total_service_seconds:total}).eq('id',osId).eq('status','FINALIZADA - AGUARDANDO PCM');
+        if(error)throw error;
+        const {error:he}=await db.from('os_execution_history').insert({
+          os_id:o.id,os_number:o.os_number,employee:currentUser,
+          action:LAST_EDIT_ACTION,
+          reason:`Horário original: ${fmtLocal2(oldStart)} até ${fmtLocal2(oldFinish)} | ${dur2(oldTotal)}. Novo horário: ${fmtLocal2(startIso)} até ${fmtLocal2(finishIso)} | ${dur2(total)}. Justificativa: ${reason}`,
+          started_at:startIso,ended_at:finishIso,duration_seconds:total
+        });
+        if(he)console.warn('Histórico da alteração não foi registrado:',he);
+        if(typeof loadEmployeeOrders==='function')await loadEmployeeOrders();
+        else location.reload();
+        return true;
+      });
+    }catch(e){console.error(e);alert(e?.message||'Não foi possível abrir a alteração de horário.');}
+  };
+
+  /* Atualiza o card para nunca mais usar a janela de 30 minutos. */
+  const oldCard=window.createEmployeeCard;
+  if(typeof oldCard==='function'){
+    window.createEmployeeCard=function(o){
+      let html=oldCard(o);
+      if(o && o.status==='FINALIZADA - AGUARDANDO PCM'){
+        const h=(window.employeeHistoryMeta&&window.employeeHistoryMeta.get(o.id))||[];
+        const used=h.some(x=>OLD_EDIT_ACTIONS.has(String(x.action||'').trim().toUpperCase()));
+        if(!used && !html.includes('editFinalizedTime('+o.id+')')){
+          const actions=html.match(/<div class="employee-actions">[\s\S]*?<\/div>/);
+          if(actions){
+            const add=`<button class="action-btn btn-start" onclick="editFinalizedTime(${Number(o.id)})">⏱ MUDAR HORÁRIO (1 VEZ)</button>`;
+            html=html.replace(actions[0],actions[0].replace('</div>',add+'</div>'));
+          }
+        }
+      }
+      return html;
+    };
+  }
+})();
+</script>
 </body>
 </html>
