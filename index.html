@@ -19,7 +19,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=FHC0I0Z9u1j31e34d0eQdwoQdCL6iz5aGEXNYhceEWjZggRY9jTbFbj_KKNTdLRc8Ib8rR4FQhbqz9mnH8j585QXvHAGICf-lLwaQWo31SJT8jvPkzu8y9Ovd4-WduF9rYMlF8aA-FUiQ0940j7haVtFW-82bNInjZLSmAToR6aCzeWKW1FsZGxVdb5YmgE6msfTaSGfWezlqsivR11wmamcMHqjOuQGIyRvhCITOYV47YOTNIvGM_jVtCuzKn7fYzUEwaswGxsr0Ysp33bYrNWhf-ySgYA8oK7N9_8i4_JvjpduBEa-3WfznEw_VzDc-8yhtTXLiYlY8MTUpttBXl18e9JJnZKvOKMFl5IC2Pk" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -3988,7 +3988,11 @@ async function login(){
 
         navigateTo("view-dashboard");
 
-        await loadDashboardData();
+        // Recarrega a lista imediatamente após o lançamento.
+        await window.loadDashboardData();
+        if(typeof window.pcmRefreshAdminLayout === "function") {
+            window.pcmRefreshAdminLayout();
+        }
 
     }else{
 
@@ -4544,11 +4548,12 @@ async function loadDashboardData(){
         return;
     }
 
+    // Não depende de created_at para carregar o painel.
+    // Algumas instalações da tabela podem não ter essa coluna.
     const {data,error} =
         await db
             .from("os_orders")
-            .select("*")
-            .order("created_at",{ascending:false});
+            .select("*");
 
 
     if(error){
@@ -4559,7 +4564,11 @@ async function loadDashboardData(){
     }
 
 
-    dashboardOrders = data || [];
+    dashboardOrders = (data || []).slice().sort((a,b)=>{
+        const da = new Date(a.created_at || a.opening_date || 0).getTime() || 0;
+        const dbv = new Date(b.created_at || b.opening_date || 0).getTime() || 0;
+        return dbv-da || Number(b.id||0)-Number(a.id||0);
+    });
 
 
     const abertas =
@@ -8327,6 +8336,116 @@ window.editFinalizedTime=async function(osId){
     await loadEmployeeOrders();
     return true;
   });
+};
+
+
+/* =========================================================
+   CORREÇÃO FINAL — BOTÃO FINALIZAR O.S.
+   Usa o funcionário realmente ativo na O.S. como validação.
+========================================================= */
+window.finishOS=async function(osId){
+  try{
+    if(!currentUser || isAdmin){
+      alert('Somente o funcionário responsável pela execução pode finalizar a O.S.');
+      return;
+    }
+
+    const order=await getO(osId);
+    if(!order){ alert('O.S. não encontrada.'); return; }
+
+    const activeUser=normalizeEmployee(order.active_employee);
+    const loggedUser=normalizeEmployee(currentUser);
+
+    if(order.status!=='EM PRODUÇÃO'){
+      alert('Esta O.S. não está em produção.');
+      return;
+    }
+
+    /* A execução pertence a quem clicou em INICIAR O.S. */
+    if(!activeUser || activeUser!==loggedUser){
+      alert('Esta O.S. não está ativa para o usuário logado.');
+      return;
+    }
+
+    const startValue=order.started_at||'';
+    const endValue=new Date().toISOString();
+    const elapsed=typeof getCurrentElapsed==='function' ? getCurrentElapsed(order) : 0;
+    const currentTotal=Number(order.total_service_seconds||0)+Number(elapsed||0);
+
+    const fields=`
+      <div class="factory-note">
+        Ao finalizar, a execução será encerrada para você e a O.S. ficará
+        <b>FINALIZADA — AGUARDANDO PCM</b>.
+      </div>
+      <label>Início do serviço</label>
+      <input id="finishStartFinal" type="datetime-local" value="${isoToLocal(startValue)}">
+      <label>Fim do serviço</label>
+      <input id="finishEndFinal" type="datetime-local" value="${isoToLocal(endValue)}">
+      <label>Tempo total de serviço (HH:MM:SS)</label>
+      <input id="finishTotalFinal" value="${dur(currentTotal)}" inputmode="numeric">
+      <div class="factory-note">
+        Confira os horários antes de confirmar. Depois da finalização haverá
+        somente <b>1 última alteração</b> pelo funcionário.
+      </div>`;
+
+    modal('finishOSFinalModal','Finalizar O.S.','Confirme o período real trabalhado.',fields,'FINALIZAR O.S.',async el=>{
+      const start=el.querySelector('#finishStartFinal').value;
+      const finish=el.querySelector('#finishEndFinal').value;
+      if(!start||!finish){alert('Informe o início e o fim do serviço.');return false;}
+
+      const a=new Date(start).getTime();
+      const b=new Date(finish).getTime();
+      if(!Number.isFinite(a)||!Number.isFinite(b)||b<a){
+        alert('Confira os horários de início e fim.');
+        return false;
+      }
+
+      const total=Math.floor((b-a)/1000);
+      if(total<0){alert('O tempo total não pode ser negativo.');return false;}
+
+      const startIso=new Date(start).toISOString();
+      const finishIso=new Date(finish).toISOString();
+
+      const {error:updateError}=await db.from('os_orders').update({
+        status:'FINALIZADA - AGUARDANDO PCM',
+        started_at:startIso,
+        finished_at:finishIso,
+        active_employee:null,
+        paused_at:null,
+        total_service_seconds:total
+      }).eq('id',osId).eq('status','EM PRODUÇÃO');
+
+      if(updateError){
+        console.error('Erro ao finalizar O.S.:',updateError);
+        alert('Não foi possível finalizar a O.S. no banco.\n\n'+updateError.message);
+        return false;
+      }
+
+      /* Histórico não pode impedir a finalização se houver falha isolada nele. */
+      try{
+        await insertExecutionHistory({
+          os_id:order.id,
+          os_number:order.os_number,
+          employee:currentUser,
+          action:'FINALIZADA',
+          reason:'O.S. finalizada pelo funcionário. Período conferido no encerramento.',
+          started_at:startIso,
+          ended_at:finishIso,
+          duration_seconds:total
+        });
+      }catch(historyError){
+        console.error('O.S. finalizada, mas histórico não foi registrado:',historyError);
+      }
+
+      showPcmToast('O.S. '+order.os_number+' finalizada e enviada para conferência do PCM.','success');
+
+      try{ await loadEmployeeOrders(); }catch(e){ console.error(e); }
+      return true;
+    });
+  }catch(e){
+    console.error('Falha no botão FINALIZAR O.S.:',e);
+    alert(e.message||'Não foi possível finalizar a O.S.');
+  }
 };
 
 /* =========================================================
