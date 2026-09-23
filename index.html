@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=hBgmmVMfQIe77BwJ9d67Ic_fBsEomZAIyzTw-X6UWeE9zgWSeCm1DhQ9SM7GPHYaaba0D2pPWI5LBHxndcDhElDNs1Zibym3RiYceVu6VLOeQ5x3FVZ956FL8YYzH8a5mVrqNK8m3iMwpKKBxdN_-oS6u38L8V2N2htpyQvJw7kycS5dMMjN_THKwb8cHQ7RkFHZNM0x8oBezjXJhZ2mUa_-9YxsMD-2GQnWr8UQlQoW2aKYTF5yZMX7CxWS5XUgJDSuUs5wG0k5Tl3Ri3GmKMzD--uTRlhuLesAYZTN2fMM_tofKK3FE3Qd3GZW31nc3_QwD53jH4bcej3s2XlNYw" charset="UTF-8"></script><style>
+<style>
 *{
     box-sizing:border-box;
 }
@@ -9514,17 +9514,25 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(result?.error) throw new Error(result.error.message || 'O Supabase recusou o salvamento.');
         if(!result?.data) throw new Error('O Supabase não confirmou a alteração da O.S. Nenhum registro foi retornado.');
 
-        // Histórico é secundário: dispara sem bloquear o fechamento.
-        Promise.resolve(db.from('os_execution_history').insert({
+        // O histórico é o controle oficial de que a única alteração foi usada.
+        // Por isso, precisamos confirmar o INSERT antes de retirar a O.S. do painel do funcionário.
+        const historyRequest=db.from('os_execution_history').insert({
           os_id:o.id,os_number:o.os_number,employee:currentUser,
           action:LAST_EDIT_ACTION,
           reason:`Horário original: ${fmtLocal2(oldStart)} até ${fmtLocal2(oldFinish)} | ${dur2(oldTotal)}. Novo horário: ${fmtLocal2(startIso)} até ${fmtLocal2(finishIso)} | ${dur2(total)}. Justificativa: ${reason}`,
           started_at:startIso,ended_at:finishIso,duration_seconds:total
-        })).then(hr=>{if(hr?.error)console.warn('Histórico não registrado:',hr.error)}).catch(e=>console.warn('Histórico não registrado:',e));
+        });
+        const historyResult=await Promise.race([
+          historyRequest,
+          new Promise((_,reject)=>setTimeout(()=>reject(new Error('O horário foi salvo, mas o histórico da alteração não respondeu. A O.S. continuará disponível até o registro ser confirmado.')),8000))
+        ]);
+        if(historyResult?.error){
+          throw new Error('O horário foi salvo, mas não foi possível registrar a alteração no histórico: '+historyResult.error.message);
+        }
 
-        // O modal será fechado pelo modal2 porque retornamos true.
-        if(typeof loadEmployeeOrders==='function') setTimeout(()=>loadEmployeeOrders().catch(e=>console.warn('Falha ao atualizar a tela:',e)),0);
-        alert('Horário alterado e salvo no banco de dados com sucesso.');
+        // Recarrega somente depois de confirmar o histórico. Assim a O.S. desaparece do painel do funcionário.
+        if(typeof loadEmployeeOrders==='function') await loadEmployeeOrders();
+        alert('Alteração salva com sucesso. Esta foi a única alteração permitida. A O.S. foi encaminhada ao PCM.');
         return true;
       });
     }catch(e){console.error(e);alert(e?.message||'Não foi possível abrir a alteração de horário.');}
@@ -9547,6 +9555,63 @@ document.addEventListener('DOMContentLoaded',()=>{
         }
       }
       return html;
+    };
+  }
+})();
+</script>
+<script>
+/* =========================================================
+   REGRA FINAL — após a única alteração do funcionário,
+   a O.S. NÃO aparece mais no painel do funcionário.
+   O PCM continua vendo normalmente pelo dashboard.
+========================================================= */
+(function(){
+  const FINAL_TIME_ACTIONS=new Set([
+    'ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO',
+    'HORÁRIO AJUSTADO PELO FUNCIONÁRIO',
+    'TEMPO AJUSTADO NA FINALIZAÇÃO'
+  ]);
+  const isUsedHistory=row=>FINAL_TIME_ACTIONS.has(String(row?.action||'').trim().toUpperCase());
+
+  const originalLoadEmployeeOrders=window.loadEmployeeOrders;
+  if(typeof originalLoadEmployeeOrders==='function'){
+    window.loadEmployeeOrders=async function(){
+      if(!currentUser || isAdmin) return;
+      const {data,error}=await db.from('os_orders').select('*').order('created_at',{ascending:false});
+      if(error){console.error(error);return;}
+      const mine=(data||[]).filter(order=>responsibleMatchesUser(order.responsible,currentUser));
+      employeeHistoryMeta=new Map();
+      const ids=mine.map(o=>o.id);
+      if(ids.length){
+        const {data:h,error:he}=await db.from('os_execution_history')
+          .select('os_id,action,created_at,reason')
+          .in('os_id',ids)
+          .order('created_at',{ascending:false});
+        if(he){console.error('Erro ao carregar histórico das O.S.:',he);}
+        if(!he && h){
+          h.forEach(row=>{
+            if(!employeeHistoryMeta.has(row.os_id)) employeeHistoryMeta.set(row.os_id,[]);
+            employeeHistoryMeta.get(row.os_id).push(row);
+          });
+        }
+      }
+      // Remove do painel do funcionário qualquer O.S. cuja última alteração já foi usada.
+      const visible=mine.filter(order=>{
+        const history=employeeHistoryMeta.get(order.id)||[];
+        const used=history.some(isUsedHistory);
+        return !(order.status==='FINALIZADA - AGUARDANDO PCM' && used);
+      });
+      renderEmployeeOrders(visible);
+    };
+  }
+
+  // Também protege a renderização caso alguma rotina chame createEmployeeCard diretamente.
+  const originalCreate=window.createEmployeeCard;
+  if(typeof originalCreate==='function'){
+    window.createEmployeeCard=function(order){
+      const history=(window.employeeHistoryMeta&&window.employeeHistoryMeta.get(order?.id))||[];
+      if(order?.status==='FINALIZADA - AGUARDANDO PCM' && history.some(isUsedHistory)) return '';
+      return originalCreate(order);
     };
   }
 })();
