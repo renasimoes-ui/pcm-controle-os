@@ -19,7 +19,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=a8w9wXrFsA_mzvME-aHXaaFj-oZ6PUAZmgvfGbACSu5G59qtbHsekATtO14JN73Tz_5AXmeogfZhQ40iqhx0q0T85wBG0Ia6Da5Rj_WTv0SNnhfhbdeys6MSwHVItYv00J01MuYYubaHiVPH99plKcZCWuJZaa_fbOXi3Ef6pfydbT8YXPVsSdRK2uF4KWc9bDRssAGZOqsaodzphOjsqUQGQZYxYOjb2L3qjjdAQV4_UwrFcIP-bmx9PXfJMOtwy0tBbkOC2PtGux5vyB0HQnv4HmolHlXj7-rvNK1NNzOuXybTHrWIAYi8twf6zop85ltp7cpsoM7FKXFFKUh3KthcOzFFkh2n8Ahuy612ZM0" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -9462,7 +9462,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
 
       const h=await history2(osId);
-      const used=h.some(x=>OLD_EDIT_ACTIONS.has(String(x.action||'').trim().toUpperCase()));
+      const used=Boolean(o.employee_time_edit_used) || h.some(x=>OLD_EDIT_ACTIONS.has(String(x.action||'').trim().toUpperCase()));
       if(used){
         alert('A última alteração de horário desta O.S. já foi utilizada. Qualquer nova correção deve ser feita pelo PCM.');
         return;
@@ -9505,7 +9505,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 
         // SALVAMENTO DEFINITIVO: primeiro atualiza somente os campos da O.S.
         // e exige resposta do Supabase. O histórico/reload nunca pode travar este botão.
-        const payload={started_at:startIso,finished_at:finishIso,total_service_seconds:total};
+        const payload={
+          started_at:startIso,
+          finished_at:finishIso,
+          total_service_seconds:total,
+          employee_time_edit_used:true,
+          employee_time_edit_at:now,
+          employee_time_edit_reason:reason,
+          employee_time_original_start:oldStart||null,
+          employee_time_original_finish:oldFinish||null,
+          employee_time_original_total:oldTotal
+        };
         const request=db.from('os_orders').update(payload).eq('id',osId).select('id,started_at,finished_at,total_service_seconds').maybeSingle();
         const result=await Promise.race([
           request,
@@ -9514,23 +9524,25 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(result?.error) throw new Error(result.error.message || 'O Supabase recusou o salvamento.');
         if(!result?.data) throw new Error('O Supabase não confirmou a alteração da O.S. Nenhum registro foi retornado.');
 
-        // O histórico é o controle oficial de que a única alteração foi usada.
-        // Por isso, precisamos confirmar o INSERT antes de retirar a O.S. do painel do funcionário.
-        const historyRequest=db.from('os_execution_history').insert({
-          os_id:o.id,os_number:o.os_number,employee:currentUser,
-          action:LAST_EDIT_ACTION,
-          reason:`Horário original: ${fmtLocal2(oldStart)} até ${fmtLocal2(oldFinish)} | ${dur2(oldTotal)}. Novo horário: ${fmtLocal2(startIso)} até ${fmtLocal2(finishIso)} | ${dur2(total)}. Justificativa: ${reason}`,
-          started_at:startIso,ended_at:finishIso,duration_seconds:total
-        });
-        const historyResult=await Promise.race([
-          historyRequest,
-          new Promise((_,reject)=>setTimeout(()=>reject(new Error('O horário foi salvo, mas o histórico da alteração não respondeu. A O.S. continuará disponível até o registro ser confirmado.')),8000))
-        ]);
-        if(historyResult?.error){
-          throw new Error('O horário foi salvo, mas não foi possível registrar a alteração no histórico: '+historyResult.error.message);
+        // O controle da única alteração agora fica gravado diretamente em os_orders.
+        // O histórico é complementar e nunca pode impedir a O.S. de sair do painel do funcionário.
+        try{
+          const historyRequest=db.from('os_execution_history').insert({
+            os_id:o.id,os_number:o.os_number,employee:currentUser,
+            action:LAST_EDIT_ACTION,
+            reason:`Horário original: ${fmtLocal2(oldStart)} até ${fmtLocal2(oldFinish)} | ${dur2(oldTotal)}. Novo horário: ${fmtLocal2(startIso)} até ${fmtLocal2(finishIso)} | ${dur2(total)}. Justificativa: ${reason}`,
+            started_at:startIso,ended_at:finishIso,duration_seconds:total
+          });
+          await Promise.race([
+            historyRequest,
+            new Promise(resolve=>setTimeout(()=>resolve({timeout:true}),3000))
+          ]);
+        }catch(historyError){
+          console.warn('Histórico da alteração não foi registrado, mas a alteração principal foi salva:',historyError);
         }
 
-        // Recarrega somente depois de confirmar o histórico. Assim a O.S. desaparece do painel do funcionário.
+        // Recarrega depois de o banco principal confirmar employee_time_edit_used=true.
+        // A O.S. some do painel do funcionário mesmo que o histórico falhe.
         if(typeof loadEmployeeOrders==='function') await loadEmployeeOrders();
         alert('Alteração salva com sucesso. Esta foi a única alteração permitida. A O.S. foi encaminhada ao PCM.');
         return true;
@@ -9545,7 +9557,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       let html=oldCard(o);
       if(o && o.status==='FINALIZADA - AGUARDANDO PCM'){
         const h=(window.employeeHistoryMeta&&window.employeeHistoryMeta.get(o.id))||[];
-        const used=h.some(x=>OLD_EDIT_ACTIONS.has(String(x.action||'').trim().toUpperCase()));
+        const used=Boolean(o.employee_time_edit_used) || h.some(x=>OLD_EDIT_ACTIONS.has(String(x.action||'').trim().toUpperCase()));
         if(!used && !html.includes('editFinalizedTime('+o.id+')')){
           const actions=html.match(/<div class="employee-actions">[\s\S]*?<\/div>/);
           if(actions){
@@ -9598,7 +9610,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       // Remove do painel do funcionário qualquer O.S. cuja última alteração já foi usada.
       const visible=mine.filter(order=>{
         const history=employeeHistoryMeta.get(order.id)||[];
-        const used=history.some(isUsedHistory);
+        const used=Boolean(order.employee_time_edit_used) || history.some(isUsedHistory);
         return !(order.status==='FINALIZADA - AGUARDANDO PCM' && used);
       });
       renderEmployeeOrders(visible);
@@ -9610,7 +9622,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(typeof originalCreate==='function'){
     window.createEmployeeCard=function(order){
       const history=(window.employeeHistoryMeta&&window.employeeHistoryMeta.get(order?.id))||[];
-      if(order?.status==='FINALIZADA - AGUARDANDO PCM' && history.some(isUsedHistory)) return '';
+      if(order?.status==='FINALIZADA - AGUARDANDO PCM' && (Boolean(order.employee_time_edit_used) || history.some(isUsedHistory))) return '';
       return originalCreate(order);
     };
   }
