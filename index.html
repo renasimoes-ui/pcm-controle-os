@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=FHC0I0Z9u1j31e34d0eQdwoQdCL6iz5aGEXNYhceEWjZggRY9jTbFbj_KKNTdLRc8Ib8rR4FQhbqz9mnH8j585QXvHAGICf-lLwaQWo31SJT8jvPkzu8y9Ovd4-WduF9rYMlF8aA-FUiQ0940j7haVtFW-82bNInjZLSmAToR6aCzeWKW1FsZGxVdb5YmgE6msfTaSGfWezlqsivR11wmamcMHqjOuQGIyRvhCITOYV47YOTNIvGM_jVtCuzKn7fYzUEwaswGxsr0Ysp33bYrNWhf-ySgYA8oK7N9_8i4_JvjpduBEa-3WfznEw_VzDc-8yhtTXLiYlY8MTUpttBXl18e9JJnZKvOKMFl5IC2Pk" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=q9riS3uSJbZLKq2CC-yAO8myiHIuFKyk5UUi2Z6plj0xPNvkXiltc0F_1eH8B3Lnlk1UicBH6V10ibUDh7_x59iV7Keq9PJ_tiG_D6Pqs9OE-iYjy8CPZCKeOAN7ktVX2Al831ici241aZp706ujQVr1-P7087cStEBJGh9JhXJG5_LwQYb4XEVMXPcJSDYG_OP7lssFeAJME7151cbRhXH3WCPeMxRgC8gMtfAZDjL_4S3faDSWhaVrBIOAB82Xvd4KxgIxvyGl_Ni1SVIlsJQ4wCBKumvufbS5qZvjU-NAK0qwGFGmdRrsnqXS0CgPf8CB16SXho9UgIpwTh_dqC0hSKP5mWV4vNp8QpRiYUk" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -7887,6 +7887,9 @@ body{min-height:100vh;background:#050505!important;}
   const oldNav=window.navigateTo;
   if(oldNav&&!oldNav.__factorySecure){const secure=function(view,btn){if(!isAdmin&&view!=='view-employee')view='view-employee';return oldNav(view,btn)};secure.__factorySecure=true;window.navigateTo=secure;}
   document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{if(typeof window.refreshFactoryNavigation==='function')window.refreshFactoryNavigation()},100);});
+  /* Disponibiliza o modal para as funções de finalização definidas fora desta IIFE. */
+  window.modal = modal;
+
 })();
 </script>
 
@@ -8138,7 +8141,7 @@ window.finishOS=async function(osId){
     <div class="factory-note">Confira os horários antes de confirmar a finalização.</div>
   `;
 
-  modal('pcmFinishModal','Finalizar O.S.','Confirme o período real trabalhado.',fields,'FINALIZAR O.S.',async el=>{
+  window.modal('pcmFinishModal','Finalizar O.S.','Confirme o período real trabalhado.',fields,'FINALIZAR O.S.',async el=>{
     const start=el.querySelector('#pcmFinishStart').value;
     const finish=el.querySelector('#pcmFinishEnd').value;
     let total=parseDur(el.querySelector('#pcmFinishTotal').value);
@@ -8388,7 +8391,7 @@ window.finishOS=async function(osId){
         somente <b>1 última alteração</b> pelo funcionário.
       </div>`;
 
-    modal('finishOSFinalModal','Finalizar O.S.','Confirme o período real trabalhado.',fields,'FINALIZAR O.S.',async el=>{
+    window.modal('finishOSFinalModal','Finalizar O.S.','Confirme o período real trabalhado.',fields,'FINALIZAR O.S.',async el=>{
       const start=el.querySelector('#finishStartFinal').value;
       const finish=el.querySelector('#finishEndFinal').value;
       if(!start||!finish){alert('Informe o início e o fim do serviço.');return false;}
