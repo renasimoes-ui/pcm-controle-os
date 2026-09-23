@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=IwGyWluT8IVqWXGNGik1Zn3LDO4CngvPSDHEHMzCSVhY8AqrwHmeNORMAB62oT7UDDXKdauSce62S5Jce7xRBjfdSlc70rLTPAN8YpFOiPGIb8kjrWvMCMou6cfDaSlWvrc_Y6db4oKdhzzv0JnYTG2QzRePCapo207d4BccrJIi62zHaFuapGxpTXsrPtCol5v3fKejFUeAAG9yCY2qYILT4cVOUqZya5qESkt4rzENI0OP9qtdT7UrF52bqclFJ6MUOYwtNZ19Eb2CQE5yAxdPoMPl7HAnvuzUlBbnV_ZV66fgEzqQKSe3REG5pmfY92qCwPUDAyBkEGq7GXaM5xuPMLGo0KoFQ9mqZtbqgndOlzDpCY67TOypvMPNA8kY" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=hBgmmVMfQIe77BwJ9d67Ic_fBsEomZAIyzTw-X6UWeE9zgWSeCm1DhQ9SM7GPHYaaba0D2pPWI5LBHxndcDhElDNs1Zibym3RiYceVu6VLOeQ5x3FVZ956FL8YYzH8a5mVrqNK8m3iMwpKKBxdN_-oS6u38L8V2N2htpyQvJw7kycS5dMMjN_THKwb8cHQ7RkFHZNM0x8oBezjXJhZ2mUa_-9YxsMD-2GQnWr8UQlQoW2aKYTF5yZMX7CxWS5XUgJDSuUs5wG0k5Tl3Ri3GmKMzD--uTRlhuLesAYZTN2fMM_tofKK3FE3Qd3GZW31nc3_QwD53jH4bcej3s2XlNYw" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -5169,6 +5169,8 @@ function createEmployeeCard(order){
     const running=order.status === "EM PRODUÇÃO" && normalizeEmployee(order.active_employee)===normalizeEmployee(currentUser);
     const history=employeeHistoryMeta.get(order.id)||[];
     const timeEditUsed=history.some(h=>h.action==="TEMPO AJUSTADO NA FINALIZAÇÃO");
+    // Depois que o funcionário usa a única correção de horário, a O.S. deixa de aparecer no painel dele.
+    if(order.status === "FINALIZADA - AGUARDANDO PCM" && timeEditUsed) return "";
     const finishedMs=order.finished_at?new Date(order.finished_at).getTime():0;
     const finishWindowOpen=finishedMs && (Date.now()-finishedMs)<(30*60*1000);
     let buttons="";
@@ -5190,7 +5192,7 @@ function createEmployeeCard(order){
     if(order.status === "AGUARDANDO MATERIAL") buttons=`<div class="factory-note">📦 O.S. aguardando material.<br>O PCM fará a liberação.</div>`;
 
     if(order.status === "FINALIZADA - AGUARDANDO PCM"){
-        if(finishWindowOpen && !timeEditUsed){
+        if(!timeEditUsed){
             const remain=Math.max(0,30*60-Math.floor((Date.now()-finishedMs)/1000));
             buttons=`<div class="factory-note success">✓ Serviço finalizado • revisão do tempo disponível por ${formatSeconds(remain)}. O PCM fará a finalização definitiva.</div><button class="action-btn btn-start" onclick="editFinalizedTime(${order.id})">⏱ REVISAR TEMPO (1 VEZ)</button>`;
         }else{
@@ -7824,8 +7826,32 @@ body{min-height:100vh;background:#050505!important;}
   }
   window.finishOS=async function(osId){await finishFlow(osId,true)};
   window.editFinalizedTime=async function(osId){
-    if(!currentUser||isAdmin)return;const order=await getOrder(osId);if(!['FINALIZADA - AGUARDANDO PCM','FINALIZADA'].includes(order.status)||!isMine(order))return;const finished=new Date(order.finished_at||0).getTime();if(!finished||Date.now()-finished>30*60*1000)return alert('A janela de 30 minutos para alterar o tempo já terminou.');const h=await historyFor(osId);if(h.some(x=>x.action===ACTION_TIME))return alert('O tempo desta O.S. já foi alterado uma vez.');
-    modal('editTimeModal','Revisar tempo da O.S.','Você pode alterar o tempo uma única vez. A justificativa é obrigatória.',`<label>Novo tempo total (HH:MM:SS)</label><input id="editTimeInput" value="${durInput(parseInt(order.total_service_seconds||0))}" inputmode="numeric"><label>Justificativa *</label><textarea id="editTimeReason" placeholder="Explique por que o tempo precisa ser alterado..."></textarea>`,'SALVAR ALTERAÇÃO',async el=>{const nt=parseDuration(el.querySelector('#editTimeInput').value);const reason=el.querySelector('#editTimeReason').value.trim();if(nt===null){alert('Use HH:MM:SS.');return false;}if(nt===parseInt(order.total_service_seconds||0)){alert('O novo tempo é igual ao atual.');return false;}if(!reason){alert('Informe a justificativa.');return false;}const now=new Date().toISOString();const {error}=await db.from('os_orders').update({total_service_seconds:nt}).eq('id',osId).in('status',['FINALIZADA - AGUARDANDO PCM','FINALIZADA']);if(error)throw error;await insertExecutionHistory({os_id:osId,os_number:order.os_number,employee:currentUser,action:ACTION_TIME,reason,started_at:null,ended_at:now,duration_seconds:nt});await loadEmployeeOrders();return true;});
+    if(!currentUser||isAdmin)return;
+    const order=await getOrder(osId);
+    if(!order||order.status!=='FINALIZADA - AGUARDANDO PCM'||!isMine(order))return alert('Esta O.S. não está disponível para ajuste pelo funcionário.');
+    const h=await historyFor(osId);
+    if(h.some(x=>x.action===ACTION_TIME))return alert('O ajuste de horário desta O.S. já foi utilizado uma vez. Agora a O.S. está com o PCM.');
+    modal('editTimeModal','Revisar tempo da O.S.','Você tem **1 única oportunidade** para corrigir o horário/tempo desta O.S. Depois de salvar, ela sai do seu painel e fica disponível somente para o PCM. A justificativa é obrigatória.',`<div class="factory-note">⚠️ Esta alteração só pode ser feita <b>UMA VEZ</b>. Depois de salvar, a O.S. será encaminhada para o PCM e desaparecerá do seu painel.</div><label>Novo tempo total (HH:MM:SS)</label><input id="editTimeInput" value="${durInput(parseInt(order.total_service_seconds||0))}" inputmode="numeric"><label>Justificativa da alteração <b style="color:#b91c1c">*</b></label><textarea id="editTimeReason" placeholder="Explique por que o horário/tempo precisa ser alterado..."></textarea>`,'SALVAR ALTERAÇÃO',async el=>{
+      const nt=parseDuration(el.querySelector('#editTimeInput').value);
+      const reason=el.querySelector('#editTimeReason').value.trim();
+      if(nt===null){alert('Use o formato HH:MM:SS.');return false;}
+      if(nt===parseInt(order.total_service_seconds||0)){alert('Você precisa alterar o tempo para registrar a correção.');return false;}
+      if(!reason){alert('A justificativa é obrigatória para alterar o horário/tempo.');el.querySelector('#editTimeReason').focus();return false;}
+      const check=await historyFor(osId);
+      if(check.some(x=>x.action===ACTION_TIME)){alert('Esta O.S. já teve a única alteração de horário utilizada. Ela pertence ao PCM agora.');return false;}
+      const now=new Date().toISOString();
+      const {error}=await db.from('os_orders').update({total_service_seconds:nt}).eq('id',osId).eq('status','FINALIZADA - AGUARDANDO PCM');
+      if(error)throw error;
+      try{
+        await insertExecutionHistory({os_id:osId,os_number:order.os_number,employee:currentUser,action:ACTION_TIME,reason,started_at:order.started_at||null,ended_at:now,duration_seconds:nt});
+      }catch(historyError){
+        console.error('Erro ao registrar a alteração de horário:',historyError);
+        alert('O horário foi salvo, mas não foi possível registrar a justificativa no histórico. O PCM deverá verificar esta O.S.');
+      }
+      await loadEmployeeOrders();
+      alert('Alteração salva com sucesso. A O.S. saiu do seu painel e foi encaminhada para o PCM.');
+      return true;
+    });
   };
 
   window.adminEditFinalizedTime=async function(osId){
@@ -9477,35 +9503,28 @@ document.addEventListener('DOMContentLoaded',()=>{
         }
         const startIso=new Date(start).toISOString(),finishIso=new Date(finish).toISOString(),now=new Date().toISOString();
 
-        // Salva SOMENTE na tabela principal primeiro. Não deixamos histórico ou recarregamento prender o botão.
-        const savePromise=db.from('os_orders').update({started_at:startIso,finished_at:finishIso,total_service_seconds:total}).eq('id',osId);
-        const saveResult=await savePromise;
-        const {error}=saveResult;
-        if(error){
-          console.error('Erro ao salvar horário no Supabase:',error);
-          throw new Error('O horário não foi salvo no banco. ' + (error.message || 'Verifique as permissões/RLS da tabela os_orders.'));
-        }
+        // SALVAMENTO DEFINITIVO: primeiro atualiza somente os campos da O.S.
+        // e exige resposta do Supabase. O histórico/reload nunca pode travar este botão.
+        const payload={started_at:startIso,finished_at:finishIso,total_service_seconds:total};
+        const request=db.from('os_orders').update(payload).eq('id',osId).select('id,started_at,finished_at,total_service_seconds').maybeSingle();
+        const result=await Promise.race([
+          request,
+          new Promise((_,reject)=>setTimeout(()=>reject(new Error('O Supabase não respondeu. Verifique sua conexão e as políticas de acesso da tabela os_orders.')),8000))
+        ]);
+        if(result?.error) throw new Error(result.error.message || 'O Supabase recusou o salvamento.');
+        if(!result?.data) throw new Error('O Supabase não confirmou a alteração da O.S. Nenhum registro foi retornado.');
 
-        // Registra o histórico sem bloquear a conclusão da alteração principal.
-        try{
-          const historyPromise=db.from('os_execution_history').insert({
-            os_id:o.id,os_number:o.os_number,employee:currentUser,
-            action:LAST_EDIT_ACTION,
-            reason:`Horário original: ${fmtLocal2(oldStart)} até ${fmtLocal2(oldFinish)} | ${dur2(oldTotal)}. Novo horário: ${fmtLocal2(startIso)} até ${fmtLocal2(finishIso)} | ${dur2(total)}. Justificativa: ${reason}`,
-            started_at:startIso,ended_at:finishIso,duration_seconds:total
-          });
-          historyPromise.then(hr=>{
-            if(hr && hr.error) console.warn('Histórico da alteração não foi registrado:',hr.error);
-          }).catch(historyErr=>console.warn('Histórico não registrado, mas o horário já foi salvo:',historyErr));
-        }catch(historyErr){
-          console.warn('Histórico não registrado, mas o horário já foi salvo:',historyErr);
-        }
+        // Histórico é secundário: dispara sem bloquear o fechamento.
+        Promise.resolve(db.from('os_execution_history').insert({
+          os_id:o.id,os_number:o.os_number,employee:currentUser,
+          action:LAST_EDIT_ACTION,
+          reason:`Horário original: ${fmtLocal2(oldStart)} até ${fmtLocal2(oldFinish)} | ${dur2(oldTotal)}. Novo horário: ${fmtLocal2(startIso)} até ${fmtLocal2(finishIso)} | ${dur2(total)}. Justificativa: ${reason}`,
+          started_at:startIso,ended_at:finishIso,duration_seconds:total
+        })).then(hr=>{if(hr?.error)console.warn('Histórico não registrado:',hr.error)}).catch(e=>console.warn('Histórico não registrado:',e));
 
-        // Fecha o modal imediatamente. O recarregamento fica em segundo plano.
+        // O modal será fechado pelo modal2 porque retornamos true.
+        if(typeof loadEmployeeOrders==='function') setTimeout(()=>loadEmployeeOrders().catch(e=>console.warn('Falha ao atualizar a tela:',e)),0);
         alert('Horário alterado e salvo no banco de dados com sucesso.');
-        if(typeof loadEmployeeOrders==='function'){
-          loadEmployeeOrders().catch(e=>console.warn('Falha ao atualizar a tela:',e));
-        }
         return true;
       });
     }catch(e){console.error(e);alert(e?.message||'Não foi possível abrir a alteração de horário.');}
