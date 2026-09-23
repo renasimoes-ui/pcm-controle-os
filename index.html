@@ -19,7 +19,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=IwGyWluT8IVqWXGNGik1Zn3LDO4CngvPSDHEHMzCSVhY8AqrwHmeNORMAB62oT7UDDXKdauSce62S5Jce7xRBjfdSlc70rLTPAN8YpFOiPGIb8kjrWvMCMou6cfDaSlWvrc_Y6db4oKdhzzv0JnYTG2QzRePCapo207d4BccrJIi62zHaFuapGxpTXsrPtCol5v3fKejFUeAAG9yCY2qYILT4cVOUqZya5qESkt4rzENI0OP9qtdT7UrF52bqclFJ6MUOYwtNZ19Eb2CQE5yAxdPoMPl7HAnvuzUlBbnV_ZV66fgEzqQKSe3REG5pmfY92qCwPUDAyBkEGq7GXaM5xuPMLGo0KoFQ9mqZtbqgndOlzDpCY67TOypvMPNA8kY" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -9404,9 +9404,22 @@ document.addEventListener('DOMContentLoaded',()=>{
     el.querySelector('[data-cancel]').onclick=close;
     el.onclick=e=>{if(e.target===el)close()};
     el.querySelector('[data-ok]').onclick=async()=>{
-      const btn=el.querySelector('[data-ok]');btn.disabled=true;btn.textContent='SALVANDO...';
-      try{const result=await save(el);if(result!==false)close();}
-      catch(e){console.error(e);alert(e?.message||'Não foi possível salvar a alteração.');btn.disabled=false;btn.textContent=ok;}
+      const btn=el.querySelector('[data-ok]');
+      if(btn.disabled)return;
+      btn.disabled=true;
+      btn.textContent='SALVANDO...';
+      try{
+        const result=await Promise.race([
+          save(el),
+          new Promise((_,reject)=>setTimeout(()=>reject(new Error('O salvamento demorou mais que 10 segundos. O banco não respondeu.')),10000))
+        ]);
+        if(result!==false)close();
+      }catch(e){
+        console.error('Erro ao salvar alteração de horário:',e);
+        btn.disabled=false;
+        btn.textContent=ok;
+        alert(e?.message||'Não foi possível salvar a alteração.');
+      }
     };
     return el;
   }
@@ -9466,10 +9479,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
         // Salva SOMENTE na tabela principal primeiro. Não deixamos histórico ou recarregamento prender o botão.
         const savePromise=db.from('os_orders').update({started_at:startIso,finished_at:finishIso,total_service_seconds:total}).eq('id',osId);
-        const saveResult=await Promise.race([
-          savePromise,
-          new Promise((_,reject)=>setTimeout(()=>reject(new Error('O Supabase não respondeu em 15 segundos. Verifique a conexão/permissão da tabela os_orders.')),15000))
-        ]);
+        const saveResult=await savePromise;
         const {error}=saveResult;
         if(error){
           console.error('Erro ao salvar horário no Supabase:',error);
@@ -9484,11 +9494,9 @@ document.addEventListener('DOMContentLoaded',()=>{
             reason:`Horário original: ${fmtLocal2(oldStart)} até ${fmtLocal2(oldFinish)} | ${dur2(oldTotal)}. Novo horário: ${fmtLocal2(startIso)} até ${fmtLocal2(finishIso)} | ${dur2(total)}. Justificativa: ${reason}`,
             started_at:startIso,ended_at:finishIso,duration_seconds:total
           });
-          const hr=await Promise.race([
-            historyPromise,
-            new Promise((resolve)=>setTimeout(()=>resolve({timeout:true}),5000))
-          ]);
-          if(hr && hr.error) console.warn('Histórico da alteração não foi registrado:',hr.error);
+          historyPromise.then(hr=>{
+            if(hr && hr.error) console.warn('Histórico da alteração não foi registrado:',hr.error);
+          }).catch(historyErr=>console.warn('Histórico não registrado, mas o horário já foi salvo:',historyErr));
         }catch(historyErr){
           console.warn('Histórico não registrado, mas o horário já foi salvo:',historyErr);
         }
