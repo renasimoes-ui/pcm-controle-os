@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=F5fgGlklZ2pqFUeU3vtyGA90hXIOxUf9bUovDSaVAKEMUwMtDkhWEKA1v-EIiQz6dDaotxmByZzr1W8g56Hc6enshTrcrhwnIr3ITzq_Ai4y69TyBdVxw8LBh_C0vyPjr_ZwwMoMT-zvQFYVLUhCPnlxQqIl3Y511_V9LrHNXxcCdECP4oS0NbT_2bvyx62PieMNlItDQVd4g_MkQE2jLS8CvoYleA8sWJCHHcjnANjISVm_emPC610GoMDKkpBAnQpzDhMrh-jvSaXKHaFXaguP2HXLmKhIFolJDBxH6RtXVRl34y7qLc1Pg0qYwUifaDe9vq_Z3zh8fthLpyAuA8GyVVUxd0mOoSpGNNkg4JI" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=AXGxa2AOJAuDHStIItHq7A6SssvbAy-fiYlid7DXJGdOAHTaT9j9Z5FO4ytZUGgGMkdx57GQZEkvrAjJPZ1SqbTEvwHxS3QrO4vU0BAvZSdrOEKmd8TPMdK0oMLt8P2krjUIl84uoonJGm07148Q6-aAbvJHIXyMn9qM4bclqY2xcm3Y70X0H974LIabMXMJ88IAwl3z69aAonvhKrL9L_lxFfi7TXtc1wtCYwUpQqei_N-J6joXpOH6Q6kcA_aKLiDyP8ldSaGzIUJrPY20LQNgqFYJdXpZEOhtGQL0jkbdJzPrwFwAPpIXJG39FYmfJ1Ml7O027rqav1B7DcenbKmJbujkjDFo3ZzZpBngq7E" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -9463,8 +9463,16 @@ document.addEventListener('DOMContentLoaded',()=>{
           if(useCalc)total=calculated;
         }
         const startIso=new Date(start).toISOString(),finishIso=new Date(finish).toISOString(),now=new Date().toISOString();
-        const {error}=await db.from('os_orders').update({started_at:startIso,finished_at:finishIso,total_service_seconds:total}).eq('id',osId).eq('status','FINALIZADA - AGUARDANDO PCM');
-        if(error)throw error;
+        const {error}=await db.from('os_orders').update({started_at:startIso,finished_at:finishIso,total_service_seconds:total}).eq('id',osId);
+        if(error){
+          console.error('Erro ao salvar horário no Supabase:',error);
+          throw new Error('O horário não foi salvo no banco. ' + (error.message || 'Verifique as permissões/RLS da tabela os_orders.'));
+        }
+        const {data:verify,error:verifyError}=await db.from('os_orders').select('id,started_at,finished_at,total_service_seconds').eq('id',osId).single();
+        if(verifyError || !verify){
+          console.error('Erro ao confirmar alteração no Supabase:',verifyError);
+          throw new Error('A alteração foi enviada, mas não consegui confirmar a gravação no banco.');
+        }
         const {error:he}=await db.from('os_execution_history').insert({
           os_id:o.id,os_number:o.os_number,employee:currentUser,
           action:LAST_EDIT_ACTION,
@@ -9472,6 +9480,7 @@ document.addEventListener('DOMContentLoaded',()=>{
           started_at:startIso,ended_at:finishIso,duration_seconds:total
         });
         if(he)console.warn('Histórico da alteração não foi registrado:',he);
+        alert('Horário alterado e salvo no banco de dados com sucesso.');
         if(typeof loadEmployeeOrders==='function')await loadEmployeeOrders();
         else location.reload();
         return true;
