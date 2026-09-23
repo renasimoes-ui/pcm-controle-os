@@ -19,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=AXGxa2AOJAuDHStIItHq7A6SssvbAy-fiYlid7DXJGdOAHTaT9j9Z5FO4ytZUGgGMkdx57GQZEkvrAjJPZ1SqbTEvwHxS3QrO4vU0BAvZSdrOEKmd8TPMdK0oMLt8P2krjUIl84uoonJGm07148Q6-aAbvJHIXyMn9qM4bclqY2xcm3Y70X0H974LIabMXMJ88IAwl3z69aAonvhKrL9L_lxFfi7TXtc1wtCYwUpQqei_N-J6joXpOH6Q6kcA_aKLiDyP8ldSaGzIUJrPY20LQNgqFYJdXpZEOhtGQL0jkbdJzPrwFwAPpIXJG39FYmfJ1Ml7O027rqav1B7DcenbKmJbujkjDFo3ZzZpBngq7E" charset="UTF-8"></script><style>
+<style>
 *{
     box-sizing:border-box;
 }
@@ -9463,26 +9463,41 @@ document.addEventListener('DOMContentLoaded',()=>{
           if(useCalc)total=calculated;
         }
         const startIso=new Date(start).toISOString(),finishIso=new Date(finish).toISOString(),now=new Date().toISOString();
-        const {error}=await db.from('os_orders').update({started_at:startIso,finished_at:finishIso,total_service_seconds:total}).eq('id',osId);
+
+        // Salva SOMENTE na tabela principal primeiro. Não deixamos histórico ou recarregamento prender o botão.
+        const savePromise=db.from('os_orders').update({started_at:startIso,finished_at:finishIso,total_service_seconds:total}).eq('id',osId);
+        const saveResult=await Promise.race([
+          savePromise,
+          new Promise((_,reject)=>setTimeout(()=>reject(new Error('O Supabase não respondeu em 15 segundos. Verifique a conexão/permissão da tabela os_orders.')),15000))
+        ]);
+        const {error}=saveResult;
         if(error){
           console.error('Erro ao salvar horário no Supabase:',error);
           throw new Error('O horário não foi salvo no banco. ' + (error.message || 'Verifique as permissões/RLS da tabela os_orders.'));
         }
-        const {data:verify,error:verifyError}=await db.from('os_orders').select('id,started_at,finished_at,total_service_seconds').eq('id',osId).single();
-        if(verifyError || !verify){
-          console.error('Erro ao confirmar alteração no Supabase:',verifyError);
-          throw new Error('A alteração foi enviada, mas não consegui confirmar a gravação no banco.');
+
+        // Registra o histórico sem bloquear a conclusão da alteração principal.
+        try{
+          const historyPromise=db.from('os_execution_history').insert({
+            os_id:o.id,os_number:o.os_number,employee:currentUser,
+            action:LAST_EDIT_ACTION,
+            reason:`Horário original: ${fmtLocal2(oldStart)} até ${fmtLocal2(oldFinish)} | ${dur2(oldTotal)}. Novo horário: ${fmtLocal2(startIso)} até ${fmtLocal2(finishIso)} | ${dur2(total)}. Justificativa: ${reason}`,
+            started_at:startIso,ended_at:finishIso,duration_seconds:total
+          });
+          const hr=await Promise.race([
+            historyPromise,
+            new Promise((resolve)=>setTimeout(()=>resolve({timeout:true}),5000))
+          ]);
+          if(hr && hr.error) console.warn('Histórico da alteração não foi registrado:',hr.error);
+        }catch(historyErr){
+          console.warn('Histórico não registrado, mas o horário já foi salvo:',historyErr);
         }
-        const {error:he}=await db.from('os_execution_history').insert({
-          os_id:o.id,os_number:o.os_number,employee:currentUser,
-          action:LAST_EDIT_ACTION,
-          reason:`Horário original: ${fmtLocal2(oldStart)} até ${fmtLocal2(oldFinish)} | ${dur2(oldTotal)}. Novo horário: ${fmtLocal2(startIso)} até ${fmtLocal2(finishIso)} | ${dur2(total)}. Justificativa: ${reason}`,
-          started_at:startIso,ended_at:finishIso,duration_seconds:total
-        });
-        if(he)console.warn('Histórico da alteração não foi registrado:',he);
+
+        // Fecha o modal imediatamente. O recarregamento fica em segundo plano.
         alert('Horário alterado e salvo no banco de dados com sucesso.');
-        if(typeof loadEmployeeOrders==='function')await loadEmployeeOrders();
-        else location.reload();
+        if(typeof loadEmployeeOrders==='function'){
+          loadEmployeeOrders().catch(e=>console.warn('Falha ao atualizar a tela:',e));
+        }
         return true;
       });
     }catch(e){console.error(e);alert(e?.message||'Não foi possível abrir a alteração de horário.');}
