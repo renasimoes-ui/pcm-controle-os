@@ -1,81 +1,154 @@
 /* =========================================================
    PCM • CONTROLE DE O.S. — MAIN BOOT
    AB Florestas e Madeiras
+   Compatível com celular / Vercel / GitHub
    ========================================================= */
 
 (function () {
+
     'use strict';
 
     window.PCM_BOOT = window.PCM_BOOT || {};
+
+    /* Evita executar o boot duas vezes */
+    if (window.PCM_BOOT.loaded) {
+        console.log('[PCM] main.js já foi carregado.');
+        return;
+    }
 
     window.PCM_BOOT.loaded = true;
     window.PCM_BOOT.startedAt = Date.now();
 
     var supabaseLoading = null;
 
-    window.PCM_BOOT.loadSupabase = function () {
+    /* =========================================================
+       VERIFICA SE O SUPABASE JÁ ESTÁ DISPONÍVEL
+       ========================================================= */
 
-        /* Se já estiver carregado, não carrega novamente */
-        if (
+    function supabaseDisponivel() {
+
+        return !!(
             window.supabase &&
             typeof window.supabase.createClient === 'function'
-        ) {
+        );
+
+    }
+
+
+    /* =========================================================
+       CARREGAMENTO DO SUPABASE
+       ========================================================= */
+
+    window.PCM_BOOT.loadSupabase = function () {
+
+        /* Já carregado */
+        if (supabaseDisponivel()) {
+
+            console.log(
+                '[PCM] Supabase já estava carregado.'
+            );
+
             return Promise.resolve(window.supabase);
         }
 
-        /* Se já existe uma tentativa, reutiliza */
+
+        /* Já existe uma tentativa em andamento */
         if (supabaseLoading) {
+
             return supabaseLoading;
         }
+
 
         supabaseLoading = new Promise(function (resolve, reject) {
 
             var sources = [
+
                 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-                'https://unpkg.com/@supabase/supabase-js@2'
+
+                'https://unpkg.com/@supabase/supabase-js@2',
+
+                'https://esm.sh/@supabase/supabase-js@2'
+
             ];
+
 
             var index = 0;
 
+
             function tentarProximo() {
 
-                /* Verifica se carregou */
-                if (
-                    window.supabase &&
-                    typeof window.supabase.createClient === 'function'
-                ) {
+                /* Verifica novamente */
+                if (supabaseDisponivel()) {
+
+                    console.log(
+                        '[PCM] Supabase carregado com sucesso.'
+                    );
+
                     resolve(window.supabase);
+
                     return;
                 }
 
-                /* Não há mais opções */
+
+                /* Acabaram as fontes */
                 if (index >= sources.length) {
+
                     reject(
                         new Error(
-                            'Não foi possível carregar a conexão com o sistema. Verifique a internet e tente novamente.'
+                            'Não foi possível carregar o Supabase. Verifique a conexão de internet do celular.'
                         )
                     );
+
                     return;
                 }
 
-                var script = document.createElement('script');
 
-                script.src = sources[index++];
+                var url = sources[index++];
+
+                console.log(
+                    '[PCM] Tentando carregar Supabase:',
+                    url
+                );
+
+
+                var script =
+                    document.createElement('script');
+
+
+                script.src = url;
+
                 script.async = true;
+
+                script.defer = true;
+
+                script.crossOrigin = 'anonymous';
+
 
                 var finalizado = false;
 
-                var timeout = setTimeout(function () {
 
-                    if (finalizado) {
-                        return;
-                    }
+                var timeout =
+                    window.setTimeout(function () {
 
-                    finalizado = true;
+                        if (finalizado) {
+                            return;
+                        }
 
-                    tentarProximo();
+                        finalizado = true;
 
-                }, 10000);
+                        console.warn(
+                            '[PCM] Timeout ao carregar:',
+                            url
+                        );
+
+                        tentarProximo();
+
+                    }, 12000);
+
+
+                /* =================================================
+                   CARREGOU
+                   ================================================= */
 
                 script.onload = function () {
 
@@ -85,17 +158,33 @@
 
                     finalizado = true;
 
-                    clearTimeout(timeout);
+                    window.clearTimeout(timeout);
 
-                    if (
-                        window.supabase &&
-                        typeof window.supabase.createClient === 'function'
-                    ) {
+
+                    if (supabaseDisponivel()) {
+
+                        console.log(
+                            '[PCM] Supabase carregado:',
+                            url
+                        );
+
                         resolve(window.supabase);
+
                     } else {
+
+                        console.warn(
+                            '[PCM] Script carregou, mas Supabase não apareceu.'
+                        );
+
                         tentarProximo();
                     }
+
                 };
+
+
+                /* =================================================
+                   ERRO
+                   ================================================= */
 
                 script.onerror = function () {
 
@@ -105,45 +194,98 @@
 
                     finalizado = true;
 
-                    clearTimeout(timeout);
+                    window.clearTimeout(timeout);
+
+
+                    console.warn(
+                        '[PCM] Falha ao carregar:',
+                        url
+                    );
+
 
                     tentarProximo();
+
                 };
 
+
                 document.head.appendChild(script);
+
             }
+
 
             tentarProximo();
 
         }).catch(function (erro) {
 
+            /* Permite uma nova tentativa */
             supabaseLoading = null;
 
+
+            console.error(
+                '[PCM] Falha no carregamento do Supabase:',
+                erro
+            );
+
+
             throw erro;
+
         });
 
+
         return supabaseLoading;
+
     };
 
-    /* Captura erros sem impedir o sistema de abrir */
-    window.addEventListener('error', function (event) {
 
-        console.error(
-            '[PCM] Erro JavaScript:',
-            event.error || event.message || event
-        );
+    /* =========================================================
+       ERROS JAVASCRIPT
+       ========================================================= */
 
-    });
+    window.addEventListener(
+        'error',
+        function (event) {
 
-    window.addEventListener('unhandledrejection', function (event) {
+            console.error(
+                '[PCM] Erro JavaScript:',
+                event.error ||
+                event.message ||
+                event
+            );
 
-        console.error(
-            '[PCM] Promise rejeitada:',
-            event.reason || event
-        );
+        }
+    );
 
-    });
 
-    console.log('[PCM] main.js carregado com sucesso.');
+    /* =========================================================
+       PROMISES COM ERRO
+       ========================================================= */
+
+    window.addEventListener(
+        'unhandledrejection',
+        function (event) {
+
+            console.error(
+                '[PCM] Promise rejeitada:',
+                event.reason ||
+                event
+            );
+
+        }
+    );
+
+
+    /* =========================================================
+       INFORMAÇÃO DE BOOT
+       ========================================================= */
+
+    console.log(
+        '[PCM] main.js carregado com sucesso.'
+    );
+
+    console.log(
+        '[PCM] Boot iniciado em:',
+        new Date(window.PCM_BOOT.startedAt)
+    );
+
 
 })();
