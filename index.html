@@ -2932,19 +2932,21 @@ body:has(#loginScreen:not(.hidden)){
 </style>
 
 
-<style id="pcm-cinematic-cover">
-/* Capa cinematográfica de madeira */
-#loginView, #loginScreen, .login-screen, .login-page {
-  background-image: linear-gradient(90deg, rgba(7,5,3,.62), rgba(7,5,3,.25), rgba(7,5,3,.48)), url("login-cinematic.png") !important;
-  background-position:center !important;
-  background-size:cover !important;
-  background-repeat:no-repeat !important;
-}
-#loginView::before, #loginScreen::before, .login-screen::before, .login-page::before {
-  background:radial-gradient(circle at 50% 45%, rgba(0,0,0,.02), rgba(0,0,0,.32) 80%) !important;
-}
+<style id="pcm-finalizar-mobile-layout">
+/* PCM — ajuste exclusivo do modal FINALIZAR O.S. no celular */
+.modal{z-index:100000!important;align-items:center!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;padding:12px!important;}
+.factory-modal-box{width:min(520px,100%)!important;max-width:100%!important;max-height:calc(100dvh - 24px)!important;max-height:calc(100vh - 24px)!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain!important;margin:auto!important;padding:18px!important;}
+.factory-modal-actions{position:sticky!important;bottom:0!important;z-index:5!important;background:#0a1220!important;padding-top:12px!important;padding-bottom:2px!important;margin-top:14px!important;}
 @media(max-width:700px){
-  #loginView, #loginScreen, .login-screen, .login-page { background-position:center center !important; }
+  .modal{align-items:flex-start!important;padding:10px 10px calc(10px + env(safe-area-inset-bottom))!important;}
+  .factory-modal-box{width:100%!important;max-width:430px!important;max-height:calc(100dvh - 20px - env(safe-area-inset-bottom))!important;max-height:calc(100vh - 20px)!important;margin:auto!important;border-radius:18px!important;padding:17px 15px calc(15px + env(safe-area-inset-bottom))!important;}
+  .factory-modal-box h3{font-size:20px!important;line-height:1.15!important;margin-bottom:7px!important;}
+  .factory-modal-box p{font-size:12px!important;line-height:1.45!important;margin-bottom:12px!important;}
+  .factory-modal-box label{font-size:12px!important;margin:10px 0 5px!important;}
+  .factory-modal-box input,.factory-modal-box textarea{min-height:46px!important;padding:11px!important;}
+  .factory-modal-actions{gap:8px!important;margin-top:12px!important;padding-top:10px!important;background:linear-gradient(to bottom,rgba(10,18,32,.96),#0a1220 35%)!important;}
+  .factory-modal-actions button{flex:1 1 0!important;min-width:0!important;min-height:48px!important;font-size:12px!important;}
+  body:has(.modal[style*="display: flex"]) #pcmMobileNav,body:has(.modal[style*="display: flex"]) .mobile-nav{display:none!important;}
 }
 </style>
 </head>
@@ -3815,7 +3817,7 @@ function ensureSupabase(){
     if(supabaseLoading) return supabaseLoading;
     /*
        O HTML é AUTOSSUFICIENTE.
-       Carregamento interno do sistema para uso no celular.
+       Não depende de main.js para iniciar no celular.
        O Supabase é carregado diretamente aqui.
     */
     supabaseLoading = new Promise((resolve,reject)=>{
@@ -3988,11 +3990,7 @@ async function login(){
 
         navigateTo("view-dashboard");
 
-        // Recarrega a lista imediatamente após o lançamento.
-        await window.loadDashboardData();
-        if(typeof window.pcmRefreshAdminLayout === "function") {
-            window.pcmRefreshAdminLayout();
-        }
+        await loadDashboardData();
 
     }else{
 
@@ -4548,12 +4546,11 @@ async function loadDashboardData(){
         return;
     }
 
-    // Não depende de created_at para carregar o painel.
-    // Algumas instalações da tabela podem não ter essa coluna.
     const {data,error} =
         await db
             .from("os_orders")
-            .select("*");
+            .select("*")
+            .order("created_at",{ascending:false});
 
 
     if(error){
@@ -4564,11 +4561,7 @@ async function loadDashboardData(){
     }
 
 
-    dashboardOrders = (data || []).slice().sort((a,b)=>{
-        const da = new Date(a.created_at || a.opening_date || 0).getTime() || 0;
-        const dbv = new Date(b.created_at || b.opening_date || 0).getTime() || 0;
-        return dbv-da || Number(b.id||0)-Number(a.id||0);
-    });
+    dashboardOrders = data || [];
 
 
     const abertas =
@@ -5113,7 +5106,7 @@ async function loadEmployeeOrders(){
     if(!currentUser || isAdmin) return;
     const {data,error}=await db.from("os_orders").select("*").order("created_at",{ascending:false});
     if(error){console.error(error);return;}
-    const myOrders=(data||[]).filter(order=>responsibleMatchesUser(order.responsible,currentUser));
+    const myOrders=(data||[]).filter(order=>responsibleMatchesUser(order.responsible,currentUser)).filter(order=>!(order.status === "FINALIZADA - AGUARDANDO PCM" && Boolean(order.employee_time_edit_used)));
     employeeHistoryMeta=new Map();
     const ids=myOrders.map(o=>o.id);
     if(ids.length){
@@ -5169,8 +5162,6 @@ function createEmployeeCard(order){
     const running=order.status === "EM PRODUÇÃO" && normalizeEmployee(order.active_employee)===normalizeEmployee(currentUser);
     const history=employeeHistoryMeta.get(order.id)||[];
     const timeEditUsed=history.some(h=>h.action==="TEMPO AJUSTADO NA FINALIZAÇÃO");
-    // Depois que o funcionário usa a única correção de horário, a O.S. deixa de aparecer no painel dele.
-    if(order.status === "FINALIZADA - AGUARDANDO PCM" && timeEditUsed) return "";
     const finishedMs=order.finished_at?new Date(order.finished_at).getTime():0;
     const finishWindowOpen=finishedMs && (Date.now()-finishedMs)<(30*60*1000);
     let buttons="";
@@ -5192,11 +5183,10 @@ function createEmployeeCard(order){
     if(order.status === "AGUARDANDO MATERIAL") buttons=`<div class="factory-note">📦 O.S. aguardando material.<br>O PCM fará a liberação.</div>`;
 
     if(order.status === "FINALIZADA - AGUARDANDO PCM"){
-        if(!timeEditUsed){
-            const remain=Math.max(0,30*60-Math.floor((Date.now()-finishedMs)/1000));
-            buttons=`<div class="factory-note success">✓ Serviço finalizado • revisão do tempo disponível por ${formatSeconds(remain)}. O PCM fará a finalização definitiva.</div><button class="action-btn btn-start" onclick="editFinalizedTime(${order.id})">⏱ REVISAR TEMPO (1 VEZ)</button>`;
+        if(!Boolean(order.employee_time_edit_used)){
+            buttons=`<div class="factory-note success">✓ Serviço finalizado • você tem <b>1 única alteração de horário</b>. Depois dela, somente o PCM poderá corrigir.</div><button class="action-btn btn-start" onclick="editFinalizedTime(${order.id})">⏱ MODIFICAR HORÁRIO — 1 VEZ</button>`;
         }else{
-            buttons=`<div class="factory-note">✓ Serviço finalizado • aguardando finalização definitiva pelo PCM.</div>`;
+            buttons=`<div class="factory-note">✓ Horário já alterado pelo funcionário. O.S. encaminhada ao PCM para finalização.</div>`;
         }
     }
     if(order.status === "FINALIZADA"){
@@ -6684,7 +6674,7 @@ async function exportHistoryPDF(){
 
   function refreshBoard(){
     addUserBoard();
-    renderUserBoard(dashboardOrders||[]);
+    renderUserBoard(window.dashboardOrders||[]);
   }
 
   // Ordenação de prioridade no Kanban atual.
@@ -6693,7 +6683,7 @@ async function exportHistoryPDF(){
     if(typeof oldFiltered==='function')oldFiltered();
     const q=(document.getElementById('pcmDashFilter')?.value||'').toLowerCase().trim();
     const status=document.querySelector('[data-pcm-status].active')?.dataset.pcmStatus||'TODAS';
-    const filtered=(dashboardOrders||[]).filter(o=>{
+    const filtered=(window.dashboardOrders||[]).filter(o=>{
       const text=[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.description,o.pause_reason].join(' ').toLowerCase();
       return (!q||text.includes(q))&&(status==='TODAS'||o.status===status);
     }).sort(sortOS);
@@ -7826,32 +7816,8 @@ body{min-height:100vh;background:#050505!important;}
   }
   window.finishOS=async function(osId){await finishFlow(osId,true)};
   window.editFinalizedTime=async function(osId){
-    if(!currentUser||isAdmin)return;
-    const order=await getOrder(osId);
-    if(!order||order.status!=='FINALIZADA - AGUARDANDO PCM'||!isMine(order))return alert('Esta O.S. não está disponível para ajuste pelo funcionário.');
-    const h=await historyFor(osId);
-    if(h.some(x=>x.action===ACTION_TIME))return alert('O ajuste de horário desta O.S. já foi utilizado uma vez. Agora a O.S. está com o PCM.');
-    modal('editTimeModal','Revisar tempo da O.S.','Você tem **1 única oportunidade** para corrigir o horário/tempo desta O.S. Depois de salvar, ela sai do seu painel e fica disponível somente para o PCM. A justificativa é obrigatória.',`<div class="factory-note">⚠️ Esta alteração só pode ser feita <b>UMA VEZ</b>. Depois de salvar, a O.S. será encaminhada para o PCM e desaparecerá do seu painel.</div><label>Novo tempo total (HH:MM:SS)</label><input id="editTimeInput" value="${durInput(parseInt(order.total_service_seconds||0))}" inputmode="numeric"><label>Justificativa da alteração <b style="color:#b91c1c">*</b></label><textarea id="editTimeReason" placeholder="Explique por que o horário/tempo precisa ser alterado..."></textarea>`,'SALVAR ALTERAÇÃO',async el=>{
-      const nt=parseDuration(el.querySelector('#editTimeInput').value);
-      const reason=el.querySelector('#editTimeReason').value.trim();
-      if(nt===null){alert('Use o formato HH:MM:SS.');return false;}
-      if(nt===parseInt(order.total_service_seconds||0)){alert('Você precisa alterar o tempo para registrar a correção.');return false;}
-      if(!reason){alert('A justificativa é obrigatória para alterar o horário/tempo.');el.querySelector('#editTimeReason').focus();return false;}
-      const check=await historyFor(osId);
-      if(check.some(x=>x.action===ACTION_TIME)){alert('Esta O.S. já teve a única alteração de horário utilizada. Ela pertence ao PCM agora.');return false;}
-      const now=new Date().toISOString();
-      const {error}=await db.from('os_orders').update({total_service_seconds:nt}).eq('id',osId).eq('status','FINALIZADA - AGUARDANDO PCM');
-      if(error)throw error;
-      try{
-        await insertExecutionHistory({os_id:osId,os_number:order.os_number,employee:currentUser,action:ACTION_TIME,reason,started_at:order.started_at||null,ended_at:now,duration_seconds:nt});
-      }catch(historyError){
-        console.error('Erro ao registrar a alteração de horário:',historyError);
-        alert('O horário foi salvo, mas não foi possível registrar a justificativa no histórico. O PCM deverá verificar esta O.S.');
-      }
-      await loadEmployeeOrders();
-      alert('Alteração salva com sucesso. A O.S. saiu do seu painel e foi encaminhada para o PCM.');
-      return true;
-    });
+    if(!currentUser||isAdmin)return;const order=await getOrder(osId);if(!['FINALIZADA - AGUARDANDO PCM','FINALIZADA'].includes(order.status)||!isMine(order))return;const finished=new Date(order.finished_at||0).getTime();if(!finished||Date.now()-finished>30*60*1000)return alert('A janela de 30 minutos para alterar o tempo já terminou.');const h=await historyFor(osId);if(h.some(x=>x.action===ACTION_TIME))return alert('O tempo desta O.S. já foi alterado uma vez.');
+    modal('editTimeModal','Revisar tempo da O.S.','Você pode alterar o tempo uma única vez. A justificativa é obrigatória.',`<label>Novo tempo total (HH:MM:SS)</label><input id="editTimeInput" value="${durInput(parseInt(order.total_service_seconds||0))}" inputmode="numeric"><label>Justificativa *</label><textarea id="editTimeReason" placeholder="Explique por que o tempo precisa ser alterado..."></textarea>`,'SALVAR ALTERAÇÃO',async el=>{const nt=parseDuration(el.querySelector('#editTimeInput').value);const reason=el.querySelector('#editTimeReason').value.trim();if(nt===null){alert('Use HH:MM:SS.');return false;}if(nt===parseInt(order.total_service_seconds||0)){alert('O novo tempo é igual ao atual.');return false;}if(!reason){alert('Informe a justificativa.');return false;}const now=new Date().toISOString();const {error}=await db.from('os_orders').update({total_service_seconds:nt}).eq('id',osId).in('status',['FINALIZADA - AGUARDANDO PCM','FINALIZADA']);if(error)throw error;await insertExecutionHistory({os_id:osId,os_number:order.os_number,employee:currentUser,action:ACTION_TIME,reason,started_at:null,ended_at:now,duration_seconds:nt});await loadEmployeeOrders();return true;});
   };
 
   window.adminEditFinalizedTime=async function(osId){
@@ -7913,9 +7879,6 @@ body{min-height:100vh;background:#050505!important;}
   const oldNav=window.navigateTo;
   if(oldNav&&!oldNav.__factorySecure){const secure=function(view,btn){if(!isAdmin&&view!=='view-employee')view='view-employee';return oldNav(view,btn)};secure.__factorySecure=true;window.navigateTo=secure;}
   document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{if(typeof window.refreshFactoryNavigation==='function')window.refreshFactoryNavigation()},100);});
-  /* Disponibiliza o modal para as funções de finalização definidas fora desta IIFE. */
-  window.modal = modal;
-
 })();
 </script>
 
@@ -7944,6 +7907,42 @@ body{min-height:100vh;background:#050505!important;}
 .pcm-cancel-reason{width:100%;padding:12px;border:1px solid #334155;border-radius:9px;background:#020617;color:#cbd5e1;text-align:left;cursor:pointer;font-size:11px}
 .pcm-cancel-reason:hover,.pcm-cancel-reason.selected{border-color:#ef4444;background:#3f1111;color:#fff}
 @media(max-width:600px){.pcm-admin-actions{grid-template-columns:1fr 1fr}.pcm-admin-actions .action-btn{font-size:9px;min-height:42px;padding:7px 5px}.pcm-cancel-box{padding:17px}}
+
+/* =========================================================
+   PALETA PCM — B89B72
+========================================================= */
+:root{--pcm:#B89B72;--pcm-dark:#8f744f;--pcm-soft:#d8c4a8;--pcm-bg:#17130f;--pcm-panel:#211b15;--pcm-border:#4a3b2b;}
+body,html{background:#0d0b09;color:#f4eee6;}
+#loginScreen{background:radial-gradient(circle at 20% 30%,rgba(184,155,114,.18),transparent 35%),radial-gradient(circle at 80% 70%,rgba(80,55,30,.32),transparent 40%),linear-gradient(135deg,#0b0907,#21180f 50%,#0b0907);}
+.login-card{background:rgba(27,21,15,.96);border-color:rgba(184,155,114,.45);}
+.login-brand .small,.page-subtitle,.employee-note{color:#b9a890;}
+.ab-logo{border-color:var(--pcm);color:var(--pcm);}
+.form-input,.form-select,.form-textarea{background:#100d0a;border-color:#594733;color:#f8f2e9;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--pcm);box-shadow:0 0 0 2px rgba(184,155,114,.15);}
+.login-btn,.btn-primary{background:var(--pcm);color:#17120d;}
+.login-btn:hover,.btn-primary:hover{background:var(--pcm-soft);}
+.sidebar{background:#120f0c;border-color:#3b3024;}
+.sidebar-brand{border-color:#3b3024;}
+.nav-btn:hover,.nav-btn.active{background:#3a2e21;color:#fff;}
+.logout-btn{border-color:#594733;color:#d8c4a8;}
+.user-badge{background:#211a13;border-color:#594733;}
+.stat-card,.panel,.os-card,.employee-os,.modal-box{background:#1b1611;border-color:#493a2b;}
+.kanban-column{background:#100d0a;border-color:#3b3024;}
+.kanban-header{background:#3a2e21;}
+th{background:#100d0a;color:#b9a890;}
+td{border-color:#33291f;}
+.btn-start{background:#5f7040;color:#eef5df;}
+.btn-material{background:#8a6230;color:#fff0d5;}
+.btn-finish{background:#8f744f;color:#fff7eb;}
+.btn-emergency{background:#7f2d24;color:#ffe3df;}
+.status-aberta{background:#403326;color:#e7d5bd;}
+.status-producao{background:#40502f;color:#e8f2d7;}
+.status-material{background:#6b4a24;color:#ffe8c7;}
+.status-finalizada{background:#514538;color:#e9dfd3;}
+.reason-btn{background:#100d0a;border-color:#594733;color:#eadbc8;}
+.reason-btn:hover{background:#2b2219;}
+.pcm-toast{border-color:rgba(184,155,114,.45);background:rgba(31,24,17,.96);color:#f1e6d8;}
+.pcm-toast-icon{background:#8f744f;color:#fff3e3;}
 </style>
 <script id="pcm-v10-admin-actions-js">
 (function(){
@@ -8042,1592 +8041,77 @@ if(typeof justBaseLoad==='function'&&!justBaseLoad.__pcmJustifications){
 document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>renderAdminJustifications(),500));
 })();
 </script>
-
-<!-- =========================================================
-     PCM • AJUSTES FINAIS — FINALIZAÇÃO / MATERIAL / PAINEL
-========================================================= -->
-<style id="pcm-ajustes-finais-css">
-.pcm-compact-list{display:grid;gap:6px}
-.pcm-compact-row{
-    display:grid;
-    grid-template-columns:90px minmax(150px,1.5fr) minmax(120px,1fr) 150px 90px 105px;
-    gap:8px;align-items:center;
-    padding:9px 10px;border:1px solid #263449;border-radius:9px;
-    background:#08111f;font-size:10px;color:#cbd5e1;
-}
-.pcm-compact-row:hover{background:#0d1726;border-color:#475569}
-.pcm-compact-head{
-    display:grid;
-    grid-template-columns:90px minmax(150px,1.5fr) minmax(120px,1fr) 150px 90px 105px;
-    gap:8px;padding:5px 10px;color:#64748b;font-size:8px;
-    text-transform:uppercase;font-weight:800;
-}
-.pcm-compact-main{min-width:0}
-.pcm-compact-main b{display:block;color:#f8fafc;font-size:11px}
-.pcm-compact-sub{display:block;color:#64748b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pcm-compact-status{font-size:9px;font-weight:800}
-.pcm-details-btn{width:100%;margin:0!important;background:#334155;color:#f8fafc}
-.pcm-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.pcm-detail-item{padding:9px;border:1px solid #263449;border-radius:8px;background:#07101d}
-.pcm-detail-item span{display:block;color:#64748b;font-size:9px;text-transform:uppercase}
-.pcm-detail-item b{display:block;margin-top:3px;color:#f8fafc;font-size:11px;word-break:break-word}
-.pcm-detail-section{margin-top:14px;padding-top:12px;border-top:1px solid #263449}
-.pcm-detail-section-title{font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;margin-bottom:8px}
-.pcm-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.pcm-detail-actions .action-btn{margin:0!important}
-.pcm-material-item{border:1px solid #334155;border-radius:10px;padding:12px;background:#020617;margin-bottom:8px}
-.pcm-material-grid{display:grid;grid-template-columns:1.4fr .6fr;gap:8px;margin-top:8px}
-.pcm-material-label{color:#64748b;font-size:9px;text-transform:uppercase}
-.pcm-material-value{color:#e2e8f0;font-size:11px;margin-top:2px;word-break:break-word}
-.pcm-material-note{margin-top:8px;padding:8px;border-radius:7px;background:#0b1220;color:#cbd5e1;font-size:10px;line-height:1.5}
-.pcm-last-edit{border:1px solid #92400e;background:#1c1207;color:#fed7aa;padding:9px;border-radius:8px;font-size:10px;margin-top:10px}
-@media(max-width:900px){
-  .pcm-compact-head{display:none}
-  .pcm-compact-row{grid-template-columns:1fr 1fr;gap:7px}
-  .pcm-compact-main:first-child{grid-column:1/-1}
-  .pcm-detail-grid{grid-template-columns:1fr}
-}
-@media(max-width:600px){
-  .pcm-compact-row{grid-template-columns:1fr}
-  .pcm-detail-actions{grid-template-columns:1fr}
-  .pcm-material-grid{grid-template-columns:1fr}
-}
-</style>
-
-<script id="pcm-ajustes-finais-js">
+<script id="pcm-mobile-final-fix">
 (function(){
-'use strict';
-
-function esc(v){
-  return typeof escapeHtml==='function'
-    ? escapeHtml(v==null?'':String(v))
-    : String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-}
-function fmtLocal(v){
-  if(!v)return '-';
-  const d=new Date(v);
-  return Number.isNaN(d.getTime())?String(v):d.toLocaleString('pt-BR');
-}
-function isoToLocal(v){
-  if(!v)return '';
-  const d=new Date(v); if(Number.isNaN(d.getTime()))return '';
-  const p=n=>String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-function parseDur(v){
-  if(typeof parseDuration==='function')return parseDuration(v);
-  const m=String(v||'').trim().match(/^(\d+):([0-5]\d):([0-5]\d)$/);
-  return m?Number(m[1])*3600+Number(m[2])*60+Number(m[3]):null;
-}
-function dur(v){
-  if(typeof durInput==='function')return durInput(Number(v||0));
-  let s=Math.max(0,Number(v||0)),h=Math.floor(s/3600);s%=3600;
-  return String(h).padStart(2,'0')+':'+String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
-}
-async function getO(id){
-  const {data,error}=await db.from('os_orders').select('*').eq('id',id).single();
-  if(error||!data)throw new Error('O.S. não encontrada.');
-  return data;
-}
-async function hist(id){
-  const {data,error}=await db.from('os_execution_history').select('*').eq('os_id',id).order('created_at',{ascending:false});
-  if(error)throw error;
-  return data||[];
-}
-
-/* =========================================================
-   1) FINALIZAÇÃO — UMA ÚNICA ALTERAÇÃO APÓS FINALIZAR
-========================================================= */
-
-window.finishOS=async function(osId){
-  if(!currentUser||isAdmin)return;
-  const order=await getO(osId);
-  if(order.status!=='EM PRODUÇÃO'||!isMine(order)){
-    alert('Esta O.S. não está ativa com você.');
-    return;
-  }
-
-  const startValue=order.started_at||'';
-  const now=new Date();
-  const endValue=now.toISOString();
-  const elapsed=typeof getCurrentElapsed==='function'?getCurrentElapsed(order):0;
-  const currentTotal=Number(order.total_service_seconds||0)+Number(elapsed||0);
-
-  const fields=`
-    <div class="factory-note">
-      Ao finalizar, o serviço será encerrado para você e ficará aguardando o PCM.
-      Depois da finalização haverá <b>somente 1 última alteração de horário</b>.
-    </div>
-    <label>Início do serviço</label>
-    <input id="pcmFinishStart" type="datetime-local" value="${isoToLocal(startValue)}">
-    <label>Fim do serviço</label>
-    <input id="pcmFinishEnd" type="datetime-local" value="${isoToLocal(endValue)}">
-    <label>Tempo total de serviço (HH:MM:SS)</label>
-    <input id="pcmFinishTotal" value="${dur(currentTotal)}" inputmode="numeric">
-    <div class="factory-note">Confira os horários antes de confirmar a finalização.</div>
-  `;
-
-  window.modal('pcmFinishModal','Finalizar O.S.','Confirme o período real trabalhado.',fields,'FINALIZAR O.S.',async el=>{
-    const start=el.querySelector('#pcmFinishStart').value;
-    const finish=el.querySelector('#pcmFinishEnd').value;
-    let total=parseDur(el.querySelector('#pcmFinishTotal').value);
-
-    if(!start||!finish){
-      alert('Informe o início e o fim do serviço.');
-      return false;
-    }
-    const a=new Date(start).getTime(),b=new Date(finish).getTime();
-    if(!Number.isFinite(a)||!Number.isFinite(b)||b<a){
-      alert('Confira os horários de início e fim.');
-      return false;
-    }
-
-    total=Math.floor((b-a)/1000);
-
-    const startIso=new Date(start).toISOString();
-    const finishIso=new Date(finish).toISOString();
-    const {error}=await db.from('os_orders').update({
-      status:'FINALIZADA - AGUARDANDO PCM',
-      finished_at:finishIso,
-      started_at:startIso,
-      active_employee:null,
-      paused_at:null,
-      total_service_seconds:total
-    }).eq('id',osId).eq('status','EM PRODUÇÃO');
-
-    if(error)throw error;
-
-    await insertExecutionHistory({
-      os_id:order.id,os_number:order.os_number,employee:currentUser,
-      action:'FINALIZADA',
-      reason:'O.S. finalizada pelo funcionário. Período conferido no encerramento.',
-      started_at:startIso,ended_at:finishIso,duration_seconds:total
-    });
-
-    await loadEmployeeOrders();
-    return true;
-  });
-};
-
-/* Substitui o cartão do funcionário para mostrar a 1 última alteração,
-   sem janela de 30 minutos. */
-window.renderEmployeeOrders=function(orders){
-  const container=document.getElementById('employeeOsContainer');
-  if(!container)return;
-  container.innerHTML='';
-  if(!orders||!orders.length){
-    container.innerHTML='<div class="panel" style="grid-column:1/-1"><div style="color:#64748b">Nenhuma O.S. atribuída a você.</div></div>';
-    return;
-  }
-  orders.forEach(order=>container.insertAdjacentHTML('beforeend',window.pcmCreateEmployeeCard(order)));
-};
-
-window.pcmCreateEmployeeCard=function(order){
-  const running=order.status==='EM PRODUÇÃO' &&
-    normalizeEmployee(order.active_employee)===normalizeEmployee(currentUser);
-
-  const history=employeeHistoryMeta.get(order.id)||[];
-  const lastEditUsed=history.some(h=>
-    h.action==='ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO' ||
-    h.action==='HORÁRIO AJUSTADO PELO FUNCIONÁRIO'
-  );
-
-  let buttons='';
-
-  if(order.status==='O.S. ABERTA')
-    buttons=`<button class="action-btn btn-start" onclick="startOS(${order.id})">▶ INICIAR O.S.</button>`;
-
-  if(order.status==='PAUSADA' && normalizeEmployee(order.responsible)===normalizeEmployee(currentUser)){
-    buttons=`<button class="action-btn btn-start" onclick="resumeOS(${order.id})">▶ RETOMAR O.S.</button>`;
-    buttons+=`<div class="factory-note">⏸ Pausada: ${esc(order.pause_reason||'Motivo não informado')}</div>`;
-  }
-
-  if(running){
-    buttons+=`<button class="action-btn btn-pause" onclick="pauseOS(${order.id})">⏸ PAUSAR</button>`;
-    buttons+=`<button class="action-btn btn-material" onclick="openMaterialModal(${order.id})">📦 REQUISITAR MATERIAL</button>`;
-    buttons+=`<button class="action-btn btn-finish" onclick="finishOS(${order.id})">✓ FINALIZAR O.S.</button>`;
-    buttons+=`<button class="action-btn btn-emergency" onclick="emergencyStopOS(${order.id})">▲ PARADA IMEDIATA</button>`;
-  }
-
-  if(order.status==='FINALIZADA - AGUARDANDO PCM'){
-    const start=order.started_at;
-    const finish=order.finished_at;
-    buttons=`<div class="factory-note success">
-      ✓ Serviço finalizado.<br>
-      <b>Início:</b> ${esc(fmtLocal(start))}<br>
-      <b>Fim:</b> ${esc(fmtLocal(finish))}<br>
-      <b>Tempo total:</b> ${esc(dur(order.total_service_seconds))}
-    </div>`;
-    if(!lastEditUsed){
-      buttons+=`<button class="action-btn btn-start" onclick="editFinalizedTime(${order.id})">✏️ MODIFICAR HORÁRIO — 1 ÚLTIMA VEZ</button>`;
-      buttons+=`<div class="factory-note warning">Você possui somente esta última alteração. Depois dela, qualquer correção será feita pelo PCM.</div>`;
-    }else{
-      buttons+=`<div class="factory-note">🔒 Última alteração já utilizada. Procure o PCM para qualquer correção adicional.</div>`;
-    }
-  }
-
-  if(order.status==='FINALIZADA')
-    buttons=`<div class="factory-note success">✓ O.S. finalizada definitivamente pelo PCM.</div>`;
-
-  if(order.status==='FINALIZADA - OBSERVAÇÃO')
-    buttons=`<div class="factory-note warning">📝 O PCM liberou esta O.S. para completar a observação.</div>
-      <button class="action-btn btn-start" onclick="openObservationModal(${order.id})">📝 ADICIONAR OBSERVAÇÃO</button>`;
-
-  return `<div class="employee-os">
-    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
-      <div class="number">O.S. ${esc(order.os_number)}</div>
-      <div class="priority ${priorityClass(order.priority)}">${esc(order.priority||'')}</div>
-    </div>
-    <div class="machine">${esc(order.machine)}</div>
-    <div style="color:#64748b;font-size:10px;margin-top:4px">${esc(order.tag||'')} • ${esc(order.sector||'')}</div>
-    <div class="description">${esc(order.description||'')}</div>
-    ${running?`<div class="timer" data-timer-id="${order.id}">⏱ ${formatSeconds(getTotalTime(order))}</div>`:`<div style="margin-top:12px;color:#64748b;font-size:10px">Tempo acumulado: ${dur(order.total_service_seconds)}</div>`}
-    ${order.observations?`<div class="factory-observation"><b>Observações:</b><br>${esc(order.observations)}</div>`:''}
-    <div class="employee-actions">${buttons}</div>
-  </div>`;
-};
-
-/* Uma única alteração depois da finalização. Sem prazo de 30 minutos. */
-window.editFinalizedTime=async function(osId){
-  if(!currentUser||isAdmin)return;
-  const order=await getO(osId);
-  if(order.status!=='FINALIZADA - AGUARDANDO PCM'||!isMine(order))return;
-
-  const history=await hist(osId);
-  const used=history.some(h=>
-    h.action==='ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO' ||
-    h.action==='HORÁRIO AJUSTADO PELO FUNCIONÁRIO'
-  );
-  if(used){
-    alert('A última alteração desta O.S. já foi utilizada. Procure o PCM.');
-    return;
-  }
-
-  const oldStart=order.started_at||'';
-  const oldFinish=order.finished_at||'';
-  const oldTotal=Number(order.total_service_seconds||0);
-
-  const fields=`
-    <div class="factory-note warning">
-      Esta é a <b>última alteração</b> permitida pelo funcionário.
-      Depois de salvar, somente o PCM poderá corrigir novamente.
-    </div>
-    <label>Início atual</label>
-    <input id="lastStartTime" type="datetime-local" value="${isoToLocal(oldStart)}">
-    <label>Fim atual</label>
-    <input id="lastFinishTime" type="datetime-local" value="${isoToLocal(oldFinish)}">
-    <label>Tempo total (HH:MM:SS)</label>
-    <input id="lastTotalTime" value="${dur(oldTotal)}" inputmode="numeric">
-    <label>Justificativa *</label>
-    <textarea id="lastTimeReason" placeholder="Explique o motivo desta última alteração..."></textarea>
-    <div class="pcm-last-edit">
-      Original: ${esc(fmtLocal(oldStart))} até ${esc(fmtLocal(oldFinish))} • ${esc(dur(oldTotal))}
-    </div>
-  `;
-
-  modal('pcmLastTimeModal','Última alteração de horário','Esta alteração poderá ser usada somente uma vez.',fields,'SALVAR ÚLTIMA ALTERAÇÃO',async el=>{
-    const start=el.querySelector('#lastStartTime').value;
-    const finish=el.querySelector('#lastFinishTime').value;
-    const reason=el.querySelector('#lastTimeReason').value.trim();
-
-    if(!reason){alert('Informe a justificativa.');return false;}
-    if(!start||!finish){alert('Informe o início e o fim.');return false;}
-
-    const a=new Date(start).getTime(),b=new Date(finish).getTime();
-    if(!Number.isFinite(a)||!Number.isFinite(b)||b<a){
-      alert('Confira os horários de início e fim.');
-      return false;
-    }
-
-    const total=Math.floor((b-a)/1000);
-    const startIso=new Date(start).toISOString();
-    const finishIso=new Date(finish).toISOString();
-    const now=new Date().toISOString();
-
-    const {error}=await db.from('os_orders').update({
-      started_at:startIso,
-      finished_at:finishIso,
-      total_service_seconds:total
-    }).eq('id',osId).eq('status','FINALIZADA - AGUARDANDO PCM');
-
-    if(error)throw error;
-
-    await insertExecutionHistory({
-      os_id:order.id,os_number:order.os_number,employee:currentUser,
-      action:'ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO',
-      reason:
-        `Horário original: ${fmtLocal(oldStart)} até ${fmtLocal(oldFinish)} | ${dur(oldTotal)}. `+
-        `Novo horário: ${fmtLocal(startIso)} até ${fmtLocal(finishIso)} | ${dur(total)}. `+
-        `Justificativa: ${reason}`,
-      started_at:startIso,ended_at:finishIso,duration_seconds:total
-    });
-
-    await loadEmployeeOrders();
-    return true;
-  });
-};
-
-
-/* =========================================================
-   CORREÇÃO FINAL — BOTÃO FINALIZAR O.S.
-   Usa o funcionário realmente ativo na O.S. como validação.
-========================================================= */
-window.finishOS=async function(osId){
-  try{
-    if(!currentUser || isAdmin){
-      alert('Somente o funcionário responsável pela execução pode finalizar a O.S.');
-      return;
-    }
-
-    const order=await getO(osId);
-    if(!order){ alert('O.S. não encontrada.'); return; }
-
-    const activeUser=normalizeEmployee(order.active_employee);
-    const loggedUser=normalizeEmployee(currentUser);
-
-    if(order.status!=='EM PRODUÇÃO'){
-      alert('Esta O.S. não está em produção.');
-      return;
-    }
-
-    /* A execução pertence a quem clicou em INICIAR O.S. */
-    if(!activeUser || activeUser!==loggedUser){
-      alert('Esta O.S. não está ativa para o usuário logado.');
-      return;
-    }
-
-    const startValue=order.started_at||'';
-    const endValue=new Date().toISOString();
-    const elapsed=typeof getCurrentElapsed==='function' ? getCurrentElapsed(order) : 0;
-    const currentTotal=Number(order.total_service_seconds||0)+Number(elapsed||0);
-
-    const fields=`
-      <div class="factory-note">
-        Ao finalizar, a execução será encerrada para você e a O.S. ficará
-        <b>FINALIZADA — AGUARDANDO PCM</b>.
-      </div>
-      <label>Início do serviço</label>
-      <input id="finishStartFinal" type="datetime-local" value="${isoToLocal(startValue)}">
-      <label>Fim do serviço</label>
-      <input id="finishEndFinal" type="datetime-local" value="${isoToLocal(endValue)}">
-      <label>Tempo total de serviço (HH:MM:SS)</label>
-      <input id="finishTotalFinal" value="${dur(currentTotal)}" inputmode="numeric">
-      <div class="factory-note">
-        Confira os horários antes de confirmar. Depois da finalização haverá
-        somente <b>1 última alteração</b> pelo funcionário.
-      </div>`;
-
-    window.modal('finishOSFinalModal','Finalizar O.S.','Confirme o período real trabalhado.',fields,'FINALIZAR O.S.',async el=>{
-      const start=el.querySelector('#finishStartFinal').value;
-      const finish=el.querySelector('#finishEndFinal').value;
-      if(!start||!finish){alert('Informe o início e o fim do serviço.');return false;}
-
-      const a=new Date(start).getTime();
-      const b=new Date(finish).getTime();
-      if(!Number.isFinite(a)||!Number.isFinite(b)||b<a){
-        alert('Confira os horários de início e fim.');
-        return false;
-      }
-
-      const total=Math.floor((b-a)/1000);
-      if(total<0){alert('O tempo total não pode ser negativo.');return false;}
-
-      const startIso=new Date(start).toISOString();
-      const finishIso=new Date(finish).toISOString();
-
-      const {error:updateError}=await db.from('os_orders').update({
-        status:'FINALIZADA - AGUARDANDO PCM',
-        started_at:startIso,
-        finished_at:finishIso,
-        active_employee:null,
-        paused_at:null,
-        total_service_seconds:total
-      }).eq('id',osId).eq('status','EM PRODUÇÃO');
-
-      if(updateError){
-        console.error('Erro ao finalizar O.S.:',updateError);
-        alert('Não foi possível finalizar a O.S. no banco.\n\n'+updateError.message);
-        return false;
-      }
-
-      /* Histórico não pode impedir a finalização se houver falha isolada nele. */
-      try{
-        await insertExecutionHistory({
-          os_id:order.id,
-          os_number:order.os_number,
-          employee:currentUser,
-          action:'FINALIZADA',
-          reason:'O.S. finalizada pelo funcionário. Período conferido no encerramento.',
-          started_at:startIso,
-          ended_at:finishIso,
-          duration_seconds:total
-        });
-      }catch(historyError){
-        console.error('O.S. finalizada, mas histórico não foi registrado:',historyError);
-      }
-
-      showPcmToast('O.S. '+order.os_number+' finalizada e enviada para conferência do PCM.','success');
-
-      try{ await loadEmployeeOrders(); }catch(e){ console.error(e); }
-      return true;
-    });
-  }catch(e){
-    console.error('Falha no botão FINALIZAR O.S.:',e);
-    alert(e.message||'Não foi possível finalizar a O.S.');
-  }
-};
-
-/* =========================================================
-   2) MATERIAL — SOLICITAÇÃO NÃO PARA A O.S.
-========================================================= */
-
-window.openMaterialModal=function(osId){
-  const old=document.getElementById('pcmMaterialRequestModal');
-  if(old)old.remove();
-
-  const el=document.createElement('div');
-  el.id='pcmMaterialRequestModal';
-  el.className='modal';
-  el.innerHTML=`<div class="modal-box">
-    <div class="modal-title">📦 Requisitar material</div>
-    <div class="modal-description">
-      A requisição será enviada ao PCM, mas <b>não interrompe a O.S.</b>.
-      Você continuará trabalhando normalmente.
-    </div>
-    <label class="form-label">Material *</label>
-    <input id="pcmReqMaterial" class="form-input" placeholder="Ex.: rolamento 6205, correia, parafuso...">
-    <label class="form-label" style="margin-top:10px">Quantidade *</label>
-    <input id="pcmReqQuantity" class="form-input" inputmode="decimal" placeholder="Ex.: 2">
-    <label class="form-label" style="margin-top:10px">Observação</label>
-    <textarea id="pcmReqObservation" class="form-textarea" style="min-height:90px" placeholder="Detalhe a necessidade do material..."></textarea>
-    <div class="modal-buttons">
-      <button type="button" class="btn-secondary" id="pcmReqCancel">CONTINUAR O.S.</button>
-      <button type="button" class="btn-primary" id="pcmReqSend">ENVIAR REQUISIÇÃO</button>
-    </div>
-  </div>`;
-  document.body.appendChild(el);
-
-  const close=()=>el.remove();
-  el.querySelector('#pcmReqCancel').onclick=close;
-  el.onclick=e=>{if(e.target===el)close()};
-
-  el.querySelector('#pcmReqSend').onclick=async()=>{
-    const material=el.querySelector('#pcmReqMaterial').value.trim();
-    const quantity=el.querySelector('#pcmReqQuantity').value.trim();
-    const observation=el.querySelector('#pcmReqObservation').value.trim();
-
-    if(!material){alert('Informe o material.');return;}
-    if(!quantity){alert('Informe a quantidade.');return;}
-
-    const order=await getO(osId);
-    if(order.status!=='EM PRODUÇÃO'||normalizeEmployee(order.active_employee)!==normalizeEmployee(currentUser)){
-      alert('Esta O.S. não está mais em produção com você.');
-      return;
-    }
-
-    const now=new Date().toISOString();
-    const fallbackReason=`Material: ${material} | Quantidade: ${quantity}${observation?' | Observação: '+observation:''}`;
-
-    /* Primeiro tenta usar campos separados. Se a tabela atual ainda não tiver
-       esses campos, cai automaticamente no formato antigo sem quebrar o app. */
-    let ins=await db.from('os_material_requests').insert({
-      os_id:order.id,os_number:order.os_number,requested_by:currentUser,
-      material,quantity,observation,reason:fallbackReason,status:'PENDENTE',requested_at:now
-    });
-
-    if(ins.error){
-      ins=await db.from('os_material_requests').insert({
-        os_id:order.id,os_number:order.os_number,requested_by:currentUser,
-        reason:fallbackReason,status:'PENDENTE',requested_at:now
-      });
-    }
-
-    if(ins.error){
-      alert('Não foi possível registrar a requisição de material.\n\n'+ins.error.message);
-      return;
-    }
-
-    /* Apenas registra a data da solicitação. Não muda status, não zera início,
-       não remove funcionário e não para o cronômetro. */
-    const up=await db.from('os_orders').update({material_requested_at:now}).eq('id',order.id);
-    if(up.error)console.warn('Data da requisição não atualizada:',up.error);
-
-    await insertExecutionHistory({
-      os_id:order.id,os_number:order.os_number,employee:currentUser,
-      action:'REQUISITOU MATERIAL',
-      reason:fallbackReason,started_at:order.started_at,ended_at:now,
-      duration_seconds:0
-    });
-
-    close();
-    if(typeof showPCMToast==='function')showPCMToast('Material requisitado. A O.S. continua em produção.','success');
-    else if(typeof showPcmToast==='function')showPcmToast('Material requisitado. A O.S. continua em produção.','success');
-
-    await loadEmployeeOrders();
-  };
-};
-
-/* =========================================================
-   3) PCM — SOLICITAÇÕES DE MATERIAL SEM TIRAR A O.S. DE PRODUÇÃO
-========================================================= */
-
-function parseMaterialRequest(r){
-  let material=r.material||'';
-  let quantity=r.quantity||'';
-  let observation=r.observation||'';
-
-  if(!material && r.reason){
-    const s=String(r.reason);
-    const m=s.match(/Material:\s*(.*?)(?:\s*\|\s*Quantidade:|$)/i);
-    const q=s.match(/Quantidade:\s*(.*?)(?:\s*\|\s*Observação:|$)/i);
-    const o=s.match(/Observação:\s*(.*)$/i);
-    material=m?m[1].trim():'';
-    quantity=q?q[1].trim():'';
-    observation=o?o[1].trim():'';
-  }
-  return {material,quantity,observation};
-}
-
-window.loadMaterialRequests=async function(){
-  if(!isAdmin)return;
-
-  const {data,error}=await db.from('os_material_requests')
-    .select('*').eq('status','PENDENTE').order('requested_at',{ascending:false});
-
-  const container=document.getElementById('materialRequestsContainer');
-  if(!container)return;
-
-  if(error){
-    console.error(error);
-    container.innerHTML='<div style="color:#fca5a5;font-size:12px">Não foi possível carregar as requisições de material.</div>';
-    return;
-  }
-  if(!data||!data.length){
-    container.innerHTML='<div style="color:#64748b;font-size:12px">Nenhuma solicitação de material pendente.</div>';
-    return;
-  }
-
-  const ids=[...new Set(data.map(x=>x.os_id))];
-  const {data:orders}=await db.from('os_orders').select('*').in('id',ids);
-  const map={};(orders||[]).forEach(o=>map[o.id]=o);
-
-  container.innerHTML=data.map(r=>{
-    const o=map[r.os_id]; if(!o)return '';
-    const m=parseMaterialRequest(r);
-    return `<div class="pcm-material-item">
-      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
-        <b>O.S. ${esc(r.os_number||o.os_number)}</b>
-        <span class="priority priority-media">REQUISIÇÃO</span>
-      </div>
-      <div style="color:#64748b;font-size:10px;margin-top:5px">
-        ${esc(o.machine||'-')} • TAG ${esc(o.tag||'-')} • ${esc(o.sector||'-')}
-      </div>
-      <div class="pcm-material-grid">
-        <div><div class="pcm-material-label">Material</div><div class="pcm-material-value">${esc(m.material||'-')}</div></div>
-        <div><div class="pcm-material-label">Quantidade</div><div class="pcm-material-value">${esc(m.quantity||'-')}</div></div>
-      </div>
-      <div class="pcm-material-note"><b>Observação:</b> ${esc(m.observation||'Sem observação.')}</div>
-      <div style="color:#94a3b8;font-size:10px;margin-top:8px">
-        Solicitado por <b style="color:#e2e8f0">${esc(r.requested_by||'-')}</b> em ${esc(fmtLocal(r.requested_at))}
-      </div>
-      <button class="action-btn btn-start" onclick="resolveMaterialRequest(${Number(r.id)})">
-        ✓ MARCAR REQUISIÇÃO COMO ATENDIDA
-      </button>
-      <div style="color:#64748b;font-size:9px;margin-top:5px">
-        A O.S. permanece em produção com o funcionário. Esta ação não reinicia nem redistribui a O.S.
-      </div>
-    </div>`;
-  }).join('');
-};
-
-window.resolveMaterialRequest=async function(requestId){
-  if(!isAdmin)return;
-  const {data:r,error}=await db.from('os_material_requests').select('*').eq('id',requestId).single();
-  if(error||!r){alert('Requisição não encontrada.');return;}
-
-  const now=new Date().toISOString();
-  const up=await db.from('os_material_requests').update({
-    status:'ATENDIDA',resolved_by:'PCM / Administrador',resolved_at:now
-  }).eq('id',requestId);
-
-  if(up.error){alert('Não foi possível atender a requisição.\n\n'+up.error.message);return;}
-
-  try{
-    await insertExecutionHistory({
-      os_id:r.os_id,os_number:r.os_number,employee:'PCM / Administrador',
-      action:'REQUISIÇÃO DE MATERIAL ATENDIDA',
-      reason:`Requisição atendida pelo PCM. ${r.material||r.reason||''}`,
-      started_at:null,ended_at:now,duration_seconds:0
-    });
-  }catch(e){console.warn(e)}
-
-  if(typeof showPCMToast==='function')showPCMToast('Requisição marcada como atendida.','success');
-  await loadMaterialRequests();
-};
-
-/* =========================================================
-   4) PCM — LISTA COMPACTA + DETALHES
-========================================================= */
-
-function pcmActions(order){
-  const id=Number(order.id);
-  const cancelled=String(order.status||'').toUpperCase()==='CANCELADA';
-  let a='';
-
-  if(!cancelled){
-    a+=`<button type="button" class="action-btn pcm-admin-edit" onclick="adminEditOS(${id});return false;">✏️ EDITAR O.S.</button>`;
-    a+=`<button type="button" class="action-btn pcm-admin-cancel" onclick="cancelOSAdmin(${id});return false;">🛑 CANCELAR O.S.</button>`;
-  }
-  a+=`<button type="button" class="action-btn btn-material" onclick="showPauseHistory(${id});return false;">⏸ MOTIVOS DE PAUSA</button>`;
-
-  if(order.status==='O.S. ABERTA'&&order.responsible)
-    a+=`<button type="button" class="action-btn btn-start" onclick="adminStartOS(${id});return false;">📤 LIBERAR O.S. PARA O USUÁRIO</button>`;
-  if(order.status==='PAUSADA'&&order.responsible)
-    a+=`<button type="button" class="action-btn btn-start" onclick="adminResumePausedOS(${id});return false;">▶ LIBERAR / RETOMAR O.S.</button>`;
-  if(order.status==='AGUARDANDO MATERIAL')
-    a+=`<button type="button" class="action-btn btn-material" onclick="openReleaseModal(${order.material_request_id||'null'},${id});return false;">📦 LIBERAR APÓS MATERIAL</button>`;
-  if(order.status==='FINALIZADA - AGUARDANDO PCM'){
-    a+=`<button type="button" class="action-btn btn-start" onclick="finalizeDefinitively(${id});return false;">✓ FINALIZAR DEFINITIVAMENTE</button>`;
-    a+=`<button type="button" class="action-btn btn-material" onclick="adminEditFinalizedTime(${id});return false;">⏱ EDITAR HORÁRIO / TEMPO</button>`;
-  }
-  if(['FINALIZADA','FINALIZADA - OBSERVAÇÃO'].includes(order.status))
-    a+=`<button type="button" class="action-btn btn-material" onclick="adminEditFinalizedTime(${id});return false;">⏱ EDITAR HORÁRIO / TEMPO</button>`;
-
-  return a;
-}
-
-window.pcmShowOrderDetails=function(osId){
-  const order=(dashboardOrders||[]).find(o=>Number(o.id)===Number(osId));
-  if(!order)return;
-
-  const start=order.started_at||'';
-  const finish=order.finished_at||'';
-  const status=order.status==='FINALIZADA - AGUARDANDO PCM'?'FINALIZADA • AGUARDANDO PCM':order.status;
-
-  const old=document.getElementById('pcmOrderDetailsModal');
-  if(old)old.remove();
-
-  const el=document.createElement('div');
-  el.id='pcmOrderDetailsModal';
-  el.className='modal';
-  el.innerHTML=`<div class="modal-box" style="max-height:92vh;overflow:auto">
-    <div class="modal-title">O.S. ${esc(order.os_number)}</div>
-    <div class="modal-description">Detalhes completos e controles administrativos da O.S.</div>
-
-    <div class="pcm-detail-grid">
-      <div class="pcm-detail-item"><span>Máquina</span><b>${esc(order.machine||'-')}</b></div>
-      <div class="pcm-detail-item"><span>TAG</span><b>${esc(order.tag||'-')}</b></div>
-      <div class="pcm-detail-item"><span>Setor</span><b>${esc(order.sector||'-')}</b></div>
-      <div class="pcm-detail-item"><span>Responsável</span><b>${esc(order.active_employee||order.responsible||'Não atribuído')}</b></div>
-      <div class="pcm-detail-item"><span>Status</span><b>${esc(status||'-')}</b></div>
-      <div class="pcm-detail-item"><span>Prioridade</span><b>${esc(order.priority||'-')}</b></div>
-      <div class="pcm-detail-item"><span>Prazo</span><b>${esc(order.deadline||'-')}</b></div>
-      <div class="pcm-detail-item"><span>Tempo total</span><b>${esc(dur(order.total_service_seconds))}</b></div>
-    </div>
-
-    <div class="pcm-detail-section">
-      <div class="pcm-detail-section-title">Execução</div>
-      <div class="pcm-detail-grid">
-        <div class="pcm-detail-item"><span>Início</span><b>${esc(fmtLocal(start))}</b></div>
-        <div class="pcm-detail-item"><span>Fim</span><b>${esc(fmtLocal(finish))}</b></div>
-        <div class="pcm-detail-item"><span>Última solicitação de material</span><b>${esc(fmtLocal(order.material_requested_at))}</b></div>
-        <div class="pcm-detail-item"><span>Motivo de pausa</span><b>${esc(order.pause_reason||'-')}</b></div>
-      </div>
-      ${order.description?`<div class="pcm-detail-item" style="margin-top:8px"><span>Descrição</span><b>${esc(order.description)}</b></div>`:''}
-    </div>
-
-    <div class="pcm-detail-section">
-      <div class="pcm-detail-section-title">Controles / histórico</div>
-      <div class="pcm-detail-actions">${pcmActions(order)}</div>
-    </div>
-
-    <div class="modal-buttons">
-      <button type="button" class="btn-secondary" id="pcmCloseDetails">FECHAR</button>
-    </div>
-  </div>`;
-  document.body.appendChild(el);
-  const close=()=>el.remove();
-  el.querySelector('#pcmCloseDetails').onclick=close;
-  el.onclick=e=>{if(e.target===el)close()};
-};
-
-function compactRow(order){
-  const responsible=order.active_employee||order.responsible||'Não atribuído';
-  const status=order.status==='FINALIZADA - AGUARDANDO PCM'?'AGUARDANDO PCM':(order.status||'-');
-  return `<div class="pcm-compact-row" data-os-id="${Number(order.id)}">
-    <div class="pcm-compact-main"><b class="os-number">${esc(order.os_number)}</b><span class="pcm-compact-sub">${esc(order.tag||'-')}</span></div>
-    <div class="pcm-compact-main"><b>${esc(order.machine||'-')}</b><span class="pcm-compact-sub">${esc(order.sector||'-')}</span></div>
-    <div class="pcm-compact-main"><b>${esc(responsible)}</b><span class="pcm-compact-sub">${esc(order.deadline||'Sem prazo')}</span></div>
-    <div class="pcm-compact-status">${esc(status)}</div>
-    <div><span class="priority ${priorityClass(order.priority)}">${esc(order.priority||'MODERADA')}</span></div>
-    <div><button type="button" class="action-btn pcm-details-btn" onclick="pcmShowOrderDetails(${Number(order.id)});return false;">DETALHES</button></div>
-  </div>`;
-}
-
-window.renderKanban=function(){
-  const all=Array.isArray(dashboardOrders)?dashboardOrders:[];
-  const q=(document.getElementById('pcmDashFilter')?.value||'').toLowerCase().trim();
-  const status=document.querySelector('[data-pcm-status].active')?.dataset.pcmStatus||'TODAS';
-
-  const filtered=all.filter(o=>{
-    const text=[o.os_number,o.machine,o.tag,o.sector,o.responsible,o.active_employee,o.description,o.pause_reason].join(' ').toLowerCase();
-    return (!q||text.includes(q))&&(status==='TODAS'||o.status===status);
-  }).sort(typeof sortOS==='function'?sortOS:(a,b)=>Number(b.id)-Number(a.id));
-
-  const groups={
-    'O.S. ABERTA':document.getElementById('kanbanAberta'),
-    'EM PRODUÇÃO':document.getElementById('kanbanProducao'),
-    'PAUSADA':document.getElementById('kanbanPausada'),
-    'AGUARDANDO MATERIAL':document.getElementById('kanbanMaterial'),
-    'FINALIZADA':document.getElementById('kanbanFinalizada'),
-    'FINALIZADA - AGUARDANDO PCM':document.getElementById('kanbanFinalizada'),
-    'FINALIZADA - OBSERVAÇÃO':document.getElementById('kanbanFinalizada')
-  };
-
-  const seen=new Set();
-  Object.values(groups).forEach(c=>{if(c)c.innerHTML='';});
-
-  filtered.forEach(o=>{
-    const c=groups[o.status];
-    if(!c||seen.has(o.id))return;
-    seen.add(o.id);
-
-    if(!c.dataset.pcmCompactHead){
-      c.dataset.pcmCompactHead='1';
-      c.insertAdjacentHTML('beforeend',`
-        <div class="pcm-compact-head">
-          <div>O.S.</div><div>Máquina / Setor</div><div>Responsável / Prazo</div><div>Status</div><div>Prioridade</div><div></div>
-        </div>`);
-    }
-    c.insertAdjacentHTML('beforeend',compactRow(o));
-  });
-
-  Object.entries(groups).forEach(([st,c])=>{
-    if(!c)return;
-    if(!c.children.length)c.innerHTML='<div style="color:#475569;font-size:10px;padding:10px">Nenhuma O.S.</div>';
-  });
-};
-
-window.renderFilteredKanban=function(){
-  if(typeof window.renderKanban==='function')window.renderKanban();
-  if(typeof addDashboardFilter==='function')addDashboardFilter();
-};
-
-/* Re-renderiza a lista compacta depois que o dashboard carregar. */
-const baseDash=window.loadDashboardData;
-if(typeof baseDash==='function'&&!baseDash.__pcmAjustesFinais){
-  const wrapped=async function(){
-    const r=await baseDash.apply(this,arguments);
-    setTimeout(()=>{if(typeof window.renderKanban==='function')window.renderKanban();},60);
-    return r;
-  };
-  wrapped.__pcmAjustesFinais=true;
-  window.loadDashboardData=wrapped;
-}
-
-/* Atualiza o painel de funcionário com o novo cartão sem depender da função antiga. */
-const baseEmpLoad=window.loadEmployeeOrders;
-if(typeof baseEmpLoad==='function'&&!baseEmpLoad.__pcmAjustesFinais){
-  const wrappedEmp=async function(){
-    const r=await baseEmpLoad.apply(this,arguments);
-    const orders=[...document.querySelectorAll('#employeeOsContainer .employee-os')];
-    /* O carregamento antigo já colocou os dados; a nova renderização abaixo
-       usa os mesmos registros buscados pela função original quando possível. */
-    try{
-      const {data}=await db.from('os_orders').select('*').order('created_at',{ascending:false});
-      const mine=(data||[]).filter(o=>responsibleMatchesUser(o.responsible,currentUser));
-      employeeHistoryMeta=new Map();
-      const ids=mine.map(o=>o.id);
-      if(ids.length){
-        const {data:h}=await db.from('os_execution_history').select('os_id,action,created_at,reason').in('os_id',ids).order('created_at',{ascending:false});
-        (h||[]).forEach(x=>{if(!employeeHistoryMeta.has(x.os_id))employeeHistoryMeta.set(x.os_id,[]);employeeHistoryMeta.get(x.os_id).push(x);});
-      }
-      window.renderEmployeeOrders(mine);
-    }catch(e){console.warn('Atualização visual do painel do funcionário:',e)}
-    return r;
-  };
-  wrappedEmp.__pcmAjustesFinais=true;
-  window.loadEmployeeOrders=wrappedEmp;
-}
-
-})();
-</script>
-
-
-<!-- =========================================================
-     PCM • PAINEL ADMINISTRADOR — LAYOUT FINAL ORGANIZADO
-========================================================= -->
-<style id="pcm-admin-polished-css">
-/* Estrutura geral do administrador */
-#view-dashboard{
-    max-width:1500px;
-    margin:0 auto;
-}
-#view-dashboard .dashboard-hero{
-    border:1px solid #263449!important;
-    background:
-      radial-gradient(circle at 85% 15%,rgba(120,53,15,.12),transparent 28%),
-      linear-gradient(135deg,#0b1220,#0a101b)!important;
-    border-radius:18px!important;
-    overflow:hidden;
-    box-shadow:0 16px 40px rgba(0,0,0,.18);
-}
-#view-dashboard .dashboard-hero-content{
-    padding:22px 24px!important;
-}
-#view-dashboard .dashboard-heading{
-    letter-spacing:-.4px;
-}
-#view-dashboard .dashboard-actions{
-    margin-top:14px;
-}
-#view-dashboard .dashboard-refresh{
-    border:1px solid #475569!important;
-    background:#111827!important;
-    color:#f8fafc!important;
-    border-radius:9px!important;
-    padding:9px 13px!important;
-    font-weight:800!important;
-}
-
-/* Indicadores */
-#view-dashboard .stats-grid{
-    grid-template-columns:repeat(6,minmax(0,1fr))!important;
-    gap:10px!important;
-}
-#view-dashboard .stat-card{
-    min-height:108px;
-    position:relative;
-    overflow:hidden;
-    padding:14px!important;
-    border-radius:13px!important;
-    background:#0b1220!important;
-    border-color:#263449!important;
-    box-shadow:none!important;
-}
-#view-dashboard .stat-card .stat-icon{
-    font-size:17px;
-    margin-bottom:8px;
-}
-#view-dashboard .stat-card .stat-value{
-    font-size:25px!important;
-    margin-top:4px!important;
-}
-#view-dashboard .stat-card .stat-hint{
-    margin-top:3px;
-    color:#64748b;
-    font-size:9px;
-}
-#view-dashboard .stat-card:after{
-    content:"";
-    position:absolute;
-    right:-25px;
-    bottom:-35px;
-    width:85px;
-    height:85px;
-    border-radius:50%;
-    background:rgba(255,255,255,.025);
-}
-
-/* Cabeçalhos dos módulos */
-#view-dashboard .panel{
-    border-radius:14px!important;
-    border-color:#263449!important;
-    background:#0b1220!important;
-    box-shadow:0 10px 28px rgba(0,0,0,.12);
-}
-#view-dashboard .dashboard-section-head{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-    padding-bottom:12px;
-    margin-bottom:12px;
-    border-bottom:1px solid #1e293b;
-}
-#view-dashboard .panel-title{
-    margin:0!important;
-    font-size:13px!important;
-    letter-spacing:.1px;
-}
-#view-dashboard .dashboard-kpis-note{
-    margin-top:4px;
-    color:#64748b;
-    font-size:10px;
-}
-
-/* Oculta o antigo conjunto de 5 colunas: o JS abaixo cria uma lista única */
-#view-dashboard .kanban{
-    display:block!important;
-}
-#view-dashboard .kanban-column{
-    display:none!important;
-}
-
-/* Lista administrativa única */
-#pcmAdminOrdersPanel{
-    padding:0!important;
-    overflow:hidden;
-}
-.pcm-admin-toolbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding:15px 17px;
-    border-bottom:1px solid #263449;
-}
-.pcm-admin-toolbar-title{
-    font-size:13px;
-    font-weight:900;
-    color:#f8fafc;
-}
-.pcm-admin-toolbar-sub{
-    margin-top:3px;
-    color:#64748b;
-    font-size:9px;
-}
-.pcm-admin-filter{
-    width:min(390px,42%);
-    min-width:220px;
-    border:1px solid #334155;
-    background:#020617;
-    color:#f8fafc;
-    border-radius:9px;
-    padding:10px 12px;
-    outline:none;
-    font-size:11px;
-}
-.pcm-admin-filter:focus{
-    border-color:#64748b;
-}
-.pcm-admin-chips{
-    display:flex;
-    gap:5px;
-    padding:10px 17px;
-    overflow-x:auto;
-    border-bottom:1px solid #1e293b;
-}
-.pcm-admin-chip{
-    border:1px solid #334155;
-    background:#0f172a;
-    color:#94a3b8;
-    border-radius:7px;
-    padding:7px 10px;
-    font-size:9px;
-    font-weight:800;
-    white-space:nowrap;
-    cursor:pointer;
-}
-.pcm-admin-chip.active{
-    background:#e2e8f0;
-    color:#020617;
-    border-color:#e2e8f0;
-}
-.pcm-admin-table-head,
-.pcm-admin-row{
-    display:grid;
-    grid-template-columns:82px minmax(150px,1.25fr) minmax(120px,1fr) 145px 82px 105px;
-    gap:10px;
-    align-items:center;
-}
-.pcm-admin-table-head{
-    padding:8px 17px;
-    background:#07101c;
-    color:#64748b;
-    font-size:8px;
-    font-weight:900;
-    text-transform:uppercase;
-    border-bottom:1px solid #1e293b;
-}
-.pcm-admin-row{
-    padding:10px 17px;
-    min-height:58px;
-    border-bottom:1px solid #172234;
-    background:#0b1220;
-    transition:background .15s ease;
-}
-.pcm-admin-row:hover{
-    background:#101a2a;
-}
-.pcm-admin-cell{
-    min-width:0;
-    font-size:10px;
-    color:#cbd5e1;
-}
-.pcm-admin-cell strong{
-    display:block;
-    color:#f8fafc;
-    font-size:10px;
-}
-.pcm-admin-muted{
-    display:block;
-    margin-top:3px;
-    color:#64748b;
-    font-size:8px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-.pcm-admin-os-number{
-    font-size:11px!important;
-}
-.pcm-admin-status{
-    display:inline-flex;
-    align-items:center;
-    width:max-content;
-    max-width:100%;
-    padding:5px 7px;
-    border-radius:6px;
-    background:#172033;
-    color:#cbd5e1;
-    font-size:8px;
-    font-weight:900;
-}
-.pcm-admin-status.prod{background:#12331f;color:#bbf7d0}
-.pcm-admin-status.open{background:#172554;color:#bfdbfe}
-.pcm-admin-status.mat{background:#3a210b;color:#fed7aa}
-.pcm-admin-status.pause{background:#29221a;color:#fde68a}
-.pcm-admin-status.done{background:#263244;color:#cbd5e1}
-.pcm-admin-status.wait{background:#30200b;color:#fdba74}
-.pcm-admin-action{
-    width:100%;
-    margin:0!important;
-    padding:8px!important;
-    font-size:8px!important;
-    background:#1e293b!important;
-    color:#f8fafc!important;
-    border:1px solid #334155!important;
-}
-.pcm-admin-action:hover{
-    background:#334155!important;
-}
-.pcm-admin-empty{
-    padding:35px 18px;
-    text-align:center;
-    color:#64748b;
-    font-size:11px;
-}
-.pcm-admin-count{
-    color:#64748b;
-    font-size:9px;
-    white-space:nowrap;
-}
-
-/* Detalhes */
-#pcmOrderDetailsModal .modal-box{
-    width:min(760px,100%);
-    max-height:90vh;
-    overflow:auto;
-    background:#0b1220;
-    border-color:#334155;
-}
-#pcmOrderDetailsModal .modal-title{
-    font-size:19px;
-}
-#pcmOrderDetailsModal .pcm-detail-section{
-    background:#07101c;
-    border:1px solid #1e293b;
-    border-radius:10px;
-    padding:12px;
-    margin-top:12px;
-}
-#pcmOrderDetailsModal .pcm-detail-section-title{
-    color:#cbd5e1;
-}
-#pcmOrderDetailsModal .pcm-detail-item{
-    background:#0b1220;
-    border-color:#263449;
-}
-#pcmOrderDetailsModal .pcm-detail-actions{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-}
-
-/* Produção ativa */
-#view-dashboard #activeJobsContainer{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:8px;
-}
-#view-dashboard #activeJobsContainer > *{
-    margin:0!important;
-}
-
-/* Materiais */
-#view-dashboard #materialRequestsContainer{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:8px;
-}
-#view-dashboard #materialRequestsContainer .pcm-material-item{
-    margin:0!important;
-    background:#07101c;
-    border-color:#29384c;
-}
-
-/* Responsivo */
-@media(max-width:1200px){
-    #view-dashboard .stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-    .pcm-admin-table-head,.pcm-admin-row{
-        grid-template-columns:75px minmax(130px,1.2fr) minmax(110px,1fr) 125px 75px 95px;
-    }
-}
-@media(max-width:850px){
-    .pcm-admin-toolbar{align-items:stretch;flex-direction:column}
-    .pcm-admin-filter{width:100%;min-width:0}
-    .pcm-admin-table-head{display:none}
-    .pcm-admin-row{
-        grid-template-columns:1fr 1fr;
-        gap:8px;
-        padding:12px;
-    }
-    .pcm-admin-cell:first-child{grid-column:1/-1}
-    .pcm-admin-cell:last-child{grid-column:1/-1}
-    .pcm-admin-action{width:100%}
-    #view-dashboard #activeJobsContainer,
-    #view-dashboard #materialRequestsContainer{grid-template-columns:1fr}
-}
-@media(max-width:600px){
-    #view-dashboard .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-    #view-dashboard .dashboard-hero-content{padding:18px!important}
-    .pcm-admin-chips{padding-left:12px;padding-right:12px}
-    .pcm-admin-row{padding:11px}
-    .pcm-admin-status{font-size:7px}
-    #pcmOrderDetailsModal .pcm-detail-actions{grid-template-columns:1fr}
-}
-</style>
-
-<script id="pcm-admin-polished-js">
-(function(){
-'use strict';
-
-function aEsc(v){
-    if(typeof escapeHtml==='function')return escapeHtml(v==null?'':String(v));
-    return String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-}
-function aStatus(s){
-    const x=String(s||'');
-    if(x==='EM PRODUÇÃO')return ['prod','EM PRODUÇÃO'];
-    if(x==='O.S. ABERTA')return ['open','ABERTA'];
-    if(x==='AGUARDANDO MATERIAL')return ['mat','MATERIAL'];
-    if(x==='PAUSADA')return ['pause','PAUSADA'];
-    if(x==='FINALIZADA - AGUARDANDO PCM')return ['wait','AGUARDANDO PCM'];
-    if(x.indexOf('FINALIZADA')===0)return ['done','FINALIZADA'];
-    return ['',''+x];
-}
-function aPriority(p){
-    return String(p||'MODERADA').toUpperCase();
-}
-function aSort(a,b){
-    if(typeof sortOS==='function')return sortOS(a,b);
-    const rank={ALTA:0,MEDIA:1,MODERADA:2};
-    return (rank[aPriority(a.priority)]??9)-(rank[aPriority(b.priority)]??9);
-}
-
-function ensureAdminPanel(){
-    const dash=document.getElementById('view-dashboard');
-    if(!dash)return null;
-
-    let panel=document.getElementById('pcmAdminOrdersPanel');
-    if(panel)return panel;
-
-    const oldKan=dash.querySelector('.kanban');
-    if(!oldKan)return null;
-
-    panel=document.createElement('div');
-    panel.id='pcmAdminOrdersPanel';
-    panel.className='panel';
-
-    panel.innerHTML=`
-      <div class="pcm-admin-toolbar">
-        <div>
-          <div class="pcm-admin-toolbar-title">📋 Controle das O.S.</div>
-          <div class="pcm-admin-toolbar-sub">Lista operacional • clique em DETALHES para acessar todos os controles.</div>
-        </div>
-        <input id="pcmAdminSearch" class="pcm-admin-filter" placeholder="Pesquisar O.S., máquina, TAG, responsável..." autocomplete="off">
-      </div>
-      <div id="pcmAdminChips" class="pcm-admin-chips">
-        <button class="pcm-admin-chip active" data-adm-status="TODAS">TODAS</button>
-        <button class="pcm-admin-chip" data-adm-status="O.S. ABERTA">ABERTAS</button>
-        <button class="pcm-admin-chip" data-adm-status="EM PRODUÇÃO">PRODUÇÃO</button>
-        <button class="pcm-admin-chip" data-adm-status="PAUSADA">PAUSADAS</button>
-        <button class="pcm-admin-chip" data-adm-status="AGUARDANDO MATERIAL">MATERIAL</button>
-        <button class="pcm-admin-chip" data-adm-status="FINALIZADA">FINALIZADAS</button>
-      </div>
-      <div class="pcm-admin-table-head">
-        <div>O.S.</div><div>Máquina / TAG</div><div>Responsável / Setor</div><div>Status</div><div>Prioridade</div><div>Ação</div>
-      </div>
-      <div id="pcmAdminList"></div>
-    `;
-
-    oldKan.parentNode.insertBefore(panel,oldKan);
-    oldKan.style.display='none';
-
-    const search=panel.querySelector('#pcmAdminSearch');
-    search.addEventListener('input',renderAdminList);
-
-    panel.querySelectorAll('[data-adm-status]').forEach(btn=>{
-        btn.addEventListener('click',()=>{
-            panel.querySelectorAll('[data-adm-status]').forEach(x=>x.classList.remove('active'));
-            btn.classList.add('active');
-            renderAdminList();
-        });
-    });
-
-    return panel;
-}
-
-function renderAdminList(){
-    const panel=ensureAdminPanel();
-    if(!panel)return;
-
-    const list=panel.querySelector('#pcmAdminList');
-    if(!list)return;
-
-    const q=(panel.querySelector('#pcmAdminSearch')?.value||'').toLowerCase().trim();
-    const status=panel.querySelector('[data-adm-status].active')?.dataset.admStatus||'TODAS';
-    const all=Array.isArray(dashboardOrders)?dashboardOrders:[];
-
-    let rows=all.filter(o=>{
-        const text=[
-            o.os_number,o.machine,o.tag,o.sector,o.responsible,
-            o.active_employee,o.description,o.priority,o.status
-        ].join(' ').toLowerCase();
-
-        return (!q||text.includes(q)) &&
-               (status==='TODAS' || o.status===status ||
-                (status==='FINALIZADA' && String(o.status||'').indexOf('FINALIZADA')===0));
-    }).sort(aSort);
-
-    if(!rows.length){
-        list.innerHTML='<div class="pcm-admin-empty">Nenhuma O.S. encontrada para os filtros selecionados.</div>';
-        return;
-    }
-
-    list.innerHTML=rows.map(o=>{
-        const [cls,label]=aStatus(o.status);
-        const responsible=o.active_employee||o.responsible||'Não atribuído';
-        const priority=aPriority(o.priority);
-        return `
-          <div class="pcm-admin-row">
-            <div class="pcm-admin-cell">
-              <strong class="pcm-admin-os-number">O.S. ${aEsc(o.os_number||'-')}</strong>
-              <span class="pcm-admin-muted">ID ${aEsc(o.id)}</span>
-            </div>
-            <div class="pcm-admin-cell">
-              <strong>${aEsc(o.machine||'-')}</strong>
-              <span class="pcm-admin-muted">TAG ${aEsc(o.tag||'-')}</span>
-            </div>
-            <div class="pcm-admin-cell">
-              <strong>${aEsc(responsible)}</strong>
-              <span class="pcm-admin-muted">${aEsc(o.sector||'-')}</span>
-            </div>
-            <div class="pcm-admin-cell">
-              <span class="pcm-admin-status ${cls}">${aEsc(label)}</span>
-            </div>
-            <div class="pcm-admin-cell">
-              <span class="priority ${typeof priorityClass==='function'?priorityClass(priority):''}">${aEsc(priority)}</span>
-            </div>
-            <div class="pcm-admin-cell">
-              <button type="button" class="action-btn pcm-admin-action" onclick="pcmShowOrderDetails(${Number(o.id)});return false;">DETALHES</button>
-            </div>
-          </div>`;
-    }).join('');
-}
-
-function refreshAdminLayout(){
-    if(!isAdmin)return;
-    ensureAdminPanel();
-    renderAdminList();
-
-    /* Mantém o painel de justificativas abaixo da lista, evitando ficar
-       misturado visualmente com o controle operacional. */
-    const just=document.getElementById('pcmJustificationsPanel');
-    const orders=document.getElementById('pcmAdminOrdersPanel');
-    if(just&&orders&&orders.nextElementSibling!==just)orders.parentNode.insertBefore(just,orders.nextElementSibling);
-}
-
-window.pcmRefreshAdminLayout=refreshAdminLayout;
-
-/* Faz o layout novo assumir o dashboard depois de qualquer atualização. */
-const oldLoad=window.loadDashboardData;
-if(typeof oldLoad==='function'&&!oldLoad.__pcmPolished){
-    const wrapped=async function(){
-        const result=await oldLoad.apply(this,arguments);
-        setTimeout(refreshAdminLayout,40);
-        return result;
-    };
-    wrapped.__pcmPolished=true;
-    window.loadDashboardData=wrapped;
-}
-
-document.addEventListener('DOMContentLoaded',()=>{
-    setTimeout(refreshAdminLayout,250);
-    setTimeout(refreshAdminLayout,1000);
-});
-
-})();
-</script>
-
-
-<script>
-/* =========================================================
-   CORREÇÃO DEFINITIVA — ÚLTIMA ALTERAÇÃO DE HORÁRIO
-   Sem janela de 30 minutos. Uma única correção pelo funcionário.
-========================================================= */
-(function(){
-  const LAST_EDIT_ACTION='ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO';
-  const OLD_EDIT_ACTIONS=new Set([
-    'ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO',
-    'HORÁRIO AJUSTADO PELO FUNCIONÁRIO',
-    'TEMPO AJUSTADO NA FINALIZAÇÃO'
-  ]);
-
-  function fmtLocal2(v){
-    if(!v)return '—';
-    const d=new Date(v); if(Number.isNaN(d.getTime()))return String(v);
-    return d.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
-  }
-  function isoLocal2(v){
-    if(!v)return '';
-    const d=new Date(v); if(Number.isNaN(d.getTime()))return '';
-    const p=n=>String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-  }
-  function dur2(sec){
-    sec=Math.max(0,Number(sec)||0);
-    return `${String(Math.floor(sec/3600)).padStart(2,'0')}:${String(Math.floor(sec%3600/60)).padStart(2,'0')}:${String(Math.floor(sec%60)).padStart(2,'0')}`;
-  }
-  function parseDur2(v){
-    const m=String(v||'').trim().match(/^(\d{1,3}):([0-5]\d):([0-5]\d)$/);
-    return m?Number(m[1])*3600+Number(m[2])*60+Number(m[3]):null;
-  }
-  function esc2(v){
-    if(typeof escapeHtml==='function')return escapeHtml(v==null?'':String(v));
-    return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-  }
-  async function order2(id){
-    const {data,error}=await db.from('os_orders').select('*').eq('id',id).single();
-    if(error||!data)throw new Error('O.S. não encontrada.');
-    return data;
-  }
-  async function history2(id){
-    const {data,error}=await db.from('os_execution_history').select('*').eq('os_id',id).order('created_at',{ascending:false});
-    if(error)throw error;
-    return data||[];
-  }
-  function mine2(o){
-    if(!currentUser||isAdmin)return false;
-    const norm=v=>String(v||'').split('—')[0].trim().toLowerCase();
-    return norm(o.responsible)===norm(currentUser) || norm(o.active_employee)===norm(currentUser);
-  }
-  function modal2(id,title,text,fields,ok,save){
-    const old=document.getElementById(id);if(old)old.remove();
-    const el=document.createElement('div');el.id=id;el.className='modal';el.style.cssText='display:flex;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;background:rgba(0,0,0,.72);padding:16px';
-    el.innerHTML=`<div class="factory-modal-box" style="width:min(620px,100%);max-height:90vh;overflow:auto;background:#0b1524;border:1px solid #475569;border-radius:16px;padding:20px;color:#e5e7eb"><h3 style="margin:0 0 8px">${esc2(title)}</h3><p style="color:#94a3b8;margin:0 0 16px">${esc2(text)}</p>${fields}<div class="factory-modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px"><button type="button" data-cancel class="factory-cancel">CANCELAR</button><button type="button" data-ok class="factory-ok">${esc2(ok)}</button></div></div>`;
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const localDT=v=>{if(!v)return '';const d=new Date(v);if(isNaN(d))return '';const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+':'+z(d.getMinutes());};
+  const fmt=v=>{if(!v)return '-';const d=new Date(v);return isNaN(d)?'-':d.toLocaleString('pt-BR');};
+  const dur=s=>{s=Math.max(0,Number(s)||0);return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(n=>String(n).padStart(2,'0')).join(':');};
+  function modal(title,desc,content,ok,save){
+    const old=document.getElementById('pcmMobileFinalModal');if(old)old.remove();
+    const el=document.createElement('div');el.id='pcmMobileFinalModal';el.className='modal';
+    el.innerHTML='<div class="modal-box" style="max-height:92vh;overflow:auto"><div class="modal-title">'+esc(title)+'</div><div class="modal-description">'+esc(desc)+'</div>'+content+'<div class="modal-buttons"><button type="button" class="btn-secondary" data-cancel>CANCELAR</button><button type="button" class="btn-primary" data-ok>'+esc(ok)+'</button></div></div>';
     document.body.appendChild(el);
-    const close=()=>el.remove();
-    el.querySelector('[data-cancel]').onclick=close;
-    el.onclick=e=>{if(e.target===el)close()};
-    el.querySelector('[data-ok]').onclick=async()=>{
-      const btn=el.querySelector('[data-ok]');
-      if(btn.disabled)return;
-      btn.disabled=true;
-      btn.textContent='SALVANDO...';
-      try{
-        const result=await Promise.race([
-          save(el),
-          new Promise((_,reject)=>setTimeout(()=>reject(new Error('O salvamento demorou mais que 10 segundos. O banco não respondeu.')),10000))
-        ]);
-        if(result!==false)close();
-      }catch(e){
-        console.error('Erro ao salvar alteração de horário:',e);
-        btn.disabled=false;
-        btn.textContent=ok;
-        alert(e?.message||'Não foi possível salvar a alteração.');
-      }
-    };
-    return el;
+    const close=()=>el.remove();el.querySelector('[data-cancel]').onclick=close;
+    el.querySelector('[data-ok]').onclick=async()=>{const b=el.querySelector('[data-ok]');if(b.disabled)return;b.disabled=true;b.textContent='SALVANDO...';try{const r=await save(el);if(r!==false)close();else{b.disabled=false;b.textContent=ok;}}catch(e){console.error(e);alert(e?.message||'Não foi possível salvar.');b.disabled=false;b.textContent=ok;}};
   }
+
+  window.openMaterialModal=async function(osId){
+    try{
+      await ensureSupabase();
+      const {data:o,error}=await db.from('os_orders').select('*').eq('id',osId).single();
+      if(error||!o){alert('O.S. não encontrada.');return;}
+      if(normalizeEmployee(o.active_employee)!==normalizeEmployee(currentUser)){alert('Esta O.S. não está em produção com você.');return;}
+      modal('Requisitar material','A solicitação será enviada ao PCM sem pausar ou parar a O.S.',
+        '<label class="form-label">Material *</label><input id="pcmMat" class="form-input" placeholder="Ex.: rolamento 6205">'+
+        '<label class="form-label" style="margin-top:12px">Quantidade *</label><input id="pcmQty" class="form-input" type="number" min="1" step="1" inputmode="numeric" placeholder="Ex.: 2">'+
+        '<label class="form-label" style="margin-top:12px">Observação</label><textarea id="pcmMatObs" class="form-textarea" placeholder="Informações adicionais..."></textarea>',
+        'ENVIAR SOLICITAÇÃO',async el=>{
+          const material=el.querySelector('#pcmMat').value.trim(),quantity=Number(el.querySelector('#pcmQty').value),observation=el.querySelector('#pcmMatObs').value.trim();
+          if(!material||!Number.isFinite(quantity)||quantity<=0){alert('Informe o material e uma quantidade válida.');return false;}
+          const now=new Date().toISOString();
+          let r=await db.from('os_material_requests').insert({os_id:o.id,os_number:o.os_number,requested_by:currentUser,reason:observation||'Solicitação de material',status:'PENDENTE',requested_at:now,material,quantity,observation});
+          if(r.error){
+            r=await db.from('os_material_requests').insert({os_id:o.id,os_number:o.os_number,requested_by:currentUser,reason:'Material: '+material+' | Quantidade: '+quantity+' | Observação: '+(observation||'-'),status:'PENDENTE',requested_at:now});
+          }
+          if(r.error)throw new Error('Não foi possível registrar o material: '+r.error.message);
+          alert('Material requisitado ao PCM. A O.S. continua em execução e o cronômetro não foi alterado.');
+          if(typeof loadEmployeeOrders==='function')await loadEmployeeOrders();
+          return true;
+        });
+    }catch(e){console.error(e);alert(e?.message||'Erro ao requisitar material.');}
+  };
 
   window.editFinalizedTime=async function(osId){
+    if(!currentUser||isAdmin)return;
     try{
-      if(!currentUser||isAdmin){alert('Somente o funcionário responsável pode alterar este horário.');return;}
-      const o=await order2(osId);
-      if(o.status!=='FINALIZADA - AGUARDANDO PCM'){
-        alert('Esta O.S. não está aguardando a última alteração do funcionário.');return;
-      }
-      if(!mine2(o)){
-        alert('Esta O.S. não está atribuída a você.');return;
-      }
-
-      const h=await history2(osId);
-      const used=Boolean(o.employee_time_edit_used) || h.some(x=>OLD_EDIT_ACTIONS.has(String(x.action||'').trim().toUpperCase()));
-      if(used){
-        alert('A última alteração de horário desta O.S. já foi utilizada. Qualquer nova correção deve ser feita pelo PCM.');
-        return;
-      }
-
-      const oldStart=o.started_at||'';
-      const oldFinish=o.finished_at||'';
-      const oldTotal=Number(o.total_service_seconds||0);
-      const fields=`
-        <div style="background:#172033;border:1px solid #475569;border-radius:10px;padding:12px;margin-bottom:14px;color:#cbd5e1">
-          <b style="color:#f8fafc">ÚLTIMA alteração do funcionário</b><br>
-          Depois de salvar, somente o PCM poderá alterar novamente.
-        </div>
-        <label>Início do serviço</label>
-        <input id="lastStartTime2" type="datetime-local" value="${isoLocal2(oldStart)}" style="width:100%;margin:6px 0 12px">
-        <label>Fim do serviço</label>
-        <input id="lastFinishTime2" type="datetime-local" value="${isoLocal2(oldFinish)}" style="width:100%;margin:6px 0 12px">
-        <label>Tempo total (HH:MM:SS)</label>
-        <input id="lastTotalTime2" value="${dur2(oldTotal)}" inputmode="numeric" style="width:100%;margin:6px 0 12px">
-        <label>Justificativa *</label>
-        <textarea id="lastTimeReason2" style="width:100%;min-height:90px;margin-top:6px" placeholder="Explique o motivo da correção..."></textarea>
-        <div style="margin-top:12px;color:#94a3b8;font-size:12px">Original: ${esc2(fmtLocal2(oldStart))} → ${esc2(fmtLocal2(oldFinish))} • ${esc2(dur2(oldTotal))}</div>`;
-
-      modal2('pcmLastTimeModal2','Mudar horário da O.S.','Confira e corrija o horário real do serviço.',fields,'SALVAR ÚLTIMA ALTERAÇÃO',async el=>{
-        const start=el.querySelector('#lastStartTime2').value;
-        const finish=el.querySelector('#lastFinishTime2').value;
-        const reason=el.querySelector('#lastTimeReason2').value.trim();
-        if(!start||!finish){alert('Informe o início e o fim do serviço.');return false;}
-        if(!reason){alert('Informe a justificativa.');return false;}
-        const a=new Date(start).getTime(),b=new Date(finish).getTime();
-        if(!Number.isFinite(a)||!Number.isFinite(b)||b<a){alert('Confira os horários de início e fim.');return false;}
-        let total=parseDur2(el.querySelector('#lastTotalTime2').value);
-        if(total===null){alert('Informe o tempo no formato HH:MM:SS.');return false;}
-        const calculated=Math.floor((b-a)/1000);
-        if(total!==calculated){
-          const useCalc=confirm(`O tempo informado (${dur2(total)}) é diferente do período entre início e fim (${dur2(calculated)}).\n\nUsar o tempo calculado pelo horário?`);
-          if(useCalc)total=calculated;
-        }
-        const startIso=new Date(start).toISOString(),finishIso=new Date(finish).toISOString(),now=new Date().toISOString();
-
-        // SALVAMENTO DEFINITIVO: primeiro atualiza somente os campos da O.S.
-        // e exige resposta do Supabase. O histórico/reload nunca pode travar este botão.
-        const payload={
-          started_at:startIso,
-          finished_at:finishIso,
-          total_service_seconds:total,
-          employee_time_edit_used:true,
-          employee_time_edit_at:now,
-          employee_time_edit_reason:reason,
-          employee_time_original_start:oldStart||null,
-          employee_time_original_finish:oldFinish||null,
-          employee_time_original_total:oldTotal
-        };
-        const request=db.from('os_orders').update(payload).eq('id',osId).select('id,started_at,finished_at,total_service_seconds').maybeSingle();
-        const result=await Promise.race([
-          request,
-          new Promise((_,reject)=>setTimeout(()=>reject(new Error('O Supabase não respondeu. Verifique sua conexão e as políticas de acesso da tabela os_orders.')),8000))
-        ]);
-        if(result?.error) throw new Error(result.error.message || 'O Supabase recusou o salvamento.');
-        if(!result?.data) throw new Error('O Supabase não confirmou a alteração da O.S. Nenhum registro foi retornado.');
-
-        // O controle da única alteração agora fica gravado diretamente em os_orders.
-        // O histórico é complementar e nunca pode impedir a O.S. de sair do painel do funcionário.
-        try{
-          const historyRequest=db.from('os_execution_history').insert({
-            os_id:o.id,os_number:o.os_number,employee:currentUser,
-            action:LAST_EDIT_ACTION,
-            reason:`Horário original: ${fmtLocal2(oldStart)} até ${fmtLocal2(oldFinish)} | ${dur2(oldTotal)}. Novo horário: ${fmtLocal2(startIso)} até ${fmtLocal2(finishIso)} | ${dur2(total)}. Justificativa: ${reason}`,
-            started_at:startIso,ended_at:finishIso,duration_seconds:total
-          });
-          await Promise.race([
-            historyRequest,
-            new Promise(resolve=>setTimeout(()=>resolve({timeout:true}),3000))
-          ]);
-        }catch(historyError){
-          console.warn('Histórico da alteração não foi registrado, mas a alteração principal foi salva:',historyError);
-        }
-
-        // Recarrega depois de o banco principal confirmar employee_time_edit_used=true.
-        // A O.S. some do painel do funcionário mesmo que o histórico falhe.
-        if(typeof loadEmployeeOrders==='function') await loadEmployeeOrders();
-        alert('Alteração salva com sucesso. Esta foi a única alteração permitida. A O.S. foi encaminhada ao PCM.');
+      await ensureSupabase();
+      const {data:o,error}=await db.from('os_orders').select('*').eq('id',osId).single();
+      if(error||!o){alert('O.S. não encontrada.');return;}
+      if(o.status!=='FINALIZADA - AGUARDANDO PCM'||normalizeEmployee(o.responsible)!==normalizeEmployee(currentUser)){alert('Esta O.S. não está disponível para sua última alteração.');return;}
+      if(Boolean(o.employee_time_edit_used)){alert('A única alteração de horário desta O.S. já foi utilizada. Procure o PCM.');return;}
+      const html='<div class="factory-note warning" style="margin-bottom:14px"><b>ATENÇÃO:</b> esta é a única alteração de horário permitida pelo funcionário.</div>'+
+        '<label class="form-label">Início</label><input id="pcmStart" class="form-input" type="datetime-local" value="'+localDT(o.started_at)+'">'+
+        '<label class="form-label" style="margin-top:12px">Fim</label><input id="pcmFinish" class="form-input" type="datetime-local" value="'+localDT(o.finished_at)+'">'+
+        '<label class="form-label" style="margin-top:12px">Justificativa *</label><textarea id="pcmTimeReason" class="form-textarea" placeholder="Explique o motivo da alteração..."></textarea>'+
+        '<div class="factory-note" style="margin-top:12px">Original: <b>'+esc(fmt(o.started_at))+'</b> até <b>'+esc(fmt(o.finished_at))+'</b> • <b>'+esc(dur(o.total_service_seconds))+'</b></div>';
+      modal('Modificar horário — 1 vez','Depois de salvar, somente o PCM poderá corrigir novamente.',html,'SALVAR ALTERAÇÃO',async el=>{
+        const sv=el.querySelector('#pcmStart').value,fv=el.querySelector('#pcmFinish').value,reason=el.querySelector('#pcmTimeReason').value.trim();
+        if(!sv||!fv){alert('Informe início e fim.');return false;}if(!reason){alert('Informe a justificativa.');return false;}
+        const a=new Date(sv),b=new Date(fv);if(isNaN(a)||isNaN(b)||b<a){alert('Confira os horários.');return false;}
+        const total=Math.floor((b-a)/1000),now=new Date().toISOString();
+        const payload={started_at:a.toISOString(),finished_at:b.toISOString(),total_service_seconds:total,employee_time_edit_used:true,employee_time_edit_at:now,employee_time_edit_reason:reason,employee_time_original_start:o.started_at||null,employee_time_original_finish:o.finished_at||null,employee_time_original_total:Number(o.total_service_seconds||0)};
+        const saved=await db.from('os_orders').update(payload).eq('id',osId).eq('status','FINALIZADA - AGUARDANDO PCM').select('id,started_at,finished_at,total_service_seconds,employee_time_edit_used').single();
+        if(saved.error)throw new Error('Não foi possível salvar no banco: '+saved.error.message);
+        if(!saved.data||!saved.data.employee_time_edit_used)throw new Error('O banco não confirmou a alteração.');
+        try{await db.from('os_execution_history').insert({os_id:o.id,os_number:o.os_number,employee:currentUser,action:'ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO',reason:'Horário original: '+fmt(o.started_at)+' até '+fmt(o.finished_at)+' | '+dur(o.total_service_seconds)+'. Novo: '+fmt(a)+' até '+fmt(b)+' | '+dur(total)+'. Justificativa: '+reason,started_at:a.toISOString(),ended_at:b.toISOString(),duration_seconds:total});}catch(e){console.warn('Histórico não registrado; alteração principal já foi salva.',e);}
+        alert('Horário alterado e salvo com sucesso. Esta foi a única alteração permitida.');
+        if(typeof loadEmployeeOrders==='function')await loadEmployeeOrders();
         return true;
       });
-    }catch(e){console.error(e);alert(e?.message||'Não foi possível abrir a alteração de horário.');}
+    }catch(e){console.error(e);alert(e?.message||'Erro ao abrir a alteração de horário.');}
   };
-
-  /* Atualiza o card para nunca mais usar a janela de 30 minutos. */
-  const oldCard=window.createEmployeeCard;
-  if(typeof oldCard==='function'){
-    window.createEmployeeCard=function(o){
-      let html=oldCard(o);
-      if(o && o.status==='FINALIZADA - AGUARDANDO PCM'){
-        const h=(window.employeeHistoryMeta&&window.employeeHistoryMeta.get(o.id))||[];
-        const used=Boolean(o.employee_time_edit_used) || h.some(x=>OLD_EDIT_ACTIONS.has(String(x.action||'').trim().toUpperCase()));
-        if(!used && !html.includes('editFinalizedTime('+o.id+')')){
-          const actions=html.match(/<div class="employee-actions">[\s\S]*?<\/div>/);
-          if(actions){
-            const add=`<button class="action-btn btn-start" onclick="editFinalizedTime(${Number(o.id)})">⏱ MUDAR HORÁRIO (1 VEZ)</button>`;
-            html=html.replace(actions[0],actions[0].replace('</div>',add+'</div>'));
-          }
-        }
-      }
-      return html;
-    };
-  }
 })();
 </script>
-<script>
-/* =========================================================
-   REGRA FINAL — após a única alteração do funcionário,
-   a O.S. NÃO aparece mais no painel do funcionário.
-   O PCM continua vendo normalmente pelo dashboard.
-========================================================= */
-(function(){
-  const FINAL_TIME_ACTIONS=new Set([
-    'ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO',
-    'HORÁRIO AJUSTADO PELO FUNCIONÁRIO',
-    'TEMPO AJUSTADO NA FINALIZAÇÃO'
-  ]);
-  const isUsedHistory=row=>FINAL_TIME_ACTIONS.has(String(row?.action||'').trim().toUpperCase());
-
-  const originalLoadEmployeeOrders=window.loadEmployeeOrders;
-  if(typeof originalLoadEmployeeOrders==='function'){
-    window.loadEmployeeOrders=async function(){
-      if(!currentUser || isAdmin) return;
-      const {data,error}=await db.from('os_orders').select('*').order('created_at',{ascending:false});
-      if(error){console.error(error);return;}
-      const mine=(data||[]).filter(order=>responsibleMatchesUser(order.responsible,currentUser));
-      employeeHistoryMeta=new Map();
-      const ids=mine.map(o=>o.id);
-      if(ids.length){
-        const {data:h,error:he}=await db.from('os_execution_history')
-          .select('os_id,action,created_at,reason')
-          .in('os_id',ids)
-          .order('created_at',{ascending:false});
-        if(he){console.error('Erro ao carregar histórico das O.S.:',he);}
-        if(!he && h){
-          h.forEach(row=>{
-            if(!employeeHistoryMeta.has(row.os_id)) employeeHistoryMeta.set(row.os_id,[]);
-            employeeHistoryMeta.get(row.os_id).push(row);
-          });
-        }
-      }
-      // Remove do painel do funcionário qualquer O.S. cuja última alteração já foi usada.
-      const visible=mine.filter(order=>{
-        const history=employeeHistoryMeta.get(order.id)||[];
-        const used=Boolean(order.employee_time_edit_used) || history.some(isUsedHistory);
-        return !(order.status==='FINALIZADA - AGUARDANDO PCM' && used);
-      });
-      renderEmployeeOrders(visible);
-    };
-  }
-
-  // Também protege a renderização caso alguma rotina chame createEmployeeCard diretamente.
-  const originalCreate=window.createEmployeeCard;
-  if(typeof originalCreate==='function'){
-    window.createEmployeeCard=function(order){
-      const history=(window.employeeHistoryMeta&&window.employeeHistoryMeta.get(order?.id))||[];
-      if(order?.status==='FINALIZADA - AGUARDANDO PCM' && (Boolean(order.employee_time_edit_used) || history.some(isUsedHistory))) return '';
-      return originalCreate(order);
-    };
-  }
-})();
-</script>
-<script src="./main.js"></script>
 </body>
 </html>
