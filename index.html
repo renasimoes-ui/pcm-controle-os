@@ -8,6 +8,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="theme-color" content="#080808">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="color-scheme" content="dark">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,7 +21,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=YyWiep_0plC2WaEaOc1hQrP_2BBvMRgPnWTuPvjejhMwRjXnO-Oif-H-wtAcII1gdPed2aPhs5j36RfKU0uioh0d5D5QYu65ZPCbLpkksiylmJWXNBAHC41jMQPbsDxaDT1cJLvQ-n13e7NpebnciKR9W-eNE-WdgA2cPUeOoOYApj1rd0z5xJ7AgyJ4K4gbHSkAGmma6FiBc4wtltqKJ1oDD7kU_0YlO1-BjbsqEHZimdt3mSV_GwTNCR3qYXc9nDa0Iw8U_Wac7jxaiabqHO_gVtkgxi-VJNqztWF0RkT5J10-J7D0lNTkaIJ8s4_zawqA5dC5Mxvb-mYKFjxwtfW6zB5XXBvg3vI2Nbhsh3M" charset="UTF-8"></script><script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=a8w9wXrFsA_mzvME-aHXaaFj-oZ6PUAZmgvfGbACSu5G59qtbHsekATtO14JN73Tz_5AXmeogfZhQ40iqhx0q0T85wBG0Ia6Da5Rj_WTv0SNnhfhbdeys6MSwHVItYv00J01MuYYubaHiVPH99plKcZCWuJZaa_fbOXi3Ef6pfydbT8YXPVsSdRK2uF4KWc9bDRssAGZOqsaodzphOjsqUQGQZYxYOjb2L3qjjdAQV4_UwrFcIP-bmx9PXfJMOtwy0tBbkOC2PtGux5vyB0HQnv4HmolHlXj7-rvNK1NNzOuXybTHrWIAYi8twf6zop85ltp7cpsoM7FKXFFKUh3KthcOzFFkh2n8Ahuy612ZM0" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=sRVIUTfkkTCrE9XRtQCOjCtju97iYqylRRv9a4cr2FkvYQJHTFrMwYQcevBM_WksxDyfWvJkpevd4UsE3MD32oG7YUdHhEHtWRSZLcD46oYkW2spqmUFGAfNBPLynrHGmmJx_bIvOY4iWlZtHMUsw42gkl1QN6nV0Rte7hz3Wy3Xrwze8WIAkBbn3hoh1VYGYV8rJvmg43lEqhrjVLD8U5pPUw0-d-rAtmyK8_UfxCw2qv0hMlDGSYgEtlXCM4LEf7P2B4tJ66meWOQVzjhher4PuvzFF6YdKNRT9bey1Q0dvmXLZLZfiyAX6UHppvxNGrgVJX4Dj8GVGxFaN3TpDA" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -2992,6 +2994,164 @@ body:has(#loginScreen:not(.hidden)){
   }
 }
 </style>
+
+<style id="pcm-mobile-final-fix">
+/* =========================================================
+   PCM - CORREÇÃO FINAL DE COMPATIBILIDADE MOBILE
+   Não depende de main.js externo.
+========================================================= */
+html{
+  width:100%;
+  min-height:100%;
+  overflow-x:hidden!important;
+  -webkit-text-size-adjust:100%;
+}
+body{
+  width:100%;
+  min-width:0;
+  min-height:100vh;
+  overflow-x:hidden!important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:none;
+}
+*,*::before,*::after{box-sizing:border-box}
+img,svg,video,canvas{max-width:100%;height:auto}
+button,a,input,select,textarea{touch-action:manipulation}
+input,select,textarea{font-size:16px!important}
+button{min-height:44px}
+
+@media(max-width:800px){
+  .main{
+    width:100%!important;
+    max-width:100%!important;
+    margin-left:0!important;
+    padding:12px 10px 92px!important;
+    overflow-x:hidden!important;
+  }
+
+  .topbar,
+  .panel,
+  .dashboard-hero,
+  .stats-grid,
+  .kanban,
+  .employee-os-grid,
+  .form-grid{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+
+  .stats-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+
+  .kanban{
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:visible!important;
+  }
+
+  .kanban-column{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+
+  .kanban-column>div[id]{
+    max-height:none!important;
+    overflow:visible!important;
+  }
+
+  .os-card,
+  .employee-os,
+  .stat-card,
+  .panel{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+
+  .table-wrap,
+  .history-table-wrap{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .table-wrap table,
+  .history-table-wrap table{
+    min-width:720px!important;
+  }
+
+  #pcmMobileNav{
+    display:flex!important;
+    position:fixed!important;
+    left:8px!important;
+    right:8px!important;
+    bottom:max(8px,env(safe-area-inset-bottom))!important;
+    width:auto!important;
+    max-width:none!important;
+    z-index:99999!important;
+  }
+
+  #pcmMobileNav button{
+    flex:1 1 0!important;
+    min-width:0!important;
+    min-height:48px!important;
+    white-space:nowrap!important;
+  }
+
+  .pcm-connection-pill{
+    bottom:82px!important;
+    right:12px!important;
+    max-width:calc(100vw - 24px)!important;
+  }
+
+  .modal{
+    z-index:20000!important;
+  }
+
+  .modal-box,
+  .factory-modal-box{
+    width:100%!important;
+    max-width:100%!important;
+    max-height:calc(100dvh - 20px)!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+  }
+}
+
+@media(max-width:430px){
+  .login-card{
+    width:calc(100vw - 24px)!important;
+    max-width:430px!important;
+  }
+
+  .stats-grid{
+    gap:7px!important;
+  }
+
+  .stat-card{
+    padding:11px!important;
+  }
+
+  .stat-value{
+    font-size:21px!important;
+  }
+
+  #pcmMobileNav{
+    gap:2px!important;
+    padding:6px!important;
+  }
+
+  #pcmMobileNav button{
+    font-size:8px!important;
+  }
+}
+</style>
+
 </head>
 
 <body>
