@@ -21,7 +21,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=2ZAsD5PCdRs8tQBKXw4BNKUsfVdsyx1VjN9OdGvRHfYS8mOUJlJ22ifVVzW3hYenAzBKTD-EQuYTCevHYfRGekJyMNwl85fRN6OUfohKPVvM0bj9cq_0TOnXoCM29GUV3ENDMdJM1N1H1QY4ruJIzP9aXLsL3JXW3yzUko5C76jkt6BlJrMV-mjvAMTsdm4HP4ua2y5E0wogcv3q0rSlPJ82FNpHl6yd97WTTE1-0rkEM8NXpsy9s6pzVzi80ur1B9lDcDWFmuQmo9-3VG-MvBH_ueRSdvJ7P_vfMkf2pLrGXmKNqWTEC86Y2a-51Hv-JIrzPtqJch-iYwjbbc_acpmBVZVJ-nZzIJe_S2brV60" charset="UTF-8"></script><style>
+<style>
 *{
     box-sizing:border-box;
 }
@@ -3152,6 +3152,101 @@ button{min-height:44px}
 }
 </style>
 
+
+<style id="pcm-mobile-finalize-fullscreen-fix">
+/* =========================================================
+   PCM — FINALIZAÇÃO MOBILE EM TELA INTEIRA
+   O modal fica acima de toda a interface, inclusive navegação
+   inferior, sem alterar a lógica de salvamento/Supabase.
+========================================================= */
+@media (max-width: 800px){
+  body.pcm-modal-open{
+    overflow:hidden !important;
+    position:fixed !important;
+    width:100% !important;
+    left:0 !important;
+    right:0 !important;
+  }
+
+  .modal.pcm-fullscreen-mobile,
+  #finishOSFinalModal,
+  #finishModal,
+  #pcmFinishModal,
+  #finishOSModal,
+  #pcmLastTimeModal2{
+    position:fixed !important;
+    inset:0 !important;
+    width:100vw !important;
+    height:100dvh !important;
+    min-height:100dvh !important;
+    max-height:none !important;
+    margin:0 !important;
+    padding:0 !important;
+    z-index:2147483647 !important;
+    align-items:stretch !important;
+    justify-content:stretch !important;
+    overflow:hidden !important;
+    box-sizing:border-box !important;
+  }
+
+  .modal.pcm-fullscreen-mobile > .factory-modal-box,
+  #finishOSFinalModal > .factory-modal-box,
+  #finishModal > .factory-modal-box,
+  #pcmFinishModal > .factory-modal-box,
+  #finishOSModal > .factory-modal-box,
+  #pcmLastTimeModal2 > .factory-modal-box{
+    width:100% !important;
+    max-width:none !important;
+    height:100dvh !important;
+    max-height:none !important;
+    min-height:100dvh !important;
+    margin:0 !important;
+    border-radius:0 !important;
+    border:0 !important;
+    padding:18px 14px calc(24px + env(safe-area-inset-bottom)) !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    box-sizing:border-box !important;
+  }
+
+  .modal.pcm-fullscreen-mobile > .factory-modal-box .factory-modal-actions,
+  #finishOSFinalModal > .factory-modal-box .factory-modal-actions,
+  #finishModal > .factory-modal-box .factory-modal-actions,
+  #pcmFinishModal > .factory-modal-box .factory-modal-actions,
+  #finishOSModal > .factory-modal-box .factory-modal-actions,
+  #pcmLastTimeModal2 > .factory-modal-box .factory-modal-actions{
+    position:sticky !important;
+    bottom:0 !important;
+    z-index:20 !important;
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:10px !important;
+    margin-top:18px !important;
+    padding:10px 0 calc(4px + env(safe-area-inset-bottom)) !important;
+    background:#0b1524 !important;
+  }
+
+  .modal.pcm-fullscreen-mobile > .factory-modal-box .factory-modal-actions button,
+  #finishOSFinalModal > .factory-modal-box .factory-modal-actions button,
+  #finishModal > .factory-modal-box .factory-modal-actions button,
+  #pcmFinishModal > .factory-modal-box .factory-modal-actions button,
+  #finishOSModal > .factory-modal-box .factory-modal-actions button,
+  #pcmLastTimeModal2 > .factory-modal-box .factory-modal-actions button{
+    min-height:50px !important;
+    width:100% !important;
+    touch-action:manipulation !important;
+  }
+
+  /* Garante que a navegação inferior nunca fique por cima do modal. */
+  body.pcm-modal-open #pcmMobileNav,
+  body.pcm-modal-open .mobile-nav,
+  body.pcm-modal-open .bottom-nav{
+    display:none !important;
+    pointer-events:none !important;
+  }
+}
+</style>
 </head>
 
 <body>
@@ -4944,7 +5039,7 @@ function adminEditOSModal(id,title,text,fields,okText,onOk){
 
     document.body.appendChild(el);
 
-    const close=()=>el.remove();
+    const close=()=>{el.remove();if(!document.querySelector('.modal[style*="2147483647"]'))document.body.classList.remove('pcm-modal-open');};
 
     const cancel=el.querySelector('[data-cancel]');
     if(cancel) cancel.onclick=close;
@@ -9646,7 +9741,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   function modal2(id,title,text,fields,ok,save){
     const old=document.getElementById(id);if(old)old.remove();
-    const el=document.createElement('div');el.id=id;el.className='modal';el.style.cssText='display:flex;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;background:rgba(0,0,0,.72);padding:16px';
+    const el=document.createElement('div');el.id=id;el.className='modal pcm-fullscreen-mobile';el.style.cssText='display:flex;position:fixed;inset:0;z-index:2147483647;align-items:center;justify-content:center;background:rgba(0,0,0,.72);padding:0';document.body.classList.add('pcm-modal-open');
     el.innerHTML=`<div class="factory-modal-box" style="width:min(620px,100%);max-height:90vh;overflow:auto;background:#0b1524;border:1px solid #475569;border-radius:16px;padding:20px;color:#e5e7eb"><h3 style="margin:0 0 8px">${esc2(title)}</h3><p style="color:#94a3b8;margin:0 0 16px">${esc2(text)}</p>${fields}<div class="factory-modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px"><button type="button" data-cancel class="factory-cancel">CANCELAR</button><button type="button" data-ok class="factory-ok">${esc2(ok)}</button></div></div>`;
     document.body.appendChild(el);
     const close=()=>el.remove();
