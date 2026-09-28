@@ -21,7 +21,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=xSY06lJiXPs6jGzcyvVvN8ZXPSAl-yb20xayONmpvP583DVXi2xoLBiGyS0pNuAR6dzisPK-7HCDlArk6WRh-x284v22tzXaxydGnm7w157ONv5zX3BxTyalkVRpZBeFkDzKkTetIbkvA6XpJbd1WzKrh_kJv2XGkULQpYUlPvvFjKlxkx6a3N1LJ9xzuTt-mgkKihr_Ta0o1pTCmjyc-YHY2h6hlYFgET1rpbGMlo3haJV_i1KMwZIZ-e9SuFL-P2BdwlCqSsKw4235heUNKHmB-_TuU7raYtYvRfHGdYMb3oS_n2xfBVX0IlRas-ZE0mPlrsri2p5EswUtEQ4sUNNqkvHMHWzdlF6tKHr2JLM" charset="UTF-8"></script><script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=sRVIUTfkkTCrE9XRtQCOjCtju97iYqylRRv9a4cr2FkvYQJHTFrMwYQcevBM_WksxDyfWvJkpevd4UsE3MD32oG7YUdHhEHtWRSZLcD46oYkW2spqmUFGAfNBPLynrHGmmJx_bIvOY4iWlZtHMUsw42gkl1QN6nV0Rte7hz3Wy3Xrwze8WIAkBbn3hoh1VYGYV8rJvmg43lEqhrjVLD8U5pPUw0-d-rAtmyK8_UfxCw2qv0hMlDGSYgEtlXCM4LEf7P2B4tJ66meWOQVzjhher4PuvzFF6YdKNRT9bey1Q0dvmXLZLZfiyAX6UHppvxNGrgVJX4Dj8GVGxFaN3TpDA" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=WSMm4IG-EOYc0riPGaGsoqGloHMA5CUAMXPa5XTnx9aavRUOfk_sXTF2H5dNVAcRYr3z9TrMgMErLDI_DF3OktpKHGmNSTb-cUTZ0st7_twVDyKRq7iSKWEFTuRblyxWd6Sn0eetIjiGZuzImrbyL342njPVYW1SPBow2vmCI0ZrTL_Mn2PQ10JVkn2W7hbI-66q3r6FdaZDaRHGEDIqjtMc6TKTQ8g8HMlaLXYYdDFSzt-OLf0n_fAErxZduGwFb3xJsXwIZeS5lFluYe8Sr1QuoypaSta6YjvXiechNqnnXOZIcQR-sFfMpf1t0f-PILCiuVMMnwD1aJBkMFC9GA" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -4111,113 +4111,87 @@ let timerInterval = null;
 ========================================================= */
 
 async function login(){
+    const userEl=document.getElementById("loginUser");
+    const pinEl=document.getElementById("loginPin");
+    const error=document.getElementById("loginError");
+    const user=String(userEl?.value||"").trim();
+    const pin=String(pinEl?.value||"").replace(/\D/g,"").trim();
 
-    try{
-        await ensureSupabase();
-    }catch(e){
-        console.error(e);
-        showPCMToast("A conexão do sistema não carregou. Verifique a internet e tente novamente.","error");
+    if(error){ error.textContent=""; error.classList.add("hidden"); }
+    if(!user || !pin){
+        if(error){ error.textContent="Selecione o usuário e informe o PIN."; error.classList.remove("hidden"); }
         return;
     }
 
-    try{
-        await loadUsers();
-    }catch(e){
-        // Mantém a tela de login utilizável mesmo se a biblioteca/conexão demorar no celular.
-        usersRows = defaultUsers.slice();
-        usersDB = {};
-        usersRows.forEach(u=>{ usersDB[u.name]=String(u.pin||""); });
+    // Primeiro valida a lista local. Assim o login nunca fica preso esperando o Supabase.
+    if(!Array.isArray(usersRows) || !usersRows.length) usersRows=defaultUsers.slice();
+    let foundUser=usersRows.find(u=>String(u.name)===user && String(u.pin||"").replace(/\D/g,"")===pin && u.active!==false);
+
+    // Usuários cadastrados no banco que não estão na lista local continuam podendo entrar.
+    // Neste caso, damos alguns segundos para o Supabase carregar; se falhar, o login local continua funcionando.
+    if(!foundUser){
+        try{
+            await Promise.race([
+                loadUsers(),
+                new Promise((_,reject)=>setTimeout(()=>reject(new Error("timeout")),5000))
+            ]);
+            foundUser=usersRows.find(u=>String(u.name)===user && String(u.pin||"").replace(/\D/g,"")===pin && u.active!==false);
+        }catch(e){ console.warn("Login: banco indisponível, usando validação local.",e); }
     }
-
-    const user =
-        document.getElementById("loginUser").value;
-
-    const pin =
-        document.getElementById("loginPin").value
-        .replace(/\D/g,"");
-
-    const error =
-        document.getElementById("loginError");
-
-    const foundUser = usersRows.find(u =>
-        String(u.name) === String(user) &&
-        String(u.pin) === String(pin) &&
-        u.active === true
-    );
 
     if(!foundUser){
-        error.textContent = "Usuário, PIN ou status de acesso inválido.";
-        error.classList.remove("hidden");
+        if(error){ error.textContent="Usuário, PIN ou status de acesso inválido."; error.classList.remove("hidden"); }
         return;
     }
 
-    error.classList.add("hidden");
-    currentUser = foundUser.name;
-    isAdmin = foundUser.role === "admin" || foundUser.name === "PCM / Administrador";
+    error?.classList.add("hidden");
+    currentUser=foundUser.name;
+    isAdmin=foundUser.role==="admin" || foundUser.name==="PCM / Administrador";
 
-    document
-        .getElementById("loginScreen")
-        .classList.add("hidden");
+    document.getElementById("loginScreen")?.classList.add("hidden");
+    document.getElementById("app")?.classList.remove("hidden");
+    document.getElementById("currentUserBadge").textContent=currentUser;
+    document.getElementById("employeeUserBadge").textContent=currentUser;
 
-    document
-        .getElementById("app")
-        .classList.remove("hidden");
-
-    // Entra direto no início do painel: sem deslocamento horizontal/vertical residual.
     requestAnimationFrame(()=>{
-        window.scrollTo({top:0,left:0,behavior:"instant"});
+        window.scrollTo(0,0);
         document.documentElement.scrollLeft=0;
         document.body.scrollLeft=0;
         const main=document.querySelector("#app .main");
-        if(main){ main.scrollTop=0; main.scrollLeft=0; }
+        if(main){main.scrollTop=0;main.scrollLeft=0;}
     });
 
-    document
-        .getElementById("currentUserBadge")
-        .textContent = currentUser;
-
-    document
-        .getElementById("employeeUserBadge")
-        .textContent = currentUser;
-
-
     if(isAdmin){
-
-        document
-            .getElementById("adminMenu")
-            .classList.remove("hidden");
-
-        document
-            .getElementById("employeeMenu")
-            .classList.add("hidden");
-
+        document.getElementById("adminMenu")?.classList.remove("hidden");
+        document.getElementById("employeeMenu")?.classList.add("hidden");
         navigateTo("view-dashboard");
-
-        // Recarrega a lista imediatamente após o lançamento.
-        await window.loadDashboardData();
-        if(typeof window.pcmRefreshAdminLayout === "function") {
-            window.pcmRefreshAdminLayout();
+        // O carregamento do banco acontece depois que a tela já abriu.
+        try{
+            await Promise.race([
+                ensureSupabase().then(()=>loadUsers()).then(()=>window.loadDashboardData?.()),
+                new Promise((_,reject)=>setTimeout(()=>reject(new Error("timeout")),8000))
+            ]);
+            if(typeof window.pcmRefreshAdminLayout==="function") window.pcmRefreshAdminLayout();
+        }catch(e){
+            console.warn("Inicialização do painel PCM:",e);
+            showPCMToast?.("Sistema aberto. A atualização dos dados será tentada novamente quando a conexão estiver disponível.","warning");
         }
-
     }else{
-
-        document
-            .getElementById("adminMenu")
-            .classList.add("hidden");
-
-        document
-            .getElementById("employeeMenu")
-            .classList.remove("hidden");
-
+        document.getElementById("adminMenu")?.classList.add("hidden");
+        document.getElementById("employeeMenu")?.classList.remove("hidden");
         navigateTo("view-employee");
-
-        await loadEmployeeOrders();
-
+        try{
+            await Promise.race([
+                ensureSupabase().then(()=>loadUsers()).then(()=>loadEmployeeOrders()),
+                new Promise((_,reject)=>setTimeout(()=>reject(new Error("timeout")),8000))
+            ]);
+        }catch(e){
+            console.warn("Inicialização do painel funcionário:",e);
+            showPCMToast?.("Sistema aberto. Não foi possível atualizar as O.S. agora.","warning");
+        }
     }
-
     startRefreshTimer();
 }
-
 
 /* =========================================================
    LOGOUT
@@ -6929,140 +6903,6 @@ async function exportHistoryPDF(){
   }
 })();
 <\/script>
-
-<script>
-/* =========================================================
-   PCM — DASHBOARD DIÁRIO + JUSTIFICATIVA + RELATÓRIO SEMANAL
-   Não altera schema/tabelas do Supabase.
-========================================================= */
-(function(){
-  const TIME_ACTIONS=new Set([
-    'TEMPO AJUSTADO NA FINALIZAÇÃO',
-    'ÚLTIMA ALTERAÇÃO DE HORÁRIO PELO FUNCIONÁRIO',
-    'HORÁRIO AJUSTADO PELO FUNCIONÁRIO'
-  ]);
-
-  const escSafe=v=>typeof escapeHtml==='function'?escapeHtml(v==null?'':String(v)):String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-  const localDate=iso=>{
-    if(!iso)return null;
-    const d=new Date(iso); return Number.isNaN(d.getTime())?null:d;
-  };
-  const dayKey=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
-  const todayKey=()=>dayKey(new Date());
-
-  function orderActivityDate(o){
-    return localDate(o.finished_at)||localDate(o.started_at)||localDate(o.created_at)||localDate(o.opening_date)||localDate(o.updated_at);
-  }
-
-  function isTodayOrder(o){
-    const active=['O.S. ABERTA','EM PRODUÇÃO','PAUSADA','AGUARDANDO MATERIAL','FINALIZADA - AGUARDANDO PCM'];
-    if(active.includes(String(o.status||''))) return true;
-    const dates=[o.finished_at,o.started_at,o.created_at,o.opening_date,o.updated_at].filter(Boolean);
-    return dates.some(v=>{const d=localDate(v);return d&&dayKey(d)===todayKey();});
-  }
-
-  async function loadTimeChangeReasons(){
-    if(!isAdmin || !Array.isArray(dashboardOrders) || !dashboardOrders.length || !db)return;
-    const ids=dashboardOrders.map(o=>o.id).filter(Boolean);
-    if(!ids.length)return;
-    const {data,error}=await db.from('os_execution_history').select('os_id,action,reason,created_at,employee').in('os_id',ids).order('created_at',{ascending:false});
-    if(error){console.warn('Não foi possível carregar justificativas de alteração de horário:',error);return;}
-    const latest=new Map();
-    (data||[]).forEach(h=>{if(TIME_ACTIONS.has(String(h.action||'').trim().toUpperCase())&&!latest.has(h.os_id))latest.set(h.os_id,h);});
-    dashboardOrders.forEach(o=>{
-      const card=document.querySelector(`.os-card[data-os-id="${CSS.escape(String(o.id))}"]`);
-      if(!card) return;
-      const old=card.querySelector('.pcm-time-change-reason'); if(old)old.remove();
-      const h=latest.get(o.id); if(!h)return;
-      const box=document.createElement('div');
-      box.className='pcm-time-change-reason';
-      box.innerHTML=`<div class="pcm-time-change-title">⚠️ Motivo da última alteração de horário</div><div>${escSafe(h.reason||'Justificativa não informada')}</div><div class="pcm-time-change-meta">Alterado por: ${escSafe(h.employee||'Funcionário')} • ${h.created_at?new Date(h.created_at).toLocaleString('pt-BR'):''}</div>`;
-      const actions=card.querySelector('.pcm-admin-actions');
-      if(actions) actions.insertAdjacentElement('afterend',box); else card.appendChild(box);
-    });
-  }
-
-  const originalLoadDashboard=window.loadDashboardData;
-  if(typeof originalLoadDashboard==='function'){
-    window.loadDashboardData=async function(){
-      const result=await originalLoadDashboard.apply(this,arguments);
-      if(isAdmin && Array.isArray(dashboardOrders)){
-        window.pcmDashboardAllOrders=dashboardOrders.slice();
-        dashboardOrders=dashboardOrders.filter(isTodayOrder);
-        if(typeof renderKanban==='function')renderKanban();
-        await loadTimeChangeReasons();
-      }
-      return result;
-    };
-  }
-
-  function mondayOf(date){
-    const d=new Date(date); d.setHours(0,0,0,0);
-    const day=d.getDay(); const diff=day===0?-6:1-day; d.setDate(d.getDate()+diff); return d;
-  }
-  function sundayOf(date){const d=mondayOf(date);d.setDate(d.getDate()+6);d.setHours(23,59,59,999);return d;}
-  function isoInput(d){return dayKey(d);}
-  function fmtDate(d){return new Date(d).toLocaleDateString('pt-BR');}
-
-  async function renderWeeklyReport(){
-    const input=document.getElementById('pcmWeekDate');
-    const tbody=document.getElementById('pcmWeeklyRows');
-    const summary=document.getElementById('pcmWeeklySummary');
-    if(!input||!tbody||!summary||!db)return;
-    const selected=new Date((input.value||todayKey())+'T12:00:00');
-    const start=mondayOf(selected), end=sundayOf(selected);
-    const {data,error}=await db.from('os_orders').select('*');
-    if(error){summary.innerHTML='<span style="color:#f87171">Não foi possível carregar o relatório semanal.</span>';tbody.innerHTML='';return;}
-    const rows=(data||[]).filter(o=>{
-      const dates=[o.finished_at,o.started_at,o.created_at,o.opening_date,o.updated_at].map(localDate).filter(Boolean);
-      return dates.some(d=>d>=start&&d<=end);
-    }).sort((a,b)=>{
-      const da=orderActivityDate(a)?.getTime()||0, dbb=orderActivityDate(b)?.getTime()||0; return dbb-da;
-    });
-    const finalizadas=rows.filter(o=>['FINALIZADA','FINALIZADA - OBSERVAÇÃO'].includes(o.status));
-    const totalSeconds=finalizadas.reduce((n,o)=>n+Number(o.total_service_seconds||0),0);
-    const fmtDur=typeof formatSeconds==='function'?formatSeconds(totalSeconds):Math.floor(totalSeconds/3600)+'h';
-    const porFuncionario={}; finalizadas.forEach(o=>{const n=o.active_employee||o.responsible||'Não informado';porFuncionario[n]=(porFuncionario[n]||0)+1;});
-    const equipe=Object.entries(porFuncionario).sort((a,b)=>b[1]-a[1]).map(([n,q])=>`${escSafe(n)}: <b>${q}</b>`).join(' • ')||'Nenhum serviço finalizado no período.';
-    summary.innerHTML=`<div><b>Período:</b> ${fmtDate(start)} a ${fmtDate(end)}</div><div class="pcm-week-stats"><span>O.S. no período: <b>${rows.length}</b></span><span>Finalizadas: <b>${finalizadas.length}</b></span><span>Tempo total: <b>${fmtDur}</b></span></div><div><b>Por funcionário:</b> ${equipe}</div>`;
-    tbody.innerHTML=rows.map(o=>`<tr><td>${escSafe(o.os_number)}</td><td>${escSafe(o.machine)}</td><td>${escSafe(o.sector)}</td><td>${escSafe(o.active_employee||o.responsible||'-')}</td><td>${escSafe(o.status)}</td><td>${o.finished_at?new Date(o.finished_at).toLocaleDateString('pt-BR'):'-'}</td><td>${typeof formatSeconds==='function'?formatSeconds(Number(o.total_service_seconds||0)): '-'}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:#64748b">Nenhuma O.S. encontrada nesta semana.</td></tr>';
-  }
-
-  function addWeeklyReport(){
-    const view=document.getElementById('view-history'); if(!view||document.getElementById('pcmWeeklyReport'))return;
-    const top=view.querySelector('.topbar'); if(!top)return;
-    const panel=document.createElement('div');panel.id='pcmWeeklyReport';panel.className='panel';
-    panel.innerHTML=`<div class="panel-title">📊 Relatório semanal</div><div class="pcm-week-controls"><label>Escolha qualquer dia da semana:</label><input id="pcmWeekDate" type="date" value="${todayKey()}"><button type="button" class="btn-primary" id="pcmWeekLoad">GERAR RELATÓRIO</button></div><div id="pcmWeeklySummary" class="pcm-week-summary"></div><div class="table-wrap"><table><thead><tr><th>O.S.</th><th>Máquina</th><th>Setor</th><th>Responsável</th><th>Status</th><th>Finalização</th><th>Tempo</th></tr></thead><tbody id="pcmWeeklyRows"></tbody></table></div>`;
-    top.insertAdjacentElement('afterend',panel);
-    document.getElementById('pcmWeekLoad').onclick=renderWeeklyReport;
-    document.getElementById('pcmWeekDate').onchange=renderWeeklyReport;
-  }
-
-  const originalLoadHistory=window.loadHistory;
-  if(typeof originalLoadHistory==='function'){
-    window.loadHistory=async function(){const r=await originalLoadHistory.apply(this,arguments);addWeeklyReport();await renderWeeklyReport();return r;};
-  }
-
-  const originalNavigate=window.navigateTo;
-  if(typeof originalNavigate==='function'){
-    window.navigateTo=function(view,btn){const r=originalNavigate.apply(this,arguments);if(view==='view-history'){setTimeout(()=>{addWeeklyReport();renderWeeklyReport();},150);}return r;};
-  }
-
-  document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{addWeeklyReport();},500);});
-
-  const style=document.createElement('style');style.id='pcmDailyWeeklyStyle';style.textContent=`
-    .pcm-time-change-reason{margin-top:10px;padding:10px 12px;border:1px solid rgba(205,159,102,.35);border-radius:10px;background:rgba(205,159,102,.07);font-size:11px;line-height:1.45;color:#dbe4ef}
-    .pcm-time-change-title{font-weight:800;color:#E2BF8A;margin-bottom:5px}
-    .pcm-time-change-meta{margin-top:6px;color:#94a3b8;font-size:10px}
-    .pcm-week-controls{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px}
-    .pcm-week-controls label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#94a3b8}
-    .pcm-week-controls input{min-height:40px;padding:8px 10px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc}
-    .pcm-week-stats{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0;color:#cbd5e1}
-    .pcm-week-summary{font-size:11px;line-height:1.6;color:#cbd5e1;margin-bottom:12px}
-    @media(max-width:600px){.pcm-week-controls{align-items:stretch}.pcm-week-controls input,.pcm-week-controls button{width:100%;box-sizing:border-box}.pcm-week-stats{display:block}.pcm-week-stats span{display:block;margin:3px 0}}
-  `;document.head.appendChild(style);
-})();
-</script>
 </body></html>`);
         popup.document.close();
         showPCMToast("PDF preparado. Na tela de impressão, escolha Salvar como PDF.","success");
