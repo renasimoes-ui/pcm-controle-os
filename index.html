@@ -18,7 +18,10 @@
 <link rel="icon" href="data:,">
 
 <title>PCM • Controle de O.S.</title>
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=fNr5QbfF81O5aAPt8lpXIwxKbWFC9hAUwal1ovcrxlDXUggO9a2nGfzBr9QuM31VyUVksW0DpDc2dE9PhItCOUn2j9Nv9w2iI8Xo4-R_lvSHYQwKtQuITU-mYwN_z21LqxRszTphBZy2ToeNtZUVWljEu0RrzBRYs-rNLIhJ6IQqQzbK30oga49cBeTmA3m-FN3Z9M4vnOSzdHIo4kaaGYLjr-eE3SDt2XKHdvY8Un-j3fDG1LeEAt1gVMPTNd74zPfyR9EGlvQsDItyejrw6d8iqCSzsoXjJVlRts9WRAe_QnDxTEA_EuqMFQfSUJ-Y1YKevPWs6te3K6mgycYOpFmZ-HOeooQ7owO9BS4vlgo" charset="UTF-8"></script><style>
+
+
+
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=4uMNzPxCI7nmd0taoSdQBBeb2fc0mwX2YsYLVm2bQU4keXWhwjybgHsmCkfyp8JrPfskVnt3y3jIlbod92sbiNplvipTmHklrRKxfgkBsN3GsNpMAgVWdUlqTrifeBA7b73uGqmTTilJDWfLUrjQdDqImB4J65VZ4FVn_FswDuIx1Da4w_anHk3C-_aF2Uy1YCFMUWrG0C-rxCnQb5LdrPr1XvU8n7Cn5TsVZXLqy34KO-uLIFDyRHQko-PD5MFCCUWfz8tsxNbdVSNRDbCRVKMiP6VhXD4Op9veOfU2CnrIYXP0kHR1Wfo4yJ6MphFKWuL3IJZPElXlWd9ydmbleZEXEdErcytglIcT0R1mDCw" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -4110,7 +4113,7 @@ let timerInterval = null;
 async function login(){
 
     try{
-        await Promise.race([ensureSupabase(), new Promise((_,reject)=>setTimeout(()=>reject(new Error("Tempo esgotado ao conectar ao servidor.")),8000))]);
+        await ensureSupabase();
     }catch(e){
         console.error(e);
         showPCMToast("A conexão do sistema não carregou. Verifique a internet e tente novamente.","error");
@@ -4118,7 +4121,7 @@ async function login(){
     }
 
     try{
-        await Promise.race([loadUsers(), new Promise((_,reject)=>setTimeout(()=>reject(new Error("Tempo esgotado ao carregar usuários.")),8000))]);
+        await loadUsers();
     }catch(e){
         // Mantém a tela de login utilizável mesmo se a biblioteca/conexão demorar no celular.
         usersRows = defaultUsers.slice();
@@ -4139,7 +4142,7 @@ async function login(){
     const foundUser = usersRows.find(u =>
         String(u.name) === String(user) &&
         String(u.pin) === String(pin) &&
-        (u.active === true || u.active === 1 || String(u.active).toLowerCase() === "true")
+        u.active === true
     );
 
     if(!foundUser){
@@ -6926,53 +6929,6 @@ async function exportHistoryPDF(){
   }
 })();
 <\/script>
-
-<script id="pcm-daily-dashboard-final">
-(function(){
-  'use strict';
-  function isTodayDate(v){
-    if(!v) return false;
-    const d=new Date(v), n=new Date();
-    return !isNaN(d.getTime()) && d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth() && d.getDate()===n.getDate();
-  }
-  function orderBelongsToToday(o){
-    return isTodayDate(o.created_at) || isTodayDate(o.started_at) || isTodayDate(o.finished_at);
-  }
-  function applyDailyFilter(){
-    if(!Array.isArray(window.dashboardOrders)) return;
-    window.pcmDashboardAllOrders=window.dashboardOrders.slice();
-    window.dashboardOrders=window.pcmDashboardAllOrders.filter(orderBelongsToToday);
-    if(typeof window.renderKanban==='function') window.renderKanban();
-    if(typeof window.renderActiveJobs==='function') window.renderActiveJobs();
-    const el=document.getElementById('dashboardToday');
-    if(el){
-      try{el.textContent=new Intl.DateTimeFormat('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(new Date());}catch(e){}
-    }
-  }
-  function hook(){
-    if(typeof window.loadDashboardData==='function' && !window.loadDashboardData.__pcmDaily){
-      const original=window.loadDashboardData;
-      const wrapped=async function(){
-        const result=await original.apply(this,arguments);
-        applyDailyFilter();
-        return result;
-      };
-      wrapped.__pcmDaily=true;
-      window.loadDashboardData=wrapped;
-    }
-    applyDailyFilter();
-  }
-  document.addEventListener('DOMContentLoaded',function(){
-    setTimeout(hook,1000);
-    setInterval(function(){
-      const key=new Date().toISOString().slice(0,10);
-      if(window.__pcmDailyDate && window.__pcmDailyDate!==key && typeof window.loadDashboardData==='function') window.loadDashboardData();
-      window.__pcmDailyDate=key;
-    },30000);
-  });
-})();
-</script>
-
 </body></html>`);
         popup.document.close();
         showPCMToast("PDF preparado. Na tela de impressão, escolha Salvar como PDF.","success");
@@ -9877,5 +9833,5 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 })();
 </script>
-</body>
+\n<script id="pcm-login-fix-v2">\n(function(){\n  const DEFAULT_USERS = [\n    {name:"PCM / Administrador",pin:"0109",role:"admin",active:true},\n    {name:"Adryan",pin:"6101",role:"Técnico",active:true},\n    {name:"Fabio",pin:"6102",role:"Técnico",active:true},\n    {name:"Rodrigo",pin:"6103",role:"Técnico",active:true},\n    {name:"Leonardo",pin:"6104",role:"Técnico",active:true},\n    {name:"Vilmar",pin:"6105",role:"Técnico",active:true},\n    {name:"Rafael",pin:"6106",role:"Técnico",active:true},\n    {name:"Danilo",pin:"6107",role:"Técnico",active:true}\n  ];\n\n  window.login = async function(){\n    const userEl=document.getElementById('loginUser');\n    const pinEl=document.getElementById('loginPin');\n    const error=document.getElementById('loginError');\n    if(!userEl||!pinEl) return;\n    const user=String(userEl.value||'').trim();\n    const pin=String(pinEl.value||'').replace(/\\D/g,'').slice(0,4);\n    if(error) error.classList.add('hidden');\n\n    // Autenticação local imediata: o login não depende da conexão com o Supabase.\n    let list=Array.isArray(window.usersRows)&&window.usersRows.length ? window.usersRows : DEFAULT_USERS;\n    let found=list.find(u=>String(u.name)===user && String(u.pin||'')===pin && u.active!==false);\n\n    if(!found){\n      // Tenta atualizar usuários do Supabase sem bloquear a primeira tentativa.\n      try{\n        if(typeof window.ensureSupabase==='function') await Promise.race([window.ensureSupabase(),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4000))]);\n        if(typeof window.loadUsers==='function') { await Promise.race([window.loadUsers(),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4000))]); }\n        list=Array.isArray(window.usersRows)&&window.usersRows.length ? window.usersRows : DEFAULT_USERS;\n        found=list.find(u=>String(u.name)===user && String(u.pin||'')===pin && u.active!==false);\n      }catch(e){ console.warn('Login: Supabase indisponível, usando usuários locais.',e); }\n    }\n\n    if(!found){\n      if(error){ error.textContent='Usuário ou PIN incorreto.'; error.classList.remove('hidden'); }\n      return;\n    }\n\n    window.currentUser=found.name;\n    window.isAdmin=(found.role==='admin'||found.name==='PCM / Administrador');\n\n    const loginScreen=document.getElementById('loginScreen');\n    const app=document.getElementById('app');\n    if(loginScreen) loginScreen.classList.add('hidden');\n    if(app) app.classList.remove('hidden');\n\n    const badge=document.getElementById('currentUserBadge');\n    const employeeBadge=document.getElementById('employeeUserBadge');\n    if(badge) badge.textContent=found.name;\n    if(employeeBadge) employeeBadge.textContent=found.name;\n\n    const adminMenu=document.getElementById('adminMenu');\n    const employeeMenu=document.getElementById('employeeMenu');\n    if(window.isAdmin){\n      if(adminMenu) adminMenu.classList.remove('hidden');\n      if(employeeMenu) employeeMenu.classList.add('hidden');\n      try{ if(typeof window.navigateTo==='function') window.navigateTo('view-dashboard'); }catch(e){}\n      // Banco e dashboard carregam depois do login, sem impedir a entrada.\n      setTimeout(async()=>{\n        try{ if(typeof window.ensureSupabase==='function') await window.ensureSupabase(); }catch(e){}\n        try{ if(typeof window.loadUsers==='function') await window.loadUsers(); }catch(e){}\n        try{ if(typeof window.loadDashboardData==='function') await window.loadDashboardData(); }catch(e){console.warn('Dashboard após login:',e);}\n      },50);\n    }else{\n      if(adminMenu) adminMenu.classList.add('hidden');\n      if(employeeMenu) employeeMenu.classList.remove('hidden');\n      try{ if(typeof window.navigateTo==='function') window.navigateTo('view-employee'); }catch(e){}\n      setTimeout(async()=>{\n        try{ if(typeof window.ensureSupabase==='function') await window.ensureSupabase(); }catch(e){}\n        try{ if(typeof window.loadEmployeeOrders==='function') await window.loadEmployeeOrders(); }catch(e){console.warn('O.S. funcionário após login:',e);}\n      },50);\n    }\n\n    try{ if(typeof window.startRefreshTimer==='function') window.startRefreshTimer(); }catch(e){}\n    requestAnimationFrame(()=>window.scrollTo(0,0));\n  };\n\n  document.addEventListener('DOMContentLoaded',function(){\n    const form=document.getElementById('osLoginForm');\n    if(form) form.onsubmit=function(e){e.preventDefault(); window.login(); return false;};\n  });\n})();\n</script>\n</body>
 </html>
