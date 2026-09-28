@@ -21,7 +21,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=sRVIUTfkkTCrE9XRtQCOjCtju97iYqylRRv9a4cr2FkvYQJHTFrMwYQcevBM_WksxDyfWvJkpevd4UsE3MD32oG7YUdHhEHtWRSZLcD46oYkW2spqmUFGAfNBPLynrHGmmJx_bIvOY4iWlZtHMUsw42gkl1QN6nV0Rte7hz3Wy3Xrwze8WIAkBbn3hoh1VYGYV8rJvmg43lEqhrjVLD8U5pPUw0-d-rAtmyK8_UfxCw2qv0hMlDGSYgEtlXCM4LEf7P2B4tJ66meWOQVzjhher4PuvzFF6YdKNRT9bey1Q0dvmXLZLZfiyAX6UHppvxNGrgVJX4Dj8GVGxFaN3TpDA" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=MTXO8MjZfcqYx3SwSZ84l3letvp5KX3lO_LcOihe1RKUpEAEV1tLvqBptVS4fDyDlNmyLz5Ma34wtx6QIPQ7vEjjrevle3WThidHOgjwcr7QQ-zh6G9lHnhpjdCwgm19J-bX3kOEF3AcHr8T5cs1YfKqTIsV317-R2IWnMV6yAWoi6N1KfVTXGrsveKSgw96eNN1oBdNY9NC8yEH-3kPxS_PjM0vQ7zMfRdN-yyEmG9kNs7H75Mt5kQoInLk_s1kPOxqX9UaHoRUtpFKPUJhy2pHTYcycsjjIiDUt3VNulZZVmk0UECeiaZiHe8q77Eub6ZV78El0tZNingTTP8w-ZmAWyXAhewEfhenqZ0K_6g" charset="UTF-8"></script><script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=sRVIUTfkkTCrE9XRtQCOjCtju97iYqylRRv9a4cr2FkvYQJHTFrMwYQcevBM_WksxDyfWvJkpevd4UsE3MD32oG7YUdHhEHtWRSZLcD46oYkW2spqmUFGAfNBPLynrHGmmJx_bIvOY4iWlZtHMUsw42gkl1QN6nV0Rte7hz3Wy3Xrwze8WIAkBbn3hoh1VYGYV8rJvmg43lEqhrjVLD8U5pPUw0-d-rAtmyK8_UfxCw2qv0hMlDGSYgEtlXCM4LEf7P2B4tJ66meWOQVzjhher4PuvzFF6YdKNRT9bey1Q0dvmXLZLZfiyAX6UHppvxNGrgVJX4Dj8GVGxFaN3TpDA" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -3242,6 +3242,11 @@ button{min-height:44px}
                 <span>Máquinas</span>
             </button>
 
+            <button class="nav-btn" onclick="navigateTo('view-purchases',this)">
+                <span>🛒</span>
+                <span>Pedidos de Compra <b id="purchaseBadge" class="pcm-purchase-badge hidden">0</b></span>
+            </button>
+
         </div>
 
         <div id="employeeMenu" class="hidden">
@@ -3249,6 +3254,11 @@ button{min-height:44px}
             <button class="nav-btn active" onclick="navigateTo('view-employee',this)">
                 <span>▦</span>
                 <span>Minhas O.S.</span>
+            </button>
+
+            <button class="nav-btn" onclick="navigateTo('view-purchases',this)">
+                <span>🛒</span>
+                <span>Solicitar Compra</span>
             </button>
 
         </div>
