@@ -17,11 +17,14 @@
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:,">
 
+<!-- Supabase carregado antes do sistema para evitar falha de inicialização no celular -->
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=pkxn9B_3lD3UMMJxR6p0--OeR4-Z2vAfNDqK9rvfJlVhs-54qgyFZQG4S9-phdkVDvlaHQ3Qv5dOKoPGIpi9ntnUVJzF-k-yCEnith0JMaCiIaPKu1BLfPrF3KhuPU5_kTd_jmRCddIBFZU9EU6F3MLKBzHp22MFlWHBkio4gxRJtwl9CNSbFX__9jCZOGEfcJcgi7c2TDEBQ7LU9AIu9raOWOuzNLvAKA4i_wIoNGe5FVF7m4C7Jy2J7uhun5BocdVvDfCFYD_6zGi2IhXDo2FM2JmIBk01ztAMCDNyS45II5jFdUmjM_z2SejTho6x" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <title>PCM • Controle de O.S.</title>
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=URMyQuH24KE9fCiCZMItqfHLrJguw5MaMRWKhME0eQuWLKK8xAQJ02niitsbmhcA9ow2z0i5Ji1ROl7gErgMfHBkoXRcWksdFTZtDj9l_kL0sZYGhwFv7o4YxNqZ-j5N4i0PZ4NKW75IdVjyr9G9hIRZx5Go8SKlSyhoy-GP35rmtyYG1z5kuHuhO91UFrXrhJin-KCJzrdhDHdne1n6pXJYLg5HzGNfPgpAj4DCp9Pt645HFiG25JEicutiueAtZXDRU5aw5PIzgJAQgNqMm6Vwx6TuYhVPA1xK1Ga-HICm5M_clPTM6vHUWRm0hJSu" charset="UTF-8"></script><style>
+<style>
 *{
     box-sizing:border-box;
 }
@@ -4027,6 +4030,14 @@ let supabaseLoading = null;
 
 function ensureSupabase(){
     if(db) return Promise.resolve(db);
+    if(window.supabase && typeof window.supabase.createClient === "function"){
+        try{
+            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            return Promise.resolve(db);
+        }catch(e){
+            console.warn("Falha ao inicializar Supabase pelo carregamento direto:", e);
+        }
+    }
     if(supabaseLoading) return supabaseLoading;
     /*
        O HTML é AUTOSSUFICIENTE.
@@ -7470,8 +7481,10 @@ document
 (function(){
     document.addEventListener("DOMContentLoaded",function(){
         setTimeout(function(){
-            loadUsers().catch(function(e){ console.warn("Usuários ainda não disponíveis; o login permanece acessível.",e); });
-        },150);
+            try{
+                if(typeof loadUsers === "function") loadUsers().catch(function(e){ console.warn("Usuários ainda não disponíveis; o login permanece acessível.",e); });
+            }catch(e){ console.warn("Falha inicial não bloqueante:",e); }
+        },500);
     });
 })();
 </script>
