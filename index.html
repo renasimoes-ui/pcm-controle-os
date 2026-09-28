@@ -8,8 +8,6 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="theme-color" content="#080808">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="color-scheme" content="dark">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -21,7 +19,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=sRVIUTfkkTCrE9XRtQCOjCtju97iYqylRRv9a4cr2FkvYQJHTFrMwYQcevBM_WksxDyfWvJkpevd4UsE3MD32oG7YUdHhEHtWRSZLcD46oYkW2spqmUFGAfNBPLynrHGmmJx_bIvOY4iWlZtHMUsw42gkl1QN6nV0Rte7hz3Wy3Xrwze8WIAkBbn3hoh1VYGYV8rJvmg43lEqhrjVLD8U5pPUw0-d-rAtmyK8_UfxCw2qv0hMlDGSYgEtlXCM4LEf7P2B4tJ66meWOQVzjhher4PuvzFF6YdKNRT9bey1Q0dvmXLZLZfiyAX6UHppvxNGrgVJX4Dj8GVGxFaN3TpDA" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=3wD7tysAH7cjNo3IvZFkcVX-dS7eHfug1VUwTs-oN6TqtpITbRaAvvScmTUhwkSIrZovXw0LHq_P_drnImDzbwRllHCE2-NEJBisWSe5xB8NqRn7KveRbFqBNDxShQAuS7yKdufEtCwO9fSBiVz3qNk8uDtkiO4JPHweNAbAuvHrxz8Z8cUUPCzRmj37RojeTQNx7cWgh1ueHkLVayHVpE778OUfXMWsDI53P0YxO1srpflpEQHL9Y_E-R0Ls6FJXCa57OvyBCN3HMaokWjJUAA4GEiFN135ayo7exGd9GR37wpug7Mt6s591sWGDTlZNOcpLberkDioOrWtkh3Bnk3p-MkGvbRc4j0xzCfW_gU" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -2994,164 +2992,7 @@ body:has(#loginScreen:not(.hidden)){
   }
 }
 </style>
-
-<style id="pcm-mobile-final-fix">
-/* =========================================================
-   PCM - CORREÇÃO FINAL DE COMPATIBILIDADE MOBILE
-   Não depende de main.js externo.
-========================================================= */
-html{
-  width:100%;
-  min-height:100%;
-  overflow-x:hidden!important;
-  -webkit-text-size-adjust:100%;
-}
-body{
-  width:100%;
-  min-width:0;
-  min-height:100vh;
-  overflow-x:hidden!important;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior-x:none;
-}
-*,*::before,*::after{box-sizing:border-box}
-img,svg,video,canvas{max-width:100%;height:auto}
-button,a,input,select,textarea{touch-action:manipulation}
-input,select,textarea{font-size:16px!important}
-button{min-height:44px}
-
-@media(max-width:800px){
-  .main{
-    width:100%!important;
-    max-width:100%!important;
-    margin-left:0!important;
-    padding:12px 10px 92px!important;
-    overflow-x:hidden!important;
-  }
-
-  .topbar,
-  .panel,
-  .dashboard-hero,
-  .stats-grid,
-  .kanban,
-  .employee-os-grid,
-  .form-grid{
-    width:100%!important;
-    max-width:100%!important;
-    min-width:0!important;
-  }
-
-  .stats-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  }
-
-  .kanban{
-    display:flex!important;
-    flex-direction:column!important;
-    overflow:visible!important;
-  }
-
-  .kanban-column{
-    width:100%!important;
-    min-width:0!important;
-    max-width:100%!important;
-    max-height:none!important;
-    overflow:visible!important;
-  }
-
-  .kanban-column>div[id]{
-    max-height:none!important;
-    overflow:visible!important;
-  }
-
-  .os-card,
-  .employee-os,
-  .stat-card,
-  .panel{
-    min-width:0!important;
-    max-width:100%!important;
-  }
-
-  .table-wrap,
-  .history-table-wrap{
-    width:100%!important;
-    max-width:100%!important;
-    overflow-x:auto!important;
-    -webkit-overflow-scrolling:touch;
-  }
-
-  .table-wrap table,
-  .history-table-wrap table{
-    min-width:720px!important;
-  }
-
-  #pcmMobileNav{
-    display:flex!important;
-    position:fixed!important;
-    left:8px!important;
-    right:8px!important;
-    bottom:max(8px,env(safe-area-inset-bottom))!important;
-    width:auto!important;
-    max-width:none!important;
-    z-index:99999!important;
-  }
-
-  #pcmMobileNav button{
-    flex:1 1 0!important;
-    min-width:0!important;
-    min-height:48px!important;
-    white-space:nowrap!important;
-  }
-
-  .pcm-connection-pill{
-    bottom:82px!important;
-    right:12px!important;
-    max-width:calc(100vw - 24px)!important;
-  }
-
-  .modal{
-    z-index:20000!important;
-  }
-
-  .modal-box,
-  .factory-modal-box{
-    width:100%!important;
-    max-width:100%!important;
-    max-height:calc(100dvh - 20px)!important;
-    overflow-y:auto!important;
-    overflow-x:hidden!important;
-  }
-}
-
-@media(max-width:430px){
-  .login-card{
-    width:calc(100vw - 24px)!important;
-    max-width:430px!important;
-  }
-
-  .stats-grid{
-    gap:7px!important;
-  }
-
-  .stat-card{
-    padding:11px!important;
-  }
-
-  .stat-value{
-    font-size:21px!important;
-  }
-
-  #pcmMobileNav{
-    gap:2px!important;
-    padding:6px!important;
-  }
-
-  #pcmMobileNav button{
-    font-size:8px!important;
-  }
-}
-</style>
-
+<style id="pcm-final-mobile-fix">html,body{width:100%;max-width:100%;overflow-x:hidden!important}*{box-sizing:border-box}@media(max-width:800px){.sidebar{display:none!important}.main{margin-left:0!important;width:100%!important;max-width:100%!important;padding:14px 10px 90px!important;overflow-x:hidden!important}input,select,textarea,button{font-size:16px!important}}#pcmConnectionNotice{display:none;position:fixed;left:12px;right:12px;bottom:78px;z-index:100000;background:#111827;color:#fff;border:1px solid #475569;border-radius:12px;padding:12px;font:600 13px Arial;box-shadow:0 8px 25px rgba(0,0,0,.35)}#pcmConnectionNotice.show{display:block}</style><div id="pcmConnectionNotice"></div><script>(function(){const b=document.getElementById('pcmConnectionNotice');window.pcmShowConnectionError=m=>{if(!b)return;b.textContent=m||'Erro de conexão. Verifique a internet e tente novamente.';b.classList.add('show')};window.pcmHideConnectionError=()=>b&&b.classList.remove('show');addEventListener('offline',()=>pcmShowConnectionError('Sem conexão com a internet no celular.'));addEventListener('online',()=>{pcmHideConnectionError();location.reload()})})();</script>
 </head>
 
 <body>
@@ -6929,6 +6770,7 @@ async function exportHistoryPDF(){
   }
 })();
 <\/script>
+<script id="pcm-daily-dashboard-final">(function(){function today(v){if(!v)return false;const d=new Date(v),n=new Date();return !isNaN(d)&&d.getFullYear()==n.getFullYear()&&d.getMonth()==n.getMonth()&&d.getDate()==n.getDate()}function filt(a){return(Array.isArray(a)?a:[]).filter(o=>today(o.created_at)||today(o.started_at)||today(o.finished_at)||today(o.updated_at))}window.pcmFilterDashboardToday=filt;function apply(){if(typeof dashboardOrders!=='undefined'&&Array.isArray(dashboardOrders)){window.pcmDashboardAllOrders=dashboardOrders;dashboardOrders=filt(dashboardOrders);if(typeof renderKanban==='function')renderKanban()}}const old=window.loadDashboardData;if(typeof old==='function'&&!old.__daily){const w=async function(){const r=await old.apply(this,arguments);apply();return r};w.__daily=true;window.loadDashboardData=w}let day=new Date().toDateString();setInterval(()=>{const n=new Date().toDateString();if(n!==day){day=n;if(typeof loadDashboardData==='function')loadDashboardData()}},30000);document.addEventListener('DOMContentLoaded',()=>setTimeout(apply,700))})();</script>
 </body></html>`);
         popup.document.close();
         showPCMToast("PDF preparado. Na tela de impressão, escolha Salvar como PDF.","success");
