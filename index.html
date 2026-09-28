@@ -21,7 +21,7 @@
 
 
 
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=WSMm4IG-EOYc0riPGaGsoqGloHMA5CUAMXPa5XTnx9aavRUOfk_sXTF2H5dNVAcRYr3z9TrMgMErLDI_DF3OktpKHGmNSTb-cUTZ0st7_twVDyKRq7iSKWEFTuRblyxWd6Sn0eetIjiGZuzImrbyL342njPVYW1SPBow2vmCI0ZrTL_Mn2PQ10JVkn2W7hbI-66q3r6FdaZDaRHGEDIqjtMc6TKTQ8g8HMlaLXYYdDFSzt-OLf0n_fAErxZduGwFb3xJsXwIZeS5lFluYe8Sr1QuoypaSta6YjvXiechNqnnXOZIcQR-sFfMpf1t0f-PILCiuVMMnwD1aJBkMFC9GA" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=Z5edHAzgk4xvpHA9jWo6QyHbzTxI0LqmgROspjDgD8YbE8pqgLOnhha32zXjPiDRFZQj3wPw35ub8SFGNZCCuTWuF7YZx8bNSz_Lq_ct_0rXDYB5mVpMX6JEyuQHvgeDG5erEOhm9Fz7BPrvEbddjKn4seABQ9m-NUKwqYaltosoIulWeadXvAk2RoOjRK-zxpQsar9PqIZcDCaNxP6NyhaHbqQd0rXFfj8mzHWLqPHrffAvDPxt7jwtw5Au-oqFXTszgvpuOL8GZpbrdKvPrq1670jMn6lqarYGFvK8sh_modWL7htQfz9gUq8VvYlR1Z0OXCoNXi2pmt9lTIlsZMrjybG0ty9QEebeEeU9rM8" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -4111,87 +4111,113 @@ let timerInterval = null;
 ========================================================= */
 
 async function login(){
-    const userEl=document.getElementById("loginUser");
-    const pinEl=document.getElementById("loginPin");
-    const error=document.getElementById("loginError");
-    const user=String(userEl?.value||"").trim();
-    const pin=String(pinEl?.value||"").replace(/\D/g,"").trim();
 
-    if(error){ error.textContent=""; error.classList.add("hidden"); }
-    if(!user || !pin){
-        if(error){ error.textContent="Selecione o usuário e informe o PIN."; error.classList.remove("hidden"); }
+    try{
+        await ensureSupabase();
+    }catch(e){
+        console.error(e);
+        showPCMToast("A conexão do sistema não carregou. Verifique a internet e tente novamente.","error");
         return;
     }
 
-    // Primeiro valida a lista local. Assim o login nunca fica preso esperando o Supabase.
-    if(!Array.isArray(usersRows) || !usersRows.length) usersRows=defaultUsers.slice();
-    let foundUser=usersRows.find(u=>String(u.name)===user && String(u.pin||"").replace(/\D/g,"")===pin && u.active!==false);
-
-    // Usuários cadastrados no banco que não estão na lista local continuam podendo entrar.
-    // Neste caso, damos alguns segundos para o Supabase carregar; se falhar, o login local continua funcionando.
-    if(!foundUser){
-        try{
-            await Promise.race([
-                loadUsers(),
-                new Promise((_,reject)=>setTimeout(()=>reject(new Error("timeout")),5000))
-            ]);
-            foundUser=usersRows.find(u=>String(u.name)===user && String(u.pin||"").replace(/\D/g,"")===pin && u.active!==false);
-        }catch(e){ console.warn("Login: banco indisponível, usando validação local.",e); }
+    try{
+        await loadUsers();
+    }catch(e){
+        // Mantém a tela de login utilizável mesmo se a biblioteca/conexão demorar no celular.
+        usersRows = defaultUsers.slice();
+        usersDB = {};
+        usersRows.forEach(u=>{ usersDB[u.name]=String(u.pin||""); });
     }
 
+    const user =
+        document.getElementById("loginUser").value;
+
+    const pin =
+        document.getElementById("loginPin").value
+        .replace(/\D/g,"");
+
+    const error =
+        document.getElementById("loginError");
+
+    const foundUser = usersRows.find(u =>
+        String(u.name) === String(user) &&
+        String(u.pin) === String(pin) &&
+        u.active === true
+    );
+
     if(!foundUser){
-        if(error){ error.textContent="Usuário, PIN ou status de acesso inválido."; error.classList.remove("hidden"); }
+        error.textContent = "Usuário, PIN ou status de acesso inválido.";
+        error.classList.remove("hidden");
         return;
     }
 
-    error?.classList.add("hidden");
-    currentUser=foundUser.name;
-    isAdmin=foundUser.role==="admin" || foundUser.name==="PCM / Administrador";
+    error.classList.add("hidden");
+    currentUser = foundUser.name;
+    isAdmin = foundUser.role === "admin" || foundUser.name === "PCM / Administrador";
 
-    document.getElementById("loginScreen")?.classList.add("hidden");
-    document.getElementById("app")?.classList.remove("hidden");
-    document.getElementById("currentUserBadge").textContent=currentUser;
-    document.getElementById("employeeUserBadge").textContent=currentUser;
+    document
+        .getElementById("loginScreen")
+        .classList.add("hidden");
 
+    document
+        .getElementById("app")
+        .classList.remove("hidden");
+
+    // Entra direto no início do painel: sem deslocamento horizontal/vertical residual.
     requestAnimationFrame(()=>{
-        window.scrollTo(0,0);
+        window.scrollTo({top:0,left:0,behavior:"instant"});
         document.documentElement.scrollLeft=0;
         document.body.scrollLeft=0;
         const main=document.querySelector("#app .main");
-        if(main){main.scrollTop=0;main.scrollLeft=0;}
+        if(main){ main.scrollTop=0; main.scrollLeft=0; }
     });
 
+    document
+        .getElementById("currentUserBadge")
+        .textContent = currentUser;
+
+    document
+        .getElementById("employeeUserBadge")
+        .textContent = currentUser;
+
+
     if(isAdmin){
-        document.getElementById("adminMenu")?.classList.remove("hidden");
-        document.getElementById("employeeMenu")?.classList.add("hidden");
+
+        document
+            .getElementById("adminMenu")
+            .classList.remove("hidden");
+
+        document
+            .getElementById("employeeMenu")
+            .classList.add("hidden");
+
         navigateTo("view-dashboard");
-        // O carregamento do banco acontece depois que a tela já abriu.
-        try{
-            await Promise.race([
-                ensureSupabase().then(()=>loadUsers()).then(()=>window.loadDashboardData?.()),
-                new Promise((_,reject)=>setTimeout(()=>reject(new Error("timeout")),8000))
-            ]);
-            if(typeof window.pcmRefreshAdminLayout==="function") window.pcmRefreshAdminLayout();
-        }catch(e){
-            console.warn("Inicialização do painel PCM:",e);
-            showPCMToast?.("Sistema aberto. A atualização dos dados será tentada novamente quando a conexão estiver disponível.","warning");
+
+        // Recarrega a lista imediatamente após o lançamento.
+        await window.loadDashboardData();
+        if(typeof window.pcmRefreshAdminLayout === "function") {
+            window.pcmRefreshAdminLayout();
         }
+
     }else{
-        document.getElementById("adminMenu")?.classList.add("hidden");
-        document.getElementById("employeeMenu")?.classList.remove("hidden");
+
+        document
+            .getElementById("adminMenu")
+            .classList.add("hidden");
+
+        document
+            .getElementById("employeeMenu")
+            .classList.remove("hidden");
+
         navigateTo("view-employee");
-        try{
-            await Promise.race([
-                ensureSupabase().then(()=>loadUsers()).then(()=>loadEmployeeOrders()),
-                new Promise((_,reject)=>setTimeout(()=>reject(new Error("timeout")),8000))
-            ]);
-        }catch(e){
-            console.warn("Inicialização do painel funcionário:",e);
-            showPCMToast?.("Sistema aberto. Não foi possível atualizar as O.S. agora.","warning");
-        }
+
+        await loadEmployeeOrders();
+
     }
+
     startRefreshTimer();
 }
+
 
 /* =========================================================
    LOGOUT
@@ -8918,6 +8944,24 @@ window.pcmShowOrderDetails=function(osId){
     <div class="pcm-detail-section">
       <div class="pcm-detail-section-title">Controles / histórico</div>
       <div class="pcm-detail-actions">${pcmActions(order)}</div>
+
+      ${order.employee_time_edit_reason ? `
+      <div style="margin-top:12px;border:1px solid #92400e;background:#17120b;border-radius:10px;padding:12px">
+        <div style="font-size:11px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">
+          ⏱ Alteração de horário — justificativa arquivada
+        </div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">
+          O funcionário alterou o horário de início e/ou fim da O.S. e esta justificativa ficou registrada no sistema.
+        </div>
+        <div style="font-size:12px;color:#e5e7eb;line-height:1.5">
+          <b>Motivo:</b> ${esc(order.employee_time_edit_reason)}
+        </div>
+        ${(order.employee_time_original_start || order.employee_time_original_finish) ? `
+        <div style="margin-top:9px;padding-top:9px;border-top:1px solid #3f2f16;font-size:10px;color:#94a3b8">
+          <b style="color:#cbd5e1">Horário original:</b> ${esc(fmtLocal(order.employee_time_original_start))} → ${esc(fmtLocal(order.employee_time_original_finish))}
+          ${order.employee_time_edit_at ? `<br><b style="color:#cbd5e1">Alterado em:</b> ${esc(fmtLocal(order.employee_time_edit_at))}` : ''}
+        </div>` : ''}
+      </div>` : ''}
     </div>
 
     <div class="modal-buttons">
