@@ -18,7 +18,7 @@
 <link rel="icon" href="data:,">
 
 <title>PCM • Controle de O.S.</title>
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=gGESTLhnq7KJAutW3hZKB7D4dqqTkdqEntvJlwQ99It5OvfdmXcFBVqeJpKXrldgHK6vxwHCVb6N4JKYNX0V5-PTPFwEbWvH-A2fFoFdnPS_BaNiNkyJ9Z3gnAoL7kREi-G9Gj1-e2-E2AQzPOi5xQi9qMDqHTSM5TiErpKdb7g09VQlCgDWSICdpguKgLVmDbYU31cbJ9l3bY2m9sL9klFTpGEatf7Sxq1qcydvRMtDGAoXYUW44CIGsX86DWjltQ-PCOYckB8P1Y-5MChTgwT7s08XoZakJK0J6bRlUijoNqdtjQpNyPgBgzUS75pAl7Sj-gXzrE4j_NjwPW2yQebjB4KG8S_d5GROqsfCecM" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=fNr5QbfF81O5aAPt8lpXIwxKbWFC9hAUwal1ovcrxlDXUggO9a2nGfzBr9QuM31VyUVksW0DpDc2dE9PhItCOUn2j9Nv9w2iI8Xo4-R_lvSHYQwKtQuITU-mYwN_z21LqxRszTphBZy2ToeNtZUVWljEu0RrzBRYs-rNLIhJ6IQqQzbK30oga49cBeTmA3m-FN3Z9M4vnOSzdHIo4kaaGYLjr-eE3SDt2XKHdvY8Un-j3fDG1LeEAt1gVMPTNd74zPfyR9EGlvQsDItyejrw6d8iqCSzsoXjJVlRts9WRAe_QnDxTEA_EuqMFQfSUJ-Y1YKevPWs6te3K6mgycYOpFmZ-HOeooQ7owO9BS4vlgo" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -4110,7 +4110,7 @@ let timerInterval = null;
 async function login(){
 
     try{
-        await ensureSupabase();
+        await Promise.race([ensureSupabase(), new Promise((_,reject)=>setTimeout(()=>reject(new Error("Tempo esgotado ao conectar ao servidor.")),8000))]);
     }catch(e){
         console.error(e);
         showPCMToast("A conexão do sistema não carregou. Verifique a internet e tente novamente.","error");
@@ -4118,7 +4118,7 @@ async function login(){
     }
 
     try{
-        await loadUsers();
+        await Promise.race([loadUsers(), new Promise((_,reject)=>setTimeout(()=>reject(new Error("Tempo esgotado ao carregar usuários.")),8000))]);
     }catch(e){
         // Mantém a tela de login utilizável mesmo se a biblioteca/conexão demorar no celular.
         usersRows = defaultUsers.slice();
@@ -4139,7 +4139,7 @@ async function login(){
     const foundUser = usersRows.find(u =>
         String(u.name) === String(user) &&
         String(u.pin) === String(pin) &&
-        u.active === true
+        (u.active === true || u.active === 1 || String(u.active).toLowerCase() === "true")
     );
 
     if(!foundUser){
