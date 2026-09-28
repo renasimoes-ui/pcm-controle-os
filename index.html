@@ -21,7 +21,7 @@
 
 
 
-<style>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=D7pHgJHYU9BNIs8kfoFO19A83_D6fJ98X47qAaRGmGKGnPyrZRyl0hSyFSOVn4iN4540i6A9PHrb2czSBCCPWpyA8uR3hUV8WBvxxbRCeRexUGE9QMHvOcnpNNVgsAamjGqKrjUlUHEomIfoaAIxnMjwH5XNto_r1NhGmJpDb6e-KZ2iS9N2uqGddXyeSwSp6ptmo3aie_Hoq7rIrAiyGudpsZLQYeS2Uv3TZkKaraBU3dTN8egSPFpQ6U3im9ABdzip694aIbycclyArTDCQfvFnXid1jfW66ScW5D-7yT5D8TEUJar8Tp0qEyJ8nEDbtE11MreemfCutZB_l8Qng" charset="UTF-8"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -3337,6 +3337,11 @@ button{min-height:44px}
                 <span>Máquinas</span>
             </button>
 
+            <button class="nav-btn pcm-purchase-nav" onclick="navigateTo('view-purchases',this)">
+                <span>🛒</span>
+                <span>Pedidos de Compra <b id="purchaseBadge" class="pcm-purchase-badge hidden">0</b></span>
+            </button>
+
         </div>
 
         <div id="employeeMenu" class="hidden">
@@ -3344,6 +3349,11 @@ button{min-height:44px}
             <button class="nav-btn active" onclick="navigateTo('view-employee',this)">
                 <span>▦</span>
                 <span>Minhas O.S.</span>
+            </button>
+
+            <button class="nav-btn" onclick="navigateTo('view-purchases',this)">
+                <span>🛒</span>
+                <span>Solicitar Compra</span>
             </button>
 
         </div>
@@ -7024,6 +7034,121 @@ async function exportHistoryPDF(){
   }
 })();
 <\/script>
+
+<style id="pcm-purchases-feature-css">
+.pcm-purchase-badge{display:inline-flex;min-width:18px;height:18px;padding:0 5px;align-items:center;justify-content:center;border-radius:999px;background:#dc2626;color:#fff;font-size:9px;font-weight:900;margin-left:5px;vertical-align:middle;animation:pcmPurchasePulse 1.4s infinite}
+@keyframes pcmPurchasePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.pcm-purchase-layout{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:14px;align-items:start}
+.pcm-purchase-card{background:linear-gradient(145deg,#181818,#101010);border:1px solid #303030;border-radius:14px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.pcm-purchase-title{font-size:16px;font-weight:900;color:#e2bf8a;margin-bottom:5px}.pcm-purchase-sub{font-size:11px;color:#94a3b8;line-height:1.5;margin-bottom:14px}
+.pcm-purchase-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pcm-purchase-grid .full{grid-column:1/-1}
+.pcm-purchase-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.pcm-purchase-list{display:grid;gap:9px;max-height:680px;overflow:auto}
+.pcm-purchase-item{border:1px solid #303030;border-radius:12px;padding:12px;background:#111}.pcm-purchase-item.new{border-color:#7f1d1d;box-shadow:0 0 0 1px rgba(220,38,38,.12)}
+.pcm-purchase-item-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.pcm-purchase-item h4{margin:0;color:#f2f0ec;font-size:13px}.pcm-purchase-meta{display:flex;flex-wrap:wrap;gap:7px 14px;color:#94a3b8;font-size:10px;margin-top:7px}.pcm-purchase-reason{margin-top:9px;padding:9px;border-radius:8px;background:#090909;color:#cbd5e1;font-size:11px;line-height:1.5}.pcm-purchase-status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900}.pcm-status-pendente{background:#3f1111;color:#fecaca}.pcm-status-analise{background:#422006;color:#fed7aa}.pcm-status-cotacao{background:#172554;color:#bfdbfe}.pcm-status-comprado{background:#052e16;color:#bbf7d0}.pcm-status-recusado{background:#27272a;color:#d4d4d8}
+.pcm-purchase-toast{position:fixed;right:18px;bottom:18px;z-index:99999;max-width:360px;background:#101010;border:1px solid #7f1d1d;color:#f8fafc;border-radius:13px;padding:13px 15px;box-shadow:0 20px 60px rgba(0,0,0,.6);cursor:pointer}.pcm-purchase-toast strong{color:#fca5a5}.pcm-purchase-empty{padding:30px;text-align:center;color:#64748b;border:1px dashed #303030;border-radius:12px}
+@media(max-width:800px){.pcm-purchase-layout{grid-template-columns:1fr}.pcm-purchase-grid{grid-template-columns:1fr}.pcm-purchase-grid .full{grid-column:auto}.pcm-purchase-actions{position:sticky;bottom:0;background:#101010;padding-top:8px}.pcm-purchase-list{max-height:none}.pcm-purchase-toast{left:12px;right:12px;bottom:75px;max-width:none}}
+</style>
+
+<script id="pcm-purchases-feature-js">
+(function(){
+'use strict';
+const PURCHASE_TABLE='purchase_requests';
+let purchasePoll=null;
+let purchaseChannel=null;
+let purchaseLastPending=-1;
+let purchaseLoadedOnce=false;
+
+function purchaseEsc(v){return typeof escapeHtml==='function'?escapeHtml(String(v??'')):String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function purchaseStatusLabel(s){const x=String(s||'PENDENTE').toUpperCase();return {PENDENTE:'PENDENTE',ANALISE:'EM ANÁLISE',COTACAO:'EM COTAÇÃO',COMPRADO:'COMPRADO',RECUSADO:'RECUSADO'}[x]||x;}
+function purchaseStatusClass(s){return 'pcm-status-'+String(s||'PENDENTE').toLowerCase();}
+function purchaseDate(v){return v?new Date(v).toLocaleString('pt-BR'):'-';}
+function purchaseNotify(msg,count){
+  let old=document.getElementById('pcmPurchaseToast');if(old)old.remove();
+  const el=document.createElement('div');el.id='pcmPurchaseToast';el.className='pcm-purchase-toast';el.innerHTML='<strong>🛒 Novo pedido de compra</strong><br><span>'+purchaseEsc(msg)+'</span>'+(count!=null?'<br><small style="color:#94a3b8">Pedidos pendentes: '+count+'</small>':'');
+  el.onclick=()=>{el.remove();if(typeof navigateTo==='function')navigateTo('view-purchases');};document.body.appendChild(el);setTimeout(()=>el.remove(),9000);
+}
+function updatePurchaseBadge(n){
+  const badges=[...document.querySelectorAll('#purchaseBadge,.pcm-purchase-badge')];badges.forEach(b=>{b.textContent=String(n||0);b.classList.toggle('hidden',!(n>0));});
+}
+async function purchaseEnsure(){await ensureSupabase();return db;}
+
+function ensurePurchaseView(){
+  let view=document.getElementById('view-purchases');if(view)return view;
+  view=document.createElement('section');view.id='view-purchases';view.className='app-view hidden';
+  view.innerHTML=`<div class="topbar"><div><div class="page-title">Pedidos de Compra</div><div class="page-subtitle">Solicitações de materiais e compras da manutenção</div></div><button class="btn-secondary" type="button" id="purchaseRefreshBtn">↻ ATUALIZAR</button></div><div id="purchaseContent"></div>`;
+  const main=document.querySelector('#app .main');if(main)main.appendChild(view);
+  view.querySelector('#purchaseRefreshBtn').onclick=()=>loadPurchases();
+  return view;
+}
+
+async function loadPurchases(){
+  if(!currentUser)return;
+  const view=ensurePurchaseView(),host=view.querySelector('#purchaseContent');
+  host.innerHTML='<div class="pcm-purchase-card"><div class="pcm-purchase-empty">Carregando pedidos...</div></div>';
+  try{
+    const client=await purchaseEnsure();
+    if(isAdmin){
+      const r=await client.from(PURCHASE_TABLE).select('*').order('created_at',{ascending:false}).limit(500);if(r.error)throw r.error;renderAdminPurchases(host,r.data||[]);updatePurchaseBadge((r.data||[]).filter(x=>String(x.status||'PENDENTE')==='PENDENTE').length);
+    }else{
+      const r=await client.from(PURCHASE_TABLE).select('*').eq('requester_name',currentUser).order('created_at',{ascending:false}).limit(100);if(r.error)throw r.error;renderEmployeePurchases(host,r.data||[]);
+    }
+  }catch(e){console.error('Pedidos de compra:',e);host.innerHTML='<div class="pcm-purchase-card"><div class="pcm-purchase-empty">Não foi possível carregar os pedidos. Se a tabela ainda não foi criada no Supabase, execute o SQL que acompanha esta atualização.</div></div>';}
+}
+
+function renderEmployeePurchases(host,rows){
+  host.innerHTML=`<div class="pcm-purchase-layout"><div class="pcm-purchase-card"><div class="pcm-purchase-title">🛒 Solicitar compra</div><div class="pcm-purchase-sub">Informe o material que precisa ser comprado. O pedido aparecerá automaticamente para o PCM / Administrador.</div><div class="pcm-purchase-grid"><div class="full"><label class="form-label">Material / peça *</label><input id="purchaseMaterial" class="form-input" placeholder="Ex.: rolamento 6205, corrente, correia..."></div><div><label class="form-label">Quantidade *</label><input id="purchaseQty" class="form-input" type="number" min="0.01" step="0.01" placeholder="1"></div><div><label class="form-label">Unidade</label><select id="purchaseUnit" class="form-input"><option>UN</option><option>PC</option><option>KG</option><option>M</option><option>L</option><option>JG</option><option>OUTRO</option></select></div><div><label class="form-label">Prioridade</label><select id="purchasePriority" class="form-input"><option>ALTA</option><option selected>NORMAL</option><option>BAIXA</option></select></div><div class="full"><label class="form-label">Nº da O.S. (se houver)</label><input id="purchaseOS" class="form-input" inputmode="numeric" placeholder="Ex.: 9887878748"></div><div class="full"><label class="form-label">Motivo / aplicação *</label><textarea id="purchaseReason" class="form-textarea" style="min-height:100px" placeholder="Explique onde será utilizado e por que precisa da compra..."></textarea></div></div><div class="pcm-purchase-actions"><button class="btn-primary" type="button" id="purchaseSendBtn">ENVIAR PEDIDO</button></div></div><div class="pcm-purchase-card"><div class="pcm-purchase-title">Meus pedidos</div><div class="pcm-purchase-sub">Acompanhe o andamento das solicitações enviadas.</div><div class="pcm-purchase-list">${rows.length?rows.map(renderPurchaseItem).join(''):'<div class="pcm-purchase-empty">Você ainda não possui pedidos de compra.</div>'}</div></div></div>`;
+  host.querySelector('#purchaseSendBtn').onclick=submitPurchase;
+}
+
+function renderAdminPurchases(host,rows){
+  const pending=rows.filter(x=>String(x.status||'PENDENTE')==='PENDENTE').length;
+  host.innerHTML=`<div class="pcm-purchase-card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div class="pcm-purchase-title">🔔 Central de pedidos</div><div class="pcm-purchase-sub" style="margin-bottom:0">Pedidos novos ficam destacados e o contador do menu é atualizado automaticamente.</div></div><div style="font-size:22px;font-weight:900;color:#e2bf8a">${pending}</div></div></div><div class="pcm-purchase-list">${rows.length?rows.map(renderAdminPurchaseItem).join(''):'<div class="pcm-purchase-empty">Nenhum pedido de compra registrado.</div>'}</div>`;
+  host.querySelectorAll('[data-purchase-status]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.id,status=btn.dataset.purchaseStatus;await updatePurchaseStatus(id,status);});
+  host.querySelectorAll('[data-purchase-note]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.id;const note=prompt('Observação do PCM para este pedido:','');if(note===null)return;await updatePurchaseStatus(id,btn.dataset.status||'ANALISE',note);});
+}
+function renderPurchaseItem(x){return `<div class="pcm-purchase-item ${String(x.status||'PENDENTE')==='PENDENTE'?'new':''}"><div class="pcm-purchase-item-top"><h4>🛒 ${purchaseEsc(x.material||'-')} — ${purchaseEsc(x.quantity||'-')} ${purchaseEsc(x.unit||'UN')}</h4><span class="pcm-purchase-status ${purchaseStatusClass(x.status)}">${purchaseStatusLabel(x.status)}</span></div><div class="pcm-purchase-meta"><span><b>O.S.:</b> ${purchaseEsc(x.os_number||'-')}</span><span><b>Solicitante:</b> ${purchaseEsc(x.requester_name||'-')}</span><span><b>Prioridade:</b> ${purchaseEsc(x.priority||'-')}</span><span><b>Data:</b> ${purchaseDate(x.created_at)}</span></div><div class="pcm-purchase-reason"><b>Motivo:</b><br>${purchaseEsc(x.justification||'-').replace(/\n/g,'<br>')}${x.admin_note?'<br><br><b>Retorno do PCM:</b><br>'+purchaseEsc(x.admin_note).replace(/\n/g,'<br>'):''}</div></div>`;}
+function renderAdminPurchaseItem(x){return `<div class="pcm-purchase-item ${String(x.status||'PENDENTE')==='PENDENTE'?'new':''}"><div class="pcm-purchase-item-top"><h4>🛒 ${purchaseEsc(x.material||'-')} — ${purchaseEsc(x.quantity||'-')} ${purchaseEsc(x.unit||'UN')}</h4><span class="pcm-purchase-status ${purchaseStatusClass(x.status)}">${purchaseStatusLabel(x.status)}</span></div><div class="pcm-purchase-meta"><span><b>Solicitante:</b> ${purchaseEsc(x.requester_name||'-')}</span><span><b>O.S.:</b> ${purchaseEsc(x.os_number||'-')}</span><span><b>Prioridade:</b> ${purchaseEsc(x.priority||'-')}</span><span><b>Solicitado:</b> ${purchaseDate(x.created_at)}</span></div><div class="pcm-purchase-reason"><b>Motivo / aplicação:</b><br>${purchaseEsc(x.justification||'-').replace(/\n/g,'<br>')}${x.admin_note?'<br><br><b>Retorno:</b><br>'+purchaseEsc(x.admin_note).replace(/\n/g,'<br>'):''}</div><div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"><button class="btn-secondary" data-purchase-status="ANALISE" data-id="${purchaseEsc(x.id)}" type="button">ANÁLISE</button><button class="btn-secondary" data-purchase-status="COTACAO" data-id="${purchaseEsc(x.id)}" type="button">COTAÇÃO</button><button class="btn-secondary" data-purchase-status="COMPRADO" data-id="${purchaseEsc(x.id)}" type="button">COMPRADO</button><button class="btn-secondary" data-purchase-status="RECUSADO" data-id="${purchaseEsc(x.id)}" type="button">RECUSAR</button><button class="btn-secondary" data-purchase-note data-status="${purchaseEsc(x.status||'ANALISE') }" data-id="${purchaseEsc(x.id)}" type="button">OBSERVAÇÃO</button></div></div>`;}
+
+async function submitPurchase(){
+  const material=document.getElementById('purchaseMaterial')?.value.trim(),qty=document.getElementById('purchaseQty')?.value,unit=document.getElementById('purchaseUnit')?.value||'UN',priority=document.getElementById('purchasePriority')?.value||'NORMAL',osNumber=document.getElementById('purchaseOS')?.value.trim()||null,reason=document.getElementById('purchaseReason')?.value.trim();
+  if(!material||!qty||Number(qty)<=0||!reason){alert('Preencha material, quantidade e motivo / aplicação.');return;}
+  try{const client=await purchaseEnsure();const {error}=await client.from(PURCHASE_TABLE).insert({requester_name:currentUser,requester_role:isAdmin?'admin':'Técnico',material,quantity:Number(qty),unit,priority,os_number:osNumber,justification:reason,status:'PENDENTE'});if(error)throw error;alert('Pedido de compra enviado ao PCM.');await loadPurchases();if(typeof startPurchaseMonitor==='function')startPurchaseMonitor();}catch(e){console.error(e);alert('Não foi possível enviar o pedido. Verifique se a tabela purchase_requests já foi criada no Supabase.\n\n'+(e.message||''));}
+}
+async function updatePurchaseStatus(id,status,note){
+  try{const client=await purchaseEnsure();const payload={status,updated_at:new Date().toISOString(),handled_at:new Date().toISOString(),handled_by:currentUser};if(note!==undefined)payload.admin_note=note;const {error}=await client.from(PURCHASE_TABLE).update(payload).eq('id',id);if(error)throw error;await loadPurchases();}catch(e){console.error(e);alert('Não foi possível atualizar o pedido.\n\n'+(e.message||''));}
+}
+
+async function checkPurchaseNotifications(showNew){
+  if(!currentUser||!isAdmin)return;
+  try{const client=await purchaseEnsure();const {data,error}=await client.from(PURCHASE_TABLE).select('id,material,requester_name,created_at,status').eq('status','PENDENTE').order('created_at',{ascending:false});if(error)throw error;const rows=data||[];updatePurchaseBadge(rows.length);if(showNew&&purchaseLoadedOnce&&rows.length>purchaseLastPending){const newest=rows[0];purchaseNotify((newest?.requester_name||'Funcionário')+' solicitou '+(newest?.material||'um material')+'.',rows.length);}purchaseLastPending=rows.length;purchaseLoadedOnce=true;}catch(e){console.warn('Monitor de pedidos de compra indisponível:',e.message||e);}
+}
+function startPurchaseMonitor(){
+  if(purchasePoll)clearInterval(purchasePoll);purchasePoll=setInterval(()=>checkPurchaseNotifications(true),15000);checkPurchaseNotifications(false);
+  try{purchaseChannel?.unsubscribe?.();purchaseChannel=db.channel('purchase-requests-live').on('postgres_changes',{event:'INSERT',schema:'public',table:PURCHASE_TABLE},payload=>{if(isAdmin){purchaseNotify((payload.new?.requester_name||'Funcionário')+' solicitou '+(payload.new?.material||'um material')+'.');checkPurchaseNotifications(false);if(document.getElementById('view-purchases')&&!document.getElementById('view-purchases').classList.contains('hidden'))loadPurchases();}}).subscribe();}catch(e){console.warn('Realtime de compras não configurado; usando atualização automática.',e);}
+}
+
+const oldNavigate=window.navigateTo;
+window.navigateTo=function(viewId,button){
+  if(viewId==='view-purchases'){
+    const view=ensurePurchaseView();document.querySelectorAll('.app-view').forEach(v=>v.classList.add('hidden'));view.classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));if(button)button.classList.add('active');loadPurchases();return;
+  }
+  return oldNavigate?oldNavigate(viewId,button):undefined;
+};
+
+const oldRefresh=window.refreshFactoryNavigation;
+window.refreshFactoryNavigation=function(){
+  if(oldRefresh)oldRefresh();
+  const nav=document.getElementById('pcmMobileNav');if(nav){let b=nav.querySelector('[data-view="view-purchases"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.view='view-purchases';b.innerHTML=`<span class="mi">🛒</span>${isAdmin?'COMPRAS':'SOLICITAR COMPRA'}<b class="pcm-purchase-badge hidden" style="margin-left:3px">0</b>`;b.onclick=()=>window.navigateTo('view-purchases',b);nav.appendChild(b);}}
+  if(isAdmin)checkPurchaseNotifications(false);
+};
+
+window.addEventListener('load',()=>{setTimeout(()=>{ensurePurchaseView();startPurchaseMonitor();},1200);});
+window.startPurchaseMonitor=startPurchaseMonitor;
+window.loadPurchases=loadPurchases;
+
+})();
+</script>
+
 </body></html>`);
         popup.document.close();
         showPCMToast("PDF preparado. Na tela de impressão, escolha Salvar como PDF.","success");
