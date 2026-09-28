@@ -18,7 +18,7 @@
 <link rel="icon" href="data:,">
 
 <!-- Supabase carregado antes do sistema para evitar falha de inicialização no celular -->
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=AXNaoDq5fnXIFOnFIyrQ4GwalvUQqk7T_00XSr0ixLXNjQh2pULNgmOMFghPa9ugevd6k1lAWGXLEzOIqXdf6EYfCdFdmyeFP_KNYD057GuLMcVKbHwnapBf_Jz5Dq_pA3AHKZ06fsnoiuX6t9RirhXV8qoTOs_HwTh-OzFwLoN3LfAn0WGCJqnhfy0bukoMikOYKNBqhfcAFLffASB85nZjMbVmdViTr8IvkAze6F9TWZBLMR9yMhdvslw46hjrnruyvoxtInUbS_adfH8FMexpctzo2o7dOrUpQmIu9_wfZbiGVHhsyxVAlq_n1UUWG5XOBStR9v4ywBIcLvG8mg" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=sqwyMxP7Mx6RBheKUAOlmfpQGNtUX7xAboM-9MJLFLfZ9tPsdUMA0pJVcXFJPil68NELp96ecnF0ATQuj9oAkrCOdgxpM7CkZugPP0JV3xxbgzdGCAt2L4fCNwahHQZQxilmUzjGu1TEvMupmbo6AjDtCEId2YILxw25XBehID6GRRkO66jZT6kWhLUBpsouJ6YZg53O6TsbluZwSZgKClXsW_hDRDCVbdn84torsJXn4v7vjhNkbVR_BLEcd31sgDeZd2SWsh0xqbbeLJjnfl-PuRik4ky-aNvXFbGoiCFJRCKZg8IDQB6i0QY-7FrWQ2Pl_cSuiV7rdMz_KhOvqQ" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <title>PCM • Controle de O.S.</title>
 
@@ -2959,11 +2959,10 @@ body:has(#loginScreen:not(.hidden)){
 @media (max-width:800px){
   .modal{
     z-index:20000 !important;
-    align-items:center !important;
-    justify-content:center !important;
-    padding:16px !important;
-    padding-top:max(16px,env(safe-area-inset-top)) !important;
-    padding-bottom:max(16px,env(safe-area-inset-bottom)) !important;
+    align-items:flex-end !important;
+    padding:10px !important;
+    padding-top:max(10px,env(safe-area-inset-top)) !important;
+    padding-bottom:max(10px,env(safe-area-inset-bottom)) !important;
     box-sizing:border-box !important;
   }
 
@@ -3156,54 +3155,12 @@ button{min-height:44px}
 }
 </style>
 
-
-<style id="pcm-mobile-modal-final-fix">
-@media (max-width: 600px){
-  .modal{
-    position:fixed !important;
-    inset:0 !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    padding:16px !important;
-    padding-top:max(16px, env(safe-area-inset-top)) !important;
-    padding-bottom:max(16px, env(safe-area-inset-bottom)) !important;
-    box-sizing:border-box !important;
-    overflow:hidden !important;
-  }
-  .modal > .factory-modal-box,
-  .modal > .modal-box{
-    width:min(430px, calc(100vw - 32px)) !important;
-    max-width:430px !important;
-    max-height:calc(100dvh - 32px) !important;
-    overflow-y:auto !important;
-    overflow-x:hidden !important;
-    margin:0 auto !important;
-    border-radius:18px !important;
-  }
-  .factory-modal-actions,
-  .modal-buttons{
-    gap:10px !important;
-  }
-  .factory-modal-actions button,
-  .modal-buttons button{
-    min-height:50px !important;
-    padding:12px 14px !important;
-    font-size:13px !important;
-    touch-action:manipulation !important;
-  }
-  .factory-modal-box input,
-  .factory-modal-box textarea,
-  .factory-modal-box select,
-  .modal-box input,
-  .modal-box textarea,
-  .modal-box select{
-    min-height:48px !important;
-    font-size:16px !important;
-  }
-}
-</style>
-
+<style id="pcm-mobile-modal-safe-fix">
+@media (max-width:600px){
+.modal{align-items:center!important;justify-content:center!important;padding:16px!important;padding-top:max(16px,env(safe-area-inset-top))!important;padding-bottom:max(16px,env(safe-area-inset-bottom))!important;box-sizing:border-box!important}
+.modal .modal-box,.modal .factory-modal-box{width:calc(100vw - 32px)!important;max-width:430px!important;max-height:calc(100dvh - 32px)!important;margin:0 auto!important;overflow-y:auto!important;overflow-x:hidden!important;border-radius:18px!important}
+.modal button{min-height:50px!important;touch-action:manipulation!important}
+}</style>
 </head>
 
 <body>
