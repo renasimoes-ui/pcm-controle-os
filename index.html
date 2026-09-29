@@ -18,7 +18,7 @@
 <link rel="icon" href="data:,">
 
 <!-- Supabase carregado antes do sistema para evitar falha de inicialização no celular -->
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=WLsjGnWvr2QigVvEid6fXN7zP86fJb1CqLAUBBfEME6heVsgdmyeoHvBNP2qezeIlk5umO3G1oOeVci0emBnjYa3GV_QCi96dd6kVJK5QQkcdrYFMKljT0Lv91DNh-rg1Qnps2WMmlhkjiXAG3ta3ZxUdDa8vK8Yi3wwaHbxek-q_uHNFc0ArlSBBklErgyc4ifdXcKyFJhY1cJI1IAPWC_LO3u-HqdIZ9HjSO2-gbI-jWV2nlLd4Whecd7ce7QWosq3bKYh3fgCawHtXUcK36jg-viv4tybohLTgrwC6a0UvADlD7eDZhzSaN-CqNWmvLGVM6SZm2eCBA26Xdt8aQ" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <title>PCM • Controle de O.S.</title>
 
@@ -8821,6 +8821,52 @@ window.openMaterialModal=function(osId){
       return;
     }
 
+    /*
+       IMPORTANTE: a tela "Pedidos de Compra" usa a tabela purchase_requests.
+       A requisição acima fica em os_material_requests para o controle da O.S.,
+       mas isso sozinho NÃO fazia o pedido aparecer na Central de Compras.
+       Agora gravamos também o mesmo pedido em purchase_requests.
+    */
+    let purchaseSaved=false;
+    try{
+      const purchasePayload={
+        requester_name:currentUser,
+        requester_role:isAdmin?'admin':'Técnico',
+        material,
+        quantity:Number(quantity)||quantity,
+        unit:'UN',
+        priority:'NORMAL',
+        os_number:order.os_number||null,
+        justification:fallbackReason,
+        status:'PENDENTE'
+      };
+      let purchaseIns=await db.from('purchase_requests').insert(purchasePayload);
+
+      /* Compatibilidade com uma eventual tabela que tenha menos colunas. */
+      if(purchaseIns.error){
+        purchaseIns=await db.from('purchase_requests').insert({
+          requester_name:currentUser,
+          requester_role:isAdmin?'admin':'Técnico',
+          material,
+          quantity:Number(quantity)||quantity,
+          unit:'UN',
+          os_number:order.os_number||null,
+          justification:fallbackReason,
+          status:'PENDENTE'
+        });
+      }
+
+      if(purchaseIns.error){
+        console.error('Falha ao enviar para purchase_requests:',purchaseIns.error);
+        alert('A requisição da O.S. foi registrada, mas o pedido não entrou na Central de Compras.\n\n'+purchaseIns.error.message);
+      }else{
+        purchaseSaved=true;
+      }
+    }catch(purchaseError){
+      console.error('Erro ao criar pedido de compra:',purchaseError);
+      alert('A requisição da O.S. foi registrada, mas ocorreu um erro ao enviar para a Central de Compras.');
+    }
+
     /* Apenas registra a data da solicitação. Não muda status, não zera início,
        não remove funcionário e não para o cronômetro. */
     const up=await db.from('os_orders').update({material_requested_at:now}).eq('id',order.id);
@@ -8834,7 +8880,7 @@ window.openMaterialModal=function(osId){
     });
 
     close();
-    if(typeof showPCMToast==='function')showPCMToast('Material requisitado. A O.S. continua em produção.','success');
+    if(typeof showPCMToast==='function')showPCMToast(purchaseSaved?'Material requisitado e enviado ao PCM/Compras. A O.S. continua em produção.':'Material requisitado. A O.S. continua em produção.','success');
     else if(typeof showPcmToast==='function')showPcmToast('Material requisitado. A O.S. continua em produção.','success');
 
     await loadEmployeeOrders();
