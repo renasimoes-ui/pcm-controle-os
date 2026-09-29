@@ -18,7 +18,7 @@
 <link rel="icon" href="data:,">
 
 <!-- Supabase carregado antes do sistema para evitar falha de inicialização no celular -->
-<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=sqwyMxP7Mx6RBheKUAOlmfpQGNtUX7xAboM-9MJLFLfZ9tPsdUMA0pJVcXFJPil68NELp96ecnF0ATQuj9oAkrCOdgxpM7CkZugPP0JV3xxbgzdGCAt2L4fCNwahHQZQxilmUzjGu1TEvMupmbo6AjDtCEId2YILxw25XBehID6GRRkO66jZT6kWhLUBpsouJ6YZg53O6TsbluZwSZgKClXsW_hDRDCVbdn84torsJXn4v7vjhNkbVR_BLEcd31sgDeZd2SWsh0xqbbeLJjnfl-PuRik4ky-aNvXFbGoiCFJRCKZg8IDQB6i0QY-7FrWQ2Pl_cSuiV7rdMz_KhOvqQ" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=WLsjGnWvr2QigVvEid6fXN7zP86fJb1CqLAUBBfEME6heVsgdmyeoHvBNP2qezeIlk5umO3G1oOeVci0emBnjYa3GV_QCi96dd6kVJK5QQkcdrYFMKljT0Lv91DNh-rg1Qnps2WMmlhkjiXAG3ta3ZxUdDa8vK8Yi3wwaHbxek-q_uHNFc0ArlSBBklErgyc4ifdXcKyFJhY1cJI1IAPWC_LO3u-HqdIZ9HjSO2-gbI-jWV2nlLd4Whecd7ce7QWosq3bKYh3fgCawHtXUcK36jg-viv4tybohLTgrwC6a0UvADlD7eDZhzSaN-CqNWmvLGVM6SZm2eCBA26Xdt8aQ" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <title>PCM • Controle de O.S.</title>
 
@@ -4796,12 +4796,52 @@ async function loadDashboardData(){
     }
 
 
-    dashboardOrders = (data || []).slice().sort((a,b)=>{
-        const da = new Date(a.created_at || a.opening_date || 0).getTime() || 0;
-        const dbv = new Date(b.created_at || b.opening_date || 0).getTime() || 0;
-        return dbv-da || Number(b.id||0)-Number(a.id||0);
-    });
+    /* =========================================================
+       DASHBOARD DIÁRIO
+       O painel operacional mostra SOMENTE as O.S. do dia atual.
+       O histórico continua consultando todas as O.S.
+    ========================================================= */
+    const nowLocal = new Date();
+    const pad2 = n => String(n).padStart(2,'0');
+    const todayKey = `${nowLocal.getFullYear()}-${pad2(nowLocal.getMonth()+1)}-${pad2(nowLocal.getDate())}`;
 
+    const orderDayKey = (o) => {
+        /* opening_date é a data operacional da O.S. quando existir. */
+        const op = String(o?.opening_date || '').slice(0,10);
+        if(/^\d{4}-\d{2}-\d{2}$/.test(op)) return op;
+
+        /* fallback para instalações que usam apenas created_at */
+        if(o?.created_at){
+            const d = new Date(o.created_at);
+            if(!Number.isNaN(d.getTime())){
+                return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+            }
+        }
+        return '';
+    };
+
+    const allDashboardOrders = data || [];
+
+    dashboardOrders = allDashboardOrders
+        .filter(o => orderDayKey(o) === todayKey)
+        .slice()
+        .sort((a,b)=>{
+            const da = new Date(a.created_at || a.opening_date || 0).getTime() || 0;
+            const dbv = new Date(b.created_at || b.opening_date || 0).getTime() || 0;
+            return dbv-da || Number(b.id||0)-Number(a.id||0);
+        });
+
+    /* Guarda a informação para mostrar claramente que o painel é diário. */
+    window.pcmDashboardDate = todayKey;
+    window.pcmDashboardTotalDatabase = allDashboardOrders.length;
+
+
+    /* Indicador visual: deixa explícito que este painel é do dia atual. */
+    const dashDateLabel=document.querySelector('#view-dashboard .dashboard-hero .dashboard-description');
+    if(dashDateLabel){
+        const label=new Date(nowLocal).toLocaleDateString('pt-BR');
+        dashDateLabel.innerHTML=`Acompanhe a operação da fábrica em tempo real.<br><strong style="color:#f8fafc">PAINEL DIÁRIO • ${label}</strong>`;
+    }
 
     const abertas =
         dashboardOrders.filter(
@@ -8930,7 +8970,7 @@ function pcmActions(order){
   return a;
 }
 
-window.pcmShowOrderDetails=function(osId){
+window.pcmShowOrderDetails=async function(osId){
   const order=(dashboardOrders||[]).find(o=>Number(o.id)===Number(osId));
   if(!order)return;
 
@@ -8940,6 +8980,34 @@ window.pcmShowOrderDetails=function(osId){
 
   const old=document.getElementById('pcmOrderDetailsModal');
   if(old)old.remove();
+
+  /* Busca o histórico da O.S. para mostrar, dentro dos detalhes,
+     exatamente quem alterou o horário e qual foi a justificativa. */
+  let history=[];
+  try{
+    const r=await db.from('os_execution_history')
+      .select('id,os_id,os_number,employee,action,reason,created_at,started_at,ended_at,duration_seconds')
+      .eq('os_id',Number(osId))
+      .order('created_at',{ascending:false});
+    if(!r.error)history=r.data||[];
+  }catch(e){
+    console.warn('Histórico da O.S.:',e);
+  }
+
+  const timeChanges=history.filter(h=>{
+    const a=String(h.action||'').toUpperCase();
+    return a.includes('HORÁRIO') || a.includes('TEMPO') || a.includes('TIME') || a.includes('FINALIZADA');
+  });
+
+  const justifications=timeChanges.filter(h=>String(h.reason||'').trim());
+
+  const historyHtml=justifications.length
+    ? justifications.map(h=>`<div class="pcm-time-change-item">
+        <div class="pcm-time-change-top"><b>${esc(h.action||'ALTERAÇÃO')}</b><span>${esc(fmtLocal(h.created_at))}</span></div>
+        <div class="pcm-time-change-meta"><span><b>Quem:</b> ${esc(h.employee||'-')}</span>${h.duration_seconds!=null?`<span><b>Tempo:</b> ${esc(dur(h.duration_seconds))}</span>`:''}</div>
+        <div class="pcm-time-change-reason"><b>Justificativa:</b><br>${esc(h.reason||'-').replace(/\n/g,'<br>')}</div>
+      </div>`).join('')
+    : `<div class="pcm-empty">Nenhuma alteração de horário/tempo com justificativa registrada para esta O.S.</div>`;
 
   const el=document.createElement('div');
   el.id='pcmOrderDetailsModal';
@@ -8968,6 +9036,12 @@ window.pcmShowOrderDetails=function(osId){
         <div class="pcm-detail-item"><span>Motivo de pausa</span><b>${esc(order.pause_reason||'-')}</b></div>
       </div>
       ${order.description?`<div class="pcm-detail-item" style="margin-top:8px"><span>Descrição</span><b>${esc(order.description)}</b></div>`:''}
+    </div>
+
+    <div class="pcm-detail-section pcm-time-change-section">
+      <div class="pcm-detail-section-title">⏱ Alterações de horário / tempo</div>
+      <div class="pcm-time-change-note">Aqui fica registrado o <b>motivo da alteração</b>, quem fez a alteração e quando ela foi realizada.</div>
+      <div class="pcm-time-change-list">${historyHtml}</div>
     </div>
 
     <div class="pcm-detail-section">
@@ -9875,6 +9949,23 @@ document.addEventListener('DOMContentLoaded',()=>{
 .pcm-purchase-item-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.pcm-purchase-item h4{margin:0;color:#f2f0ec;font-size:13px}.pcm-purchase-meta{display:flex;flex-wrap:wrap;gap:7px 14px;color:#94a3b8;font-size:10px;margin-top:7px}.pcm-purchase-reason{margin-top:9px;padding:9px;border-radius:8px;background:#090909;color:#cbd5e1;font-size:11px;line-height:1.5}.pcm-purchase-status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900}.pcm-status-pendente{background:#3f1111;color:#fecaca}.pcm-status-analise{background:#422006;color:#fed7aa}.pcm-status-cotacao{background:#172554;color:#bfdbfe}.pcm-status-comprado{background:#052e16;color:#bbf7d0}.pcm-status-recusado{background:#27272a;color:#d4d4d8}
 .pcm-purchase-toast{position:fixed;right:18px;bottom:18px;z-index:99999;max-width:360px;background:#101010;border:1px solid #7f1d1d;color:#f8fafc;border-radius:13px;padding:13px 15px;box-shadow:0 20px 60px rgba(0,0,0,.6);cursor:pointer}.pcm-purchase-toast strong{color:#fca5a5}.pcm-purchase-empty{padding:30px;text-align:center;color:#64748b;border:1px dashed #303030;border-radius:12px}
 @media(max-width:800px){.pcm-purchase-layout{grid-template-columns:1fr}.pcm-purchase-grid{grid-template-columns:1fr}.pcm-purchase-grid .full{grid-column:auto}.pcm-purchase-actions{position:sticky;bottom:0;background:#101010;padding-top:8px}.pcm-purchase-list{max-height:none}.pcm-purchase-toast{left:12px;right:12px;bottom:75px;max-width:none}}
+
+/* CAMPO DE ALTERAÇÃO DE HORÁRIO / JUSTIFICATIVA */
+.pcm-time-change-section{border-color:#6b4f2a!important;background:linear-gradient(180deg,#111827,#0b1220)!important}
+.pcm-time-change-note{font-size:10px;color:#94a3b8;line-height:1.5;margin:-6px 0 10px}
+.pcm-time-change-list{display:grid;gap:8px}
+.pcm-time-change-item{border:1px solid #3f3f46;background:#090d16;border-radius:10px;padding:10px}
+.pcm-time-change-top{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:10px}
+.pcm-time-change-top b{color:#fbbf24}
+.pcm-time-change-top span{color:#64748b;font-size:9px}
+.pcm-time-change-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:7px;color:#cbd5e1;font-size:9px}
+.pcm-time-change-meta b{color:#94a3b8}
+.pcm-time-change-reason{margin-top:8px;padding:8px;border-radius:7px;background:#111827;color:#e2e8f0;font-size:10px;line-height:1.5}
+.pcm-time-change-reason b{color:#f8fafc}
+@media(max-width:600px){
+ .pcm-time-change-top{align-items:flex-start;flex-direction:column;gap:3px}
+ .pcm-time-change-meta{display:grid;gap:4px}
+}
 </style>
 <script id="pcm-purchases-feature-js">
 (function(){
