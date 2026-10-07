@@ -4822,8 +4822,20 @@ async function loadDashboardData(){
 
     const allDashboardOrders = data || [];
 
+    /*
+       PAINEL DIÁRIO + O.S. PAUSADAS DE DIAS ANTERIORES
+       Uma O.S. que ficou PAUSADA não deixa de ser operacional só porque
+       virou o dia. Ela continua aparecendo no dashboard até ser retomada
+       ou encerrada.
+    */
     dashboardOrders = allDashboardOrders
-        .filter(o => orderDayKey(o) === todayKey)
+        .filter(o => {
+            const day = orderDayKey(o);
+            const status = String(o?.status || '').toUpperCase();
+            const isToday = day === todayKey;
+            const isCarryOverPaused = status === 'PAUSADA' && day && day < todayKey;
+            return isToday || isCarryOverPaused;
+        })
         .slice()
         .sort((a,b)=>{
             const da = new Date(a.created_at || a.opening_date || 0).getTime() || 0;
@@ -4840,7 +4852,11 @@ async function loadDashboardData(){
     const dashDateLabel=document.querySelector('#view-dashboard .dashboard-hero .dashboard-description');
     if(dashDateLabel){
         const label=new Date(nowLocal).toLocaleDateString('pt-BR');
-        dashDateLabel.innerHTML=`Acompanhe a operação da fábrica em tempo real.<br><strong style="color:#f8fafc">PAINEL DIÁRIO • ${label}</strong>`;
+        const carriedPaused = dashboardOrders.filter(o =>
+            String(o?.status||'').toUpperCase()==='PAUSADA' &&
+            String(o?.opening_date||'').slice(0,10) < todayKey
+        ).length;
+        dashDateLabel.innerHTML=`Acompanhe a operação da fábrica em tempo real.<br><strong style="color:#f8fafc">PAINEL DIÁRIO • ${label}</strong>${carriedPaused ? `<br><span style="color:#fbbf24">⏸ ${carriedPaused} O.S. PAUSADA(S) DE DIA(S) ANTERIOR(ES) EM ACOMPANHAMENTO</span>` : ''}`;
     }
 
     const abertas =
@@ -7732,6 +7748,16 @@ document
   window.fpCloseModal=()=>document.getElementById('fpOrderModal')?.classList.remove('show');
 
   window.fpShowOrder=async function(id){
+    /*
+       No histórico do PCM, "DETALHES" abre exatamente o mesmo painel
+       administrativo usado no dashboard, com edição, cancelamento,
+       pausa/retomada, material e demais ações disponíveis para a O.S.
+    */
+    if(typeof isAdmin!=='undefined' && isAdmin && typeof window.pcmShowOrderDetails==='function'){
+      await window.pcmShowOrderDetails(id);
+      return;
+    }
+
     ensureModal();const m=document.getElementById('fpOrderModal'),body=document.getElementById('fpModalBody');
     let order=(typeof dashboardOrders!=='undefined'?(dashboardOrders||[]).find(o=>String(o.id)===String(id)):null);
     if(!order){const r=await db.from('os_orders').select('*').eq('id',id).single();order=r.data;if(r.error){showPCMToast?.('Não foi possível carregar a O.S.','error');return}}
@@ -9017,8 +9043,26 @@ function pcmActions(order){
 }
 
 window.pcmShowOrderDetails=async function(osId){
-  const order=(dashboardOrders||[]).find(o=>Number(o.id)===Number(osId));
-  if(!order)return;
+  /*
+     O detalhe administrativo também precisa funcionar para O.S. do
+     histórico, inclusive quando ela não pertence ao dia atual.
+  */
+  let order=(dashboardOrders||[]).find(o=>Number(o.id)===Number(osId));
+
+  if(!order){
+    try{
+      const r=await db.from('os_orders').select('*').eq('id',Number(osId)).single();
+      if(r.error || !r.data){
+        showPCMToast?.('Não foi possível localizar a O.S.','error');
+        return;
+      }
+      order=r.data;
+    }catch(e){
+      console.error('Falha ao carregar O.S. pelos detalhes:',e);
+      showPCMToast?.('Não foi possível carregar os detalhes da O.S.','error');
+      return;
+    }
+  }
 
   const start=order.started_at||'';
   const finish=order.finished_at||'';
