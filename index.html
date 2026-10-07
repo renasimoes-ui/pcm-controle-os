@@ -18,7 +18,7 @@
 <link rel="icon" href="data:,">
 
 <!-- Supabase carregado antes do sistema para evitar falha de inicialização no celular -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=YWCOEpMcP-FJ9dCgv7oMGq0Wd_Pp617MTCY3Fmisom6ZseNONgTyKzzwMUmO6dEj3PbIoYHjbugneMcnd2y-oKp2iBBZkOoJzk97MtJUqW4UnjzTBjwaI80tLAnrX1Xi8s-EL0rAdnbhWYjaoh7vaMmM6FwbdEM1x3gX15tNcaB4fupXj_NRRRuUfSMd2seNnGml2HdcBbf9o1dnCNQ9Q1-t0KMgKMCfB08VrdkHw_lgxBzCvB4OnxrgMztpvYpuhgzbIVhiEcNIRzfp_83SbSai_IRikpjFa77ex_6CG-lFz-7B6yfdeGHF3o3A4WphOm1fxEd_A_5afHB63TqkmA" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <title>PCM • Controle de O.S.</title>
 
@@ -3254,6 +3254,16 @@ button{min-height:44px}
             <button class="nav-btn" onclick="navigateTo('view-purchases',this)">
                 <span>🛒</span>
                 <span>Pedidos de Compra <b id="purchaseBadge" class="pcm-purchase-badge hidden">0</b></span>
+            </button>
+
+            <button class="nav-btn" onclick="navigateTo('view-notifications',this)">
+                <span>🔔</span>
+                <span>Avisos <b id="notificationBadge" class="pcm-purchase-badge hidden">0</b></span>
+            </button>
+
+            <button class="nav-btn" onclick="navigateTo('view-reports',this)">
+                <span>📊</span>
+                <span>Relatórios</span>
             </button>
 
         </div>
@@ -7012,6 +7022,9 @@ async function exportHistoryPDF(){
   }
 })();
 <\/script>
+
+
+
 </body></html>`);
         popup.document.close();
         showPCMToast("PDF preparado. Na tela de impressão, escolha Salvar como PDF.","success");
@@ -9128,6 +9141,12 @@ window.pcmShowOrderDetails=async function(osId){
       ${order.description?`<div class="pcm-detail-item" style="margin-top:8px"><span>Descrição</span><b>${esc(order.description)}</b></div>`:''}
     </div>
 
+    <div class="pcm-detail-section">
+      <div class="pcm-detail-section-title">🕒 Linha do tempo da O.S.</div>
+      <div class="pcm-time-change-note">Tudo que foi registrado na execução aparece em ordem cronológica, com responsável, data e observação.</div>
+      ${typeof window.pcmBuildTimelineHtml==='function'?window.pcmBuildTimelineHtml(history):''}
+    </div>
+
     <div class="pcm-detail-section pcm-time-change-section">
       <div class="pcm-detail-section-title">⏱ Alterações de horário / tempo</div>
       <div class="pcm-time-change-note">Aqui fica registrado o <b>motivo da alteração</b>, quem fez a alteração e quando ela foi realizada.</div>
@@ -10065,6 +10084,8 @@ let purchasePoll=null;
 let purchaseChannel=null;
 let purchaseLastPending=-1;
 let purchaseLoadedOnce=false;
+let purchaseUserLoadedOnce=false;
+let purchaseUserKnownStatus=new Map();
 
 function purchaseEsc(v){return typeof escapeHtml==='function'?escapeHtml(String(v??'')):String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function purchaseStatusLabel(s){const x=String(s||'PENDENTE').toUpperCase();return {PENDENTE:'PENDENTE',ANALISE:'EM ANÁLISE',COTACAO:'EM COTAÇÃO',COMPRADO:'COMPRADO',RECUSADO:'RECUSADO'}[x]||x;}
@@ -10077,6 +10098,26 @@ function purchaseNotify(msg,count){
 }
 function updatePurchaseBadge(n){
   const badges=[...document.querySelectorAll('#purchaseBadge,.pcm-purchase-badge')];badges.forEach(b=>{b.textContent=String(n||0);b.classList.toggle('hidden',!(n>0));});
+}
+function purchaseUserNotify(msg){
+  let old=document.getElementById('pcmPurchaseUserToast');if(old)old.remove();
+  const el=document.createElement('div');el.id='pcmPurchaseUserToast';el.className='pcm-purchase-toast';
+  el.innerHTML='<strong>📦 Material comprado</strong><br><span>'+purchaseEsc(msg)+'</span>';
+  el.onclick=()=>{el.remove();if(typeof navigateTo==='function')navigateTo('view-purchases');};
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),12000);
+  try{
+    if('Notification' in window && Notification.permission==='granted'){
+      new Notification('Material comprado',{body:msg});
+    }
+  }catch(e){}
+}
+async function requestPurchaseUserNotifications(){
+  try{
+    if('Notification' in window && Notification.permission==='default'){
+      await Notification.requestPermission();
+    }
+  }catch(e){}
 }
 async function purchaseEnsure(){await ensureSupabase();return db;}
 
@@ -10127,12 +10168,76 @@ async function updatePurchaseStatus(id,status,note){
 }
 
 async function checkPurchaseNotifications(showNew){
-  if(!currentUser||!isAdmin)return;
-  try{const client=await purchaseEnsure();const {data,error}=await client.from(PURCHASE_TABLE).select('id,material,requester_name,created_at,status').eq('status','PENDENTE').order('created_at',{ascending:false});if(error)throw error;const rows=data||[];updatePurchaseBadge(rows.length);if(showNew&&purchaseLoadedOnce&&rows.length>purchaseLastPending){const newest=rows[0];purchaseNotify((newest?.requester_name||'Funcionário')+' solicitou '+(newest?.material||'um material')+'.',rows.length);}purchaseLastPending=rows.length;purchaseLoadedOnce=true;}catch(e){console.warn('Monitor de pedidos de compra indisponível:',e.message||e);}
+  if(!currentUser)return;
+  try{
+    const client=await purchaseEnsure();
+
+    if(isAdmin){
+      const {data,error}=await client.from(PURCHASE_TABLE).select('id,material,requester_name,created_at,status').eq('status','PENDENTE').order('created_at',{ascending:false});
+      if(error)throw error;
+      const rows=data||[];
+      updatePurchaseBadge(rows.length);
+      if(showNew&&purchaseLoadedOnce&&rows.length>purchaseLastPending){
+        const newest=rows[0];
+        purchaseNotify((newest?.requester_name||'Funcionário')+' solicitou '+(newest?.material||'um material')+'.',rows.length);
+      }
+      purchaseLastPending=rows.length;
+      purchaseLoadedOnce=true;
+      return;
+    }
+
+    /*
+       Para o técnico/solicitante, acompanha somente os próprios pedidos.
+       Na primeira leitura apenas memoriza o estado; depois, uma mudança para
+       COMPRADO gera o aviso. Assim não aparece falso aviso ao entrar no sistema.
+    */
+    const {data,error}=await client.from(PURCHASE_TABLE)
+      .select('id,material,quantity,unit,os_number,status,updated_at,requester_name')
+      .eq('requester_name',currentUser)
+      .order('updated_at',{ascending:false});
+    if(error)throw error;
+    const rows=data||[];
+
+    for(const row of rows){
+      const status=String(row.status||'').toUpperCase();
+      const previous=purchaseUserKnownStatus.get(String(row.id));
+      if(purchaseUserLoadedOnce && previous && previous!==status && status==='COMPRADO'){
+        const qty=row.quantity!=null?(' • '+row.quantity+' '+(row.unit||'UN')):'';
+        const os=row.os_number?(' • O.S. '+row.os_number):'';
+        purchaseUserNotify((row.material||'O material solicitado')+' foi comprado'+qty+os+'.');
+      }
+      purchaseUserKnownStatus.set(String(row.id),status);
+    }
+    purchaseUserLoadedOnce=true;
+    if(document.getElementById('view-purchases')&&!document.getElementById('view-purchases').classList.contains('hidden'))loadPurchases();
+  }catch(e){console.warn('Monitor de pedidos de compra indisponível:',e.message||e);}
 }
 function startPurchaseMonitor(){
-  if(purchasePoll)clearInterval(purchasePoll);purchasePoll=setInterval(()=>checkPurchaseNotifications(true),15000);checkPurchaseNotifications(false);
-  try{purchaseChannel?.unsubscribe?.();purchaseChannel=db.channel('purchase-requests-live').on('postgres_changes',{event:'INSERT',schema:'public',table:PURCHASE_TABLE},payload=>{if(isAdmin){purchaseNotify((payload.new?.requester_name||'Funcionário')+' solicitou '+(payload.new?.material||'um material')+'.');checkPurchaseNotifications(false);if(document.getElementById('view-purchases')&&!document.getElementById('view-purchases').classList.contains('hidden'))loadPurchases();}}).subscribe();}catch(e){console.warn('Realtime de compras não configurado; usando atualização automática.',e);}
+  if(purchasePoll)clearInterval(purchasePoll);
+  purchasePoll=setInterval(()=>checkPurchaseNotifications(true),15000);
+  checkPurchaseNotifications(false);
+  try{
+    purchaseChannel?.unsubscribe?.();
+    purchaseChannel=db.channel('purchase-requests-live')
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:PURCHASE_TABLE},payload=>{
+        if(isAdmin){
+          purchaseNotify((payload.new?.requester_name||'Funcionário')+' solicitou '+(payload.new?.material||'um material')+'.');
+          checkPurchaseNotifications(false);
+          if(document.getElementById('view-purchases')&&!document.getElementById('view-purchases').classList.contains('hidden'))loadPurchases();
+        }
+      })
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:PURCHASE_TABLE},payload=>{
+        const row=payload.new||{};
+        if(!isAdmin && String(row.requester_name||'').trim()===String(currentUser||'').trim() && String(row.status||'').toUpperCase()==='COMPRADO'){
+          const qty=row.quantity!=null?(' • '+row.quantity+' '+(row.unit||'UN')):'';
+          const os=row.os_number?(' • O.S. '+row.os_number):'';
+          purchaseUserNotify((row.material||'O material solicitado')+' foi comprado'+qty+os+'.');
+          purchaseUserKnownStatus.set(String(row.id),'COMPRADO');
+          if(document.getElementById('view-purchases')&&!document.getElementById('view-purchases').classList.contains('hidden'))loadPurchases();
+        }
+      })
+      .subscribe();
+  }catch(e){console.warn('Realtime de compras não configurado; usando atualização automática.',e);}
 }
 
 const oldNavigate=window.navigateTo;
@@ -10150,10 +10255,109 @@ window.refreshFactoryNavigation=function(){
   if(isAdmin)checkPurchaseNotifications(false);
 };
 
-window.addEventListener('load',()=>{setTimeout(()=>{ensurePurchaseView();startPurchaseMonitor();},1200);});
+window.addEventListener('load',()=>{setTimeout(()=>{ensurePurchaseView();if(!isAdmin)requestPurchaseUserNotifications();startPurchaseMonitor();},1200);});
 window.startPurchaseMonitor=startPurchaseMonitor;
 window.loadPurchases=loadPurchases;
 
+})();
+</script>
+<style id="pcm-v11-notifications-reports-css">
+/* =========================================================
+   V11 • CENTRAL DE AVISOS + LINHA DO TEMPO + RELATÓRIOS
+========================================================= */
+.pcm-notify-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.pcm-notify-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}
+.pcm-notify-tab{border:1px solid #334155;background:#0b1220;color:#94a3b8;border-radius:999px;padding:9px 13px;font-size:10px;font-weight:900;cursor:pointer}
+.pcm-notify-tab.active{background:#1e293b;color:#fff;border-color:#64748b}
+.pcm-notify-list{display:grid;gap:9px}
+.pcm-notify-item{display:grid;grid-template-columns:38px 1fr auto;gap:11px;align-items:start;border:1px solid #263244;background:linear-gradient(145deg,#111827,#0b1220);border-radius:13px;padding:13px;cursor:pointer;transition:.15s}
+.pcm-notify-item:hover{transform:translateY(-1px);border-color:#475569}
+.pcm-notify-item.unread{border-color:#7c2d12;box-shadow:inset 3px 0 0 #f59e0b}
+.pcm-notify-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:#1e293b;font-size:18px}
+.pcm-notify-title{font-size:12px;font-weight:900;color:#f8fafc}.pcm-notify-text{font-size:10px;color:#94a3b8;line-height:1.5;margin-top:4px}.pcm-notify-meta{font-size:9px;color:#64748b;margin-top:7px}
+.pcm-notify-state{font-size:8px;font-weight:900;color:#fbbf24;white-space:nowrap}.pcm-notify-state.read{color:#64748b}
+.pcm-notify-empty{padding:34px;text-align:center;color:#64748b;border:1px dashed #334155;border-radius:13px}
+.pcm-timeline{display:grid;gap:0;margin-top:5px}.pcm-timeline-item{display:grid;grid-template-columns:26px 1fr;gap:9px;position:relative;padding-bottom:13px}.pcm-timeline-item:not(:last-child)::before{content:"";position:absolute;left:12px;top:25px;bottom:0;width:1px;background:#334155}.pcm-timeline-dot{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#1e293b;border:1px solid #475569;z-index:1;font-size:11px}.pcm-timeline-content{background:#090f1a;border:1px solid #253247;border-radius:10px;padding:9px}.pcm-timeline-top{display:flex;justify-content:space-between;gap:8px}.pcm-timeline-top b{font-size:10px;color:#f8fafc}.pcm-timeline-top span{font-size:8px;color:#64748b;white-space:nowrap}.pcm-timeline-meta{font-size:9px;color:#94a3b8;margin-top:4px}.pcm-timeline-reason{margin-top:6px;font-size:9px;color:#cbd5e1;line-height:1.45}
+.pcm-report-filters{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:9px}.pcm-report-kpis{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:9px;margin:12px 0}.pcm-report-kpi{border:1px solid #263244;border-radius:12px;padding:13px;background:linear-gradient(145deg,#111827,#0b1220)}.pcm-report-kpi span{display:block;color:#64748b;font-size:9px;text-transform:uppercase;font-weight:900}.pcm-report-kpi b{display:block;color:#f8fafc;font-size:21px;margin-top:4px}.pcm-report-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pcm-report-card{background:linear-gradient(145deg,#111827,#0b1220);border:1px solid #263244;border-radius:13px;padding:14px}.pcm-report-card h3{font-size:12px;margin:0 0 10px;color:#e2bf8a}.pcm-report-table{width:100%;border-collapse:collapse;font-size:9px}.pcm-report-table th,.pcm-report-table td{padding:8px 6px;border-bottom:1px solid #1e293b;text-align:left}.pcm-report-table th{color:#64748b;font-size:8px;text-transform:uppercase}.pcm-report-table td{color:#cbd5e1}
+@media(max-width:800px){.pcm-report-filters{grid-template-columns:1fr 1fr}.pcm-report-kpis{grid-template-columns:repeat(2,1fr)}.pcm-report-grid{grid-template-columns:1fr}.pcm-notify-item{grid-template-columns:34px 1fr}.pcm-notify-state{grid-column:2}.pcm-timeline-top{flex-direction:column;gap:3px}}
+</style>
+<script id="pcm-v11-notifications-reports-js">
+(function(){
+'use strict';
+const NOTIFY_KEY='pcm_notifications_read_v11';
+let notifyTab='TODAS';
+let notifyRows=[];
+function nesc(v){return typeof escapeHtml==='function'?escapeHtml(String(v??'')):String(v??'');}
+function readMap(){try{return JSON.parse(localStorage.getItem(NOTIFY_KEY)||'{}')||{}}catch(e){return {}}}
+function saveMap(m){try{localStorage.setItem(NOTIFY_KEY,JSON.stringify(m))}catch(e){}}
+function notifyId(type,id){return String(type)+'-'+String(id);}
+function markNotifyRead(id){const m=readMap();m[id]=Date.now();saveMap(m);updateNotificationBadge();}
+function markAllRead(){const m=readMap();notifyRows.forEach(x=>m[x.key]=Date.now());saveMap(m);renderNotifications();updateNotificationBadge();}
+function unreadCount(){const m=readMap();return notifyRows.filter(x=>!m[x.key]).length;}
+function updateNotificationBadge(){const n=unreadCount();const b=document.getElementById('notificationBadge');if(b){b.textContent=String(n);b.classList.toggle('hidden',n===0)}}
+function statusIcon(s){s=String(s||'').toUpperCase();if(s==='COMPRADO')return '📦';if(s==='RECUSADO')return '⛔';if(s==='PAUSADA')return '⏸️';if(s==='FINALIZADA')return '✅';if(s==='EM PRODUÇÃO')return '🔧';return '🔔'}
+function buildOrderNotifications(orders){
+  const out=[];for(const o of orders||[]){const st=String(o.status||'').toUpperCase();const who=o.active_employee||o.responsible||'Não atribuído';
+    if(st==='PAUSADA')out.push({key:notifyId('os-pause',o.id),icon:'⏸️',title:'O.S. pausada',text:`O.S. ${o.os_number||o.id} está pausada${o.pause_reason?': '+o.pause_reason:''}.`,meta:`${o.machine||'-'} • ${who}`,time:o.updated_at||o.created_at,category:'O.S.',osId:o.id});
+    if(st==='EM PRODUÇÃO')out.push({key:notifyId('os-prod',o.id),icon:'🔧',title:'O.S. em produção',text:`O.S. ${o.os_number||o.id} está em execução.`,meta:`${o.machine||'-'} • ${who}`,time:o.started_at||o.updated_at||o.created_at,category:'O.S.',osId:o.id});
+    if(st==='FINALIZADA - AGUARDANDO PCM')out.push({key:notifyId('os-pcm',o.id),icon:'📝',title:'O.S. aguardando PCM',text:`O.S. ${o.os_number||o.id} foi finalizada pelo técnico e aguarda conferência.`,meta:`${o.machine||'-'} • ${who}`,time:o.finished_at||o.updated_at||o.created_at,category:'O.S.',osId:o.id});
+    if(typeof isOverdue==='function'&&isOverdue(o))out.push({key:notifyId('os-overdue',o.id),icon:'⚠️',title:'O.S. atrasada',text:`O prazo da O.S. ${o.os_number||o.id} foi ultrapassado.`,meta:`${o.machine||'-'} • ${who}`,time:o.deadline,category:'ATRASO',osId:o.id});
+  }return out;
+}
+async function buildPurchaseNotifications(){
+  if(!currentUser)return [];
+  try{const client=await ensureSupabase();let q=client.from('purchase_requests').select('id,material,quantity,unit,os_number,status,requester_name,updated_at,created_at').order('updated_at',{ascending:false}).limit(100);if(!isAdmin)q=q.eq('requester_name',currentUser);const r=await q;if(r.error)throw r.error;return (r.data||[]).filter(x=>isAdmin||['COMPRADO','RECUSADO'].includes(String(x.status||'').toUpperCase())).map(x=>({key:notifyId('purchase',x.id),icon:statusIcon(x.status),title:String(x.status||'').toUpperCase()==='COMPRADO'?'Material comprado':'Pedido de compra atualizado',text:`${x.material||'Material'} • ${x.quantity||'-'} ${x.unit||'UN'} — ${String(x.status||'').toUpperCase()==='RECUSADO'?'pedido recusado':'compra concluída'}.`,meta:`${x.os_number?'O.S. '+x.os_number+' • ':''}${x.requester_name||'-'}`,time:x.updated_at||x.created_at,category:'COMPRAS',purchaseId:x.id}));}catch(e){return []}
+}
+async function collectNotifications(){
+  let orders=[];try{orders=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];if(!orders.length&&isAdmin){const r=await db.from('os_orders').select('*').order('created_at',{ascending:false}).limit(300);if(!r.error)orders=r.data||[]}}catch(e){}
+  notifyRows=[...buildOrderNotifications(orders),...(await buildPurchaseNotifications())].sort((a,b)=>new Date(b.time||0)-new Date(a.time||0));
+  updateNotificationBadge();return notifyRows;
+}
+function renderNotifications(){
+  const host=document.getElementById('pcmNotificationsHost');if(!host)return;const m=readMap();let rows=notifyRows.filter(x=>notifyTab==='TODAS'||x.category===notifyTab);if(!rows.length){host.innerHTML='<div class="pcm-notify-empty">🎉 Nenhum aviso nesta categoria.</div>';return}
+  host.innerHTML='<div class="pcm-notify-list">'+rows.map(x=>`<div class="pcm-notify-item ${m[x.key]?'':'unread'}" data-notify-key="${nesc(x.key)}" data-os-id="${x.osId||''}" data-purchase-id="${x.purchaseId||''}"><div class="pcm-notify-icon">${x.icon}</div><div><div class="pcm-notify-title">${nesc(x.title)}</div><div class="pcm-notify-text">${nesc(x.text)}</div><div class="pcm-notify-meta">${nesc(x.meta||'-')} • ${nesc(x.time?new Date(x.time).toLocaleString('pt-BR'):'-')}</div></div><div class="pcm-notify-state ${m[x.key]?'read':''}">${m[x.key]?'LIDO':'NÃO LIDO'}</div></div>`).join('')+'</div>';
+  host.querySelectorAll('.pcm-notify-item').forEach(el=>el.onclick=async()=>{markNotifyRead(el.dataset.notifyKey);const osId=el.dataset.osId;if(osId&&typeof window.pcmShowOrderDetails==='function')await window.pcmShowOrderDetails(osId);else if(el.dataset.purchaseId&&typeof window.navigateTo==='function')window.navigateTo('view-purchases');renderNotifications();});
+}
+async function ensureNotificationView(){
+ let v=document.getElementById('view-notifications');if(!v){v=document.createElement('section');v.id='view-notifications';v.className='app-view hidden';const main=document.querySelector('#app .main');if(main)main.appendChild(v)}
+ v.innerHTML=`<div class="topbar"><div><div class="page-title">Central de Avisos</div><div class="page-subtitle">Tudo que precisa da sua atenção, com controle de lido e não lido.</div></div><div class="history-actions"><button class="btn-secondary" id="notifyRefresh">↻ ATUALIZAR</button><button class="btn-primary" id="notifyReadAll">✓ MARCAR TUDO COMO LIDO</button></div></div><div class="panel"><div class="pcm-notify-head"><div><div class="panel-title">🔔 Avisos</div><div style="font-size:10px;color:#64748b;margin-top:4px">Clique em um aviso para abrir a O.S. relacionada.</div></div><div id="notifyCountText" style="font-size:10px;color:#fbbf24;font-weight:900"></div></div><div class="pcm-notify-tabs"><button class="pcm-notify-tab active" data-tab="TODAS">TODAS</button><button class="pcm-notify-tab" data-tab="O.S.">O.S.</button><button class="pcm-notify-tab" data-tab="COMPRAS">COMPRAS</button><button class="pcm-notify-tab" data-tab="ATRASO">ATRASOS</button></div><div id="pcmNotificationsHost"></div></div>`;
+ v.querySelector('#notifyRefresh').onclick=async()=>{await collectNotifications();renderNotifications();};v.querySelector('#notifyReadAll').onclick=markAllRead;v.querySelectorAll('.pcm-notify-tab').forEach(b=>b.onclick=()=>{notifyTab=b.dataset.tab;v.querySelectorAll('.pcm-notify-tab').forEach(x=>x.classList.toggle('active',x===b));renderNotifications();});return v;
+}
+async function openNotifications(){if(!currentUser)return;const v=await ensureNotificationView();document.querySelectorAll('.app-view').forEach(x=>x.classList.add('hidden'));v.classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));await collectNotifications();renderNotifications();const c=document.getElementById('notifyCountText');if(c)c.textContent=unreadCount()+' não lido(s)';}
+function reportView(){
+ let v=document.getElementById('view-reports');if(v)return v;v=document.createElement('section');v.id='view-reports';v.className='app-view hidden';const main=document.querySelector('#app .main');if(main)main.appendChild(v);
+ v.innerHTML=`<div class="topbar"><div><div class="page-title">Relatórios Gerenciais</div><div class="page-subtitle">Análise de O.S., atrasos, execução e desempenho operacional.</div></div><div class="history-actions"><button class="btn-secondary" id="reportRefresh">↻ ATUALIZAR</button><button class="btn-primary" id="reportPrint">🖨 IMPRIMIR</button></div></div><div class="panel"><div class="pcm-report-filters"><div><label class="form-label">Período</label><select id="reportPeriod" class="form-select"><option value="today">Hoje</option><option value="7" selected>Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="all">Todo histórico</option></select></div><div><label class="form-label">Setor</label><select id="reportSector" class="form-select"><option value="ALL">Todos</option></select></div><div><label class="form-label">Status</label><select id="reportStatus" class="form-select"><option value="ALL">Todos</option><option>O.S. ABERTA</option><option>EM PRODUÇÃO</option><option>PAUSADA</option><option>AGUARDANDO MATERIAL</option><option>FINALIZADA</option></select></div><div style="display:flex;align-items:end"><button class="btn-primary" id="reportApply" style="width:100%">APLICAR FILTROS</button></div></div></div><div id="pcmReportHost"></div>`;
+ v.querySelector('#reportApply').onclick=()=>renderReports(v);v.querySelector('#reportRefresh').onclick=()=>renderReports(v);v.querySelector('#reportPrint').onclick=()=>printReports();setTimeout(()=>renderReports(v),0);return v;
+}
+function reportOrders(){return Array.isArray(window.dashboardOrders)?window.dashboardOrders:[]}
+function sec(v){if(typeof secFmt==='function')return secFmt(v||0);v=Number(v||0);return Math.floor(v/3600)+'h '+Math.floor(v%3600/60)+'m'}
+function renderReports(v){const all=reportOrders().slice();const period=v.querySelector('#reportPeriod').value;const sector=v.querySelector('#reportSector');const status=v.querySelector('#reportStatus').value;const sectors=[...new Set(all.map(o=>o.sector).filter(Boolean))].sort();const cur=sector.value||'ALL';sector.innerHTML='<option value="ALL">Todos</option>'+sectors.map(x=>`<option value="${nesc(x)}">${nesc(x)}</option>`).join('');sector.value=sectors.includes(cur)?cur:'ALL';const now=Date.now();const days=period==='today'?1:period==='all'?99999:Number(period);const filtered=all.filter(o=>{const d=new Date(o.created_at||o.opening_date||0).getTime();const okDate=period==='all'||(now-d)<=days*86400000;return okDate&&(sector.value==='ALL'||o.sector===sector.value)&&(status==='ALL'||String(o.status||'').toUpperCase()===status)});const done=filtered.filter(o=>String(o.status||'').toUpperCase().includes('FINALIZADA')).length;const running=filtered.filter(o=>String(o.status||'').toUpperCase().includes('PRODUÇÃO')).length;const paused=filtered.filter(o=>String(o.status||'').toUpperCase()==='PAUSADA').length;const opened=filtered.filter(o=>!String(o.status||'').toUpperCase().includes('FINALIZADA')&&!String(o.status||'').toUpperCase().includes('CANCEL')).length;const late=filtered.filter(o=>typeof isOverdue==='function'&&isOverdue(o)).length;const mat=filtered.filter(o=>String(o.status||'').toUpperCase().includes('MATERIAL')).length;const avg=filtered.length?filtered.reduce((s,o)=>s+Number(o.total_service_seconds||0),0)/filtered.length:0;const machines=new Map();filtered.forEach(o=>{const k=o.machine||'-';machines.set(k,(machines.get(k)||0)+1)});const machineRows=[...machines.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10);const people=new Map();filtered.forEach(o=>{const k=o.active_employee||o.responsible||'Não definido';if(!people.has(k))people.set(k,{total:0,done:0,time:0});const x=people.get(k);x.total++;if(String(o.status||'').toUpperCase().includes('FINALIZADA'))x.done++;x.time+=Number(o.total_service_seconds||0)});const peopleRows=[...people.entries()].sort((a,b)=>b[1].done-a[1].done).slice(0,10);
+ const host=v.querySelector('#pcmReportHost');host.innerHTML=`<div class="pcm-report-kpis"><div class="pcm-report-kpi"><span>O.S. no período</span><b>${filtered.length}</b></div><div class="pcm-report-kpi"><span>O.S. abertas</span><b>${opened}</b></div><div class="pcm-report-kpi"><span>Em execução</span><b>${running}</b></div><div class="pcm-report-kpi"><span>Pausadas</span><b>${paused}</b></div><div class="pcm-report-kpi"><span>Finalizadas</span><b>${done}</b></div><div class="pcm-report-kpi"><span>Atrasadas</span><b>${late}</b></div><div class="pcm-report-kpi"><span>Aguardando material</span><b>${mat}</b></div><div class="pcm-report-kpi"><span>Tempo médio</span><b>${sec(avg)}</b></div></div><div class="pcm-report-grid"><div class="pcm-report-card"><h3>🏭 Máquinas com maior volume</h3><table class="pcm-report-table"><thead><tr><th>Máquina</th><th>O.S.</th></tr></thead><tbody>${machineRows.map(x=>`<tr><td>${nesc(x[0])}</td><td><b>${x[1]}</b></td></tr>`).join('')||'<tr><td colspan="2">Sem dados</td></tr>'}</tbody></table></div><div class="pcm-report-card"><h3>👷 Desempenho por responsável</h3><table class="pcm-report-table"><thead><tr><th>Responsável</th><th>O.S.</th><th>Final.</th><th>Tempo</th></tr></thead><tbody>${peopleRows.map(x=>`<tr><td>${nesc(x[0])}</td><td>${x[1].total}</td><td>${x[1].done}</td><td>${sec(x[1].time)}</td></tr>`).join('')||'<tr><td colspan="4">Sem dados</td></tr>'}</tbody></table></div></div>`}
+function printReports(){const v=document.getElementById('view-reports');if(!v)return;const host=v.querySelector('#pcmReportHost');const w=window.open('','_blank');if(!w)return;w.document.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório PCM</title><style>body{font:12px Arial;color:#111;padding:24px}h1{margin:0 0 4px}p{color:#555}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#f1f5f9}.card{display:inline-block;border:1px solid #ddd;padding:10px;margin:5px;min-width:120px}.card b{font-size:20px;display:block}</style></head><body><h1>PCM • Relatório Gerencial</h1><p>Gerado em '+new Date().toLocaleString('pt-BR')+'</p>'+host.innerHTML+'</body></html>');w.document.close();setTimeout(()=>w.print(),250)}
+async function openReports(){if(!isAdmin)return;const v=reportView();document.querySelectorAll('.app-view').forEach(x=>x.classList.add('hidden'));v.classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));if(typeof loadDashboardData==='function'&&!window.dashboardOrders?.length)await loadDashboardData();renderReports(v)}
+// AUDITORIA OPERACIONAL: consulta o histórico persistido no Supabase, sem criar dados fictícios.
+async function openAuditLog(){
+ if(!isAdmin)return;
+ let v=document.getElementById('view-audit-log');
+ if(!v){v=document.createElement('section');v.id='view-audit-log';v.className='app-view hidden';const main=document.querySelector('#app .main');if(main)main.appendChild(v);}
+ v.innerHTML=`<div class="topbar"><div><div class="page-title">Auditoria de O.S.</div><div class="page-subtitle">Rastreabilidade das ações registradas no histórico de execução.</div></div><div class="history-actions"><button class="btn-secondary" id="auditRefresh">↻ ATUALIZAR</button><button class="btn-primary" id="auditExport">⬇ EXPORTAR CSV</button></div></div><div class="panel"><div class="pcm-report-filters"><div><label class="form-label">Pesquisar</label><input id="auditSearch" class="form-input" placeholder="O.S., responsável, ação ou justificativa"></div><div><label class="form-label">Período</label><select id="auditPeriod" class="form-select"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="all">Todo histórico (até 2.000 registros)</option></select></div><div><label class="form-label">Ação</label><select id="auditAction" class="form-select"><option value="ALL">Todas as ações</option></select></div></div><div id="auditStatus" style="font-size:11px;color:#94a3b8;margin:8px 0">Carregando histórico…</div><div style="overflow:auto"><table class="pcm-report-table" style="width:100%"><thead><tr><th>Data/hora</th><th>O.S.</th><th>Responsável</th><th>Ação</th><th>Justificativa / observação</th></tr></thead><tbody id="auditRows"></tbody></table></div></div>`;
+ const status=v.querySelector('#auditStatus'), rows=v.querySelector('#auditRows'), search=v.querySelector('#auditSearch'), period=v.querySelector('#auditPeriod'), action=v.querySelector('#auditAction');let data=[];
+ const render=()=>{const term=search.value.trim().toLowerCase(),days=period.value==='all'?Infinity:Number(period.value),cut=Date.now()-days*86400000;const filtered=data.filter(x=>(!x.created_at||new Date(x.created_at).getTime()>=cut)&& (action.value==='ALL'||x.action===action.value)&&(!term||[x.os_number,x.os_id,x.employee,x.action,x.reason].some(y=>String(y||'').toLowerCase().includes(term))));rows.innerHTML=filtered.map(x=>`<tr><td>${nesc(x.created_at?new Date(x.created_at).toLocaleString('pt-BR'):'-')}</td><td>${nesc(x.os_number||x.os_id||'-')}</td><td>${nesc(x.employee||'-')}</td><td>${nesc(x.action||'ALTERAÇÃO')}</td><td>${nesc(x.reason||'-')}</td></tr>`).join('')||'<tr><td colspan="5">Nenhum registro encontrado para os filtros.</td></tr>';status.textContent=`${filtered.length} registro(s) exibido(s) • ${data.length} carregado(s) do histórico.`;};
+ const load=async()=>{status.textContent='Carregando histórico do Supabase…';try{const client=await ensureSupabase();const r=await client.from('os_execution_history').select('id,os_id,os_number,employee,action,reason,created_at').order('created_at',{ascending:false}).limit(2000);if(r.error)throw r.error;data=r.data||[];const acts=[...new Set(data.map(x=>x.action).filter(Boolean))].sort();action.innerHTML='<option value="ALL">Todas as ações</option>'+acts.map(a=>`<option value="${nesc(a)}">${nesc(a)}</option>`).join('');render();}catch(e){console.error('Falha ao carregar auditoria',e);status.textContent='Não foi possível carregar a auditoria. Verifique a tabela os_execution_history e as permissões RLS do Supabase.';rows.innerHTML='';}};
+ search.oninput=render;period.onchange=render;action.onchange=render;v.querySelector('#auditRefresh').onclick=load;v.querySelector('#auditExport').onclick=()=>{const term=search.value.trim().toLowerCase();const filtered=data.filter(x=>!term||[x.os_number,x.os_id,x.employee,x.action,x.reason].some(y=>String(y||'').toLowerCase().includes(term)));const csv=[['Data/hora','O.S.','Responsável','Ação','Justificativa'],...filtered.map(x=>[x.created_at||'',x.os_number||x.os_id||'',x.employee||'',x.action||'',x.reason||''])].map(row=>row.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));a.download='auditoria_pcm.csv';a.click();URL.revokeObjectURL(a.href);};
+ document.querySelectorAll('.app-view').forEach(x=>x.classList.add('hidden'));v.classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));await load();
+}
+window.pcmOpenAuditLog=openAuditLog;
+// Linha do tempo: reutiliza o histórico já buscado no modal da O.S.
+function timelineHtml(history){const icon=a=>{a=String(a||'').toUpperCase();if(a.includes('INÍC'))return '▶';if(a.includes('PAUS'))return '⏸';if(a.includes('RETOM'))return '▶';if(a.includes('FINAL'))return '✓';if(a.includes('MATERIAL'))return '📦';if(a.includes('CANCEL'))return '✕';return '•'};return history.length?'<div class="pcm-timeline">'+history.map(h=>`<div class="pcm-timeline-item"><div class="pcm-timeline-dot">${icon(h.action)}</div><div class="pcm-timeline-content"><div class="pcm-timeline-top"><b>${nesc(h.action||'ALTERAÇÃO')}</b><span>${nesc(h.created_at?new Date(h.created_at).toLocaleString('pt-BR'):'-')}</span></div><div class="pcm-timeline-meta">Responsável pelo registro: <b>${nesc(h.employee||'-')}</b>${h.duration_seconds!=null?' • Duração: '+nesc(sec(h.duration_seconds)):''}</div>${h.reason?`<div class="pcm-timeline-reason">${nesc(h.reason).replace(/\n/g,'<br>')}</div>`:''}</div></div>`).join('')+'</div>':'<div class="pcm-empty">Ainda não existem eventos registrados para esta O.S.</div>'}
+window.pcmBuildTimelineHtml=timelineHtml;
+// Navegação final para as novas telas.
+const baseNav=window.navigateTo;
+window.navigateTo=function(viewId,button){if(viewId==='view-notifications'){openNotifications();return}if(viewId==='view-reports'){openReports();return}if(viewId==='view-audit-log'){openAuditLog();return}return baseNav?baseNav(viewId,button):undefined};
+const baseRefresh=window.refreshFactoryNavigation;
+window.refreshFactoryNavigation=function(){if(baseRefresh)baseRefresh();const admin=document.getElementById('adminMenu');const emp=document.getElementById('employeeMenu');if(admin&&isAdmin&&!admin.querySelector('[onclick*="view-notifications"]'))admin.insertAdjacentHTML('beforeend',`<button class="nav-btn" onclick="navigateTo('view-notifications',this)"><span>🔔</span><span>Avisos <b id="notificationBadge" class="pcm-purchase-badge hidden">0</b></span></button><button class="nav-btn" onclick="navigateTo('view-reports',this)"><span>📊</span><span>Relatórios</span></button><button class="nav-btn" onclick="openAuditLog()"><span>🧾</span><span>Auditoria</span></button>`);if(emp&&!isAdmin&&!emp.querySelector('[onclick*="view-notifications"]'))emp.insertAdjacentHTML('beforeend',`<button class="nav-btn" onclick="navigateTo('view-notifications',this)"><span>🔔</span><span>Avisos <b id="notificationBadge" class="pcm-purchase-badge hidden">0</b></span></button>`);const nav=document.getElementById('pcmMobileNav');if(nav&&isAdmin&&!nav.querySelector('[data-view="view-notifications"]')){const add=(v,i,l)=>{const b=document.createElement('button');b.type='button';b.dataset.view=v;b.innerHTML=`<span class="mi">${i}</span>${l}`;b.onclick=()=>window.navigateTo(v,b);nav.appendChild(b)};add('view-notifications','🔔','AVISOS');add('view-reports','📊','RELATÓRIOS');const ab=document.createElement('button');ab.type='button';ab.innerHTML='<span class="mi">🧾</span>AUDITORIA';ab.onclick=()=>openAuditLog();nav.appendChild(ab)}else if(nav&&!isAdmin&&!nav.querySelector('[data-view="view-notifications"]')){const b=document.createElement('button');b.type='button';b.dataset.view='view-notifications';b.innerHTML='<span class="mi">🔔</span>AVISOS';b.onclick=()=>window.navigateTo('view-notifications',b);nav.appendChild(b)}updateNotificationBadge();};
+window.addEventListener('load',()=>setTimeout(async()=>{if(currentUser){await ensureNotificationView();if(isAdmin)reportView();await collectNotifications();}},1600));
+window.pcmOpenNotifications=openNotifications;window.pcmOpenReports=openReports;
 })();
 </script>
 </body>
