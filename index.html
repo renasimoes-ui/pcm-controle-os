@@ -6130,22 +6130,39 @@ async function emergencyStopOS(osId){
 ========================================================= */
 
 async function insertExecutionHistory(data){
-
-    const {error} =
-        await db
+    try {
+        if (!db) await ensureSupabase();
+        const { error } = await db
             .from("os_execution_history")
             .insert(data);
 
-
-    if(error){
-
-        console.error(
-            "Erro no histórico de execução:",
-            error
-        );
-
+        if (error) {
+            // Mostra a mensagem real do Supabase, em vez de exibir apenas "[object Object]".
+            const details = {
+                message: error.message || "Sem mensagem retornada pelo Supabase",
+                code: error.code || null,
+                details: error.details || null,
+                hint: error.hint || null,
+                status: error.status || error.statusCode || null
+            };
+            console.error("Erro ao gravar em public.os_execution_history:", details, error);
+            window.lastExecutionHistoryError = details;
+            return { ok: false, error: details };
+        }
+        window.lastExecutionHistoryError = null;
+        return { ok: true };
+    } catch (error) {
+        const details = {
+            message: error?.message || String(error),
+            code: error?.code || null,
+            details: error?.details || null,
+            hint: error?.hint || null,
+            status: error?.status || error?.statusCode || null
+        };
+        console.error("Falha inesperada no histórico de execução:", details, error);
+        window.lastExecutionHistoryError = details;
+        return { ok: false, error: details };
     }
-
 }
 
 
