@@ -4150,18 +4150,30 @@ let timerInterval = null;
 
 async function login(){
 
+    /*
+      Correção de inicialização: o login não pode ficar preso na tela de PIN
+      caso o Supabase demore para responder ou a conexão esteja instável.
+      A autenticação continua validando usuário + PIN; não pula a validação.
+    */
+    const withTimeout = (promise, ms, label) => Promise.race([
+        Promise.resolve(promise),
+        new Promise((_, reject) => setTimeout(
+            () => reject(new Error(label + " demorou mais que o esperado.")),
+            ms
+        ))
+    ]);
+
     try{
-        await ensureSupabase();
+        await withTimeout(ensureSupabase(), 8000, "Conexão com o banco");
     }catch(e){
-        console.error(e);
-        showPCMToast("A conexão do sistema não carregou. Verifique a internet e tente novamente.","error");
-        return;
+        console.warn("Supabase indisponível durante a abertura do login:", e);
+        // Continua para tentar carregar os usuários; não bloqueia a tela de entrada.
     }
 
     try{
-        await loadUsers();
+        await withTimeout(loadUsers(), 8000, "Carregamento dos usuários");
     }catch(e){
-        // Mantém a tela de login utilizável mesmo se a biblioteca/conexão demorar no celular.
+        console.warn("Usando lista local de usuários para validar o acesso:", e);
         usersRows = defaultUsers.slice();
         usersDB = {};
         usersRows.forEach(u=>{ usersDB[u.name]=String(u.pin||""); });
@@ -10361,5 +10373,155 @@ window.addEventListener('load',()=>setTimeout(async()=>{if(currentUser){await en
 window.pcmOpenNotifications=openNotifications;window.pcmOpenReports=openReports;
 })();
 </script>
+
+<script id="pcm-user-os-feature-v1">
+(function(){
+'use strict';
+const MARK='[O.S. USUÁRIO]';
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+function view(){
+ let v=$('view-user-os-request');
+ if(!v){v=document.createElement('section');v.id='view-user-os-request';v.className='app-view hidden';document.querySelector('#app .main')?.appendChild(v);}
+ return v;
+}
+function adminView(){
+ let v=$('view-admin-user-os');
+ if(!v){v=document.createElement('section');v.id='view-admin-user-os';v.className='app-view hidden';document.querySelector('#app .main')?.appendChild(v);}
+ return v;
+}
+function addNav(){
+ const admin=$('adminMenu'), emp=$('employeeMenu');
+ if(admin && !admin.querySelector('[data-user-os-admin]')) admin.insertAdjacentHTML('beforeend',`<button class="nav-btn" data-user-os-admin onclick="pcmOpenAdminUserOS()"><span>🧾</span><span>O.S. Usuários</span></button>`);
+ if(emp && !emp.querySelector('[data-user-os-request]')) emp.insertAdjacentHTML('afterbegin',`<button class="nav-btn" data-user-os-request onclick="pcmOpenUserOSRequest()"><span>＋</span><span>Abrir O.S.</span></button>`);
+ const mobile=$('pcmMobileNav');
+ if(mobile && !mobile.querySelector('[data-user-os-mobile]')){
+  const b=document.createElement('button');b.dataset.userOsMobile='1';b.innerHTML='<span class="mi">＋</span>ABRIR O.S.';
+  b.onclick=()=>window.pcmOpenUserOSRequest();mobile.appendChild(b);
+ }
+}
+function hideViews(target){
+ document.querySelectorAll('.app-view').forEach(x=>x.classList.add('hidden'));
+ target.classList.remove('hidden');
+ document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+}
+function toast(msg,type){if(typeof showPcmToast==='function')showPcmToast(msg,type||'success');else alert(msg)}
+async function userLoad(){
+ const v=view();
+ v.innerHTML=`<div class="topbar"><div><div class="page-title">Abrir O.S. de manutenção</div><div class="page-subtitle">Abra uma solicitação sem número oficial. Você pode iniciar a execução imediatamente.</div></div></div>
+ <div class="panel"><div class="factory-note warning" style="margin-bottom:16px">A numeração oficial será preenchida pelo PCM/Administrador depois. Não é necessário informar TAG da máquina.</div>
+ <form id="userOSForm"><div class="form-grid">
+ <div class="form-group"><label class="form-label">Equipamento / máquina *</label><input class="form-input" id="uomMachine" required placeholder="Nome do equipamento"></div>
+ <div class="form-group"><label class="form-label">Setor *</label><input class="form-input" id="uomSector" required placeholder="Ex.: Prensa, Serraria, Expedição"></div>
+ <div class="form-group"><label class="form-label">Tipo de manutenção *</label><select class="form-select" id="uomType" required><option value="">Selecione</option><option>Corretiva</option><option>Preventiva</option><option>Melhoria</option><option>Inspeção</option><option>Outro</option></select></div>
+ <div class="form-group"><label class="form-label">Prioridade</label><select class="form-select" id="uomPriority"><option>MODERADA</option><option>MÉDIA</option><option>ALTA</option></select></div>
+ <div class="form-group full"><label class="form-label">Descrição do problema / serviço *</label><textarea class="form-textarea" id="uomDescription" required placeholder="Descreva o problema ou o serviço necessário..."></textarea></div>
+ <div class="form-group full"><label class="form-label">Observações (opcional)</label><textarea class="form-textarea" id="uomObservations" placeholder="Informações adicionais"></textarea></div>
+ </div><div class="form-actions"><button class="btn-primary" type="submit" id="uomSubmit">CRIAR O.S. E INICIAR QUANDO QUISER</button></div></form></div>
+ <div class="panel"><div class="panel-title">Minhas O.S. abertas por mim</div><div id="uomMine">Carregando...</div></div>`;
+ $('userOSForm').onsubmit=async e=>{
+  e.preventDefault();
+  if(!currentUser||isAdmin){toast('Entre com um usuário funcionário para abrir esta O.S.','error');return;}
+  const machine=$('uomMachine').value.trim(),sector=$('uomSector').value.trim(),type=$('uomType').value,priority=$('uomPriority').value,description=$('uomDescription').value.trim(),obs=$('uomObservations').value.trim();
+  if(!machine||!sector||!type||!description){toast('Preencha os campos obrigatórios.','error');return;}
+  const btn=$('uomSubmit');btn.disabled=true;btn.textContent='CADASTRANDO...';
+  const marker=`${MARK} Solicitante: ${currentUser}${obs?'\n'+obs:''}`;
+  const payload={os_number:null,opening_date:new Date().toISOString().slice(0,10),machine,tag:null,sector,maintenance_type:type,priority,responsible:currentUser,description,observations:marker,status:'O.S. ABERTA',total_service_seconds:0,active_employee:null,started_at:null,paused_at:null,finished_at:null};
+  try{
+   let result=await db.from('os_orders').insert(payload);
+   if(result.error){
+    // Compatibilidade com bancos em que os_number é obrigatório: usa identificador interno provisório, oculto do funcionário.
+    const temporary='PENDENTE-'+Date.now().toString();
+    result=await db.from('os_orders').insert({...payload,os_number:temporary});
+   }
+   if(result.error)throw result.error;
+   toast('O.S. criada. Ela já está disponível para você iniciar, sem autorização do administrador.');
+   $('userOSForm').reset();await renderMine();if(typeof loadEmployeeOrders==='function')await loadEmployeeOrders();
+  }catch(err){console.error(err);toast('Não foi possível criar a O.S. Verifique a conexão e as permissões da tabela os_orders no Supabase. '+(err.message||''),'error');}
+  finally{btn.disabled=false;btn.textContent='CRIAR O.S. E INICIAR QUANDO QUISER';}
+ };
+ await renderMine();
+}
+async function isUserOrder(order){
+ return String(order.observations||'').includes(MARK);
+}
+async function renderMine(){
+ const host=$('uomMine');if(!host||!currentUser||isAdmin)return;
+ try{
+  const r=await db.from('os_orders').select('*').eq('responsible',currentUser).order('created_at',{ascending:false}).limit(300);
+  if(r.error)throw r.error;
+  const rows=(r.data||[]).filter(o=>String(o.observations||'').includes(MARK));
+  host.innerHTML=rows.length?rows.map(o=>`<div class="os-card"><div class="os-card-top"><div class="os-number">${esc((o.os_number&&!String(o.os_number).startsWith('PENDENTE-'))?('O.S. '+o.os_number):'O.S. aguardando numeração')}</div><span class="status">${esc(o.status||'O.S. ABERTA')}</span></div><div class="os-info"><div><strong>Equipamento:</strong> ${esc(o.machine||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div></div><div class="employee-actions">${!String(o.status||'').toUpperCase().includes('FINALIZ')&&!String(o.status||'').toUpperCase().includes('CANCEL')?`<button class="action-btn btn-start" onclick="pcmStartUserOS('${esc(o.id)}')">▶ INICIAR / ABRIR</button>`:''}</div></div>`).join(''):'<div class="pcm-empty">Você ainda não abriu O.S. por este painel.</div>';
+ }catch(e){console.error(e);host.innerHTML='<div class="pcm-empty">Não foi possível carregar suas O.S. Verifique as permissões de leitura do Supabase.</div>';}
+}
+async function adminLoad(){
+ if(!isAdmin){alert('Acesso exclusivo do PCM/Administrador.');return;}
+ const v=adminView();hideViews(v);
+ v.innerHTML=`<div class="topbar"><div><div class="page-title">O.S. Usuários</div><div class="page-subtitle">Solicitações abertas pelos funcionários. Edite os dados e atribua a numeração oficial do WK.</div></div><button class="btn-secondary" id="uoaRefresh">↻ ATUALIZAR</button></div><div class="panel"><div id="uoaRows">Carregando...</div></div>`;
+ $('uoaRefresh').onclick=adminRender;
+ await adminRender();
+}
+async function adminRender(){
+ const host=$('uoaRows');if(!host)return;
+ try{
+  const r=await db.from('os_orders').select('*').order('created_at',{ascending:false}).limit(500);
+  if(r.error)throw r.error;
+  const rows=(r.data||[]).filter(o=>String(o.observations||'').includes(MARK));
+  host.innerHTML=rows.length?rows.map(o=>`<div class="os-card"><div class="os-card-top"><div class="os-number">${esc(o.os_number&&!String(o.os_number).startsWith('PENDENTE-')?'O.S. '+o.os_number:'SEM NUMERAÇÃO')}</div><span class="status">${esc(o.status||'-')}</span></div><div class="os-info"><div><strong>Solicitante:</strong> ${esc(o.responsible||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.machine||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo:</strong> ${esc(o.maintenance_type||'-')} • <strong>Prioridade:</strong> ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Data:</strong> ${esc(o.opening_date||'-')}</div></div><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR O.S. / ATRIBUIR Nº WK</button></div>`).join(''):'<div class="pcm-empty">Nenhuma O.S. aberta por usuários foi encontrada.</div>';
+ }catch(e){console.error(e);host.innerHTML='<div class="pcm-empty">Falha ao consultar O.S. Usuários. Verifique as permissões SELECT da tabela os_orders no Supabase.</div>';}
+}
+window.pcmEditUserOS=async function(id){
+ if(!isAdmin)return;
+ try{
+  const r=await db.from('os_orders').select('*').eq('id',id).single();if(r.error)throw r.error;const o=r.data;
+  const modal=document.createElement('div');modal.className='modal';modal.style.display='flex';modal.innerHTML=`<div class="modal-box"><div class="modal-title">Editar O.S. de usuário</div><div class="modal-description">Preencha o número oficial do WK para atualizar a O.S. para o funcionário.</div><div class="form-grid">
+  <div class="form-group"><label class="form-label">Número oficial WK (opcional)</label><input id="uoaNumber" class="form-input" inputmode="numeric" value="${esc(String(o.os_number||'').startsWith('PENDENTE-')?'':o.os_number||'')}" placeholder="Número da O.S."></div>
+  <div class="form-group"><label class="form-label">Equipamento</label><input id="uoaMachine" class="form-input" value="${esc(o.machine||'')}"></div>
+  <div class="form-group"><label class="form-label">Setor</label><input id="uoaSector" class="form-input" value="${esc(o.sector||'')}"></div>
+  <div class="form-group"><label class="form-label">Tipo</label><select id="uoaType" class="form-select">${['Corretiva','Preventiva','Melhoria','Inspeção','Outro'].map(x=>`<option ${o.maintenance_type===x?'selected':''}>${x}</option>`).join('')}</select></div>
+  <div class="form-group"><label class="form-label">Prioridade</label><select id="uoaPriority" class="form-select">${['MODERADA','MÉDIA','ALTA'].map(x=>`<option ${o.priority===x?'selected':''}>${x}</option>`).join('')}</select></div>
+  <div class="form-group full"><label class="form-label">Descrição</label><textarea id="uoaDescription" class="form-textarea">${esc(o.description||'')}</textarea></div>
+  </div><div class="modal-buttons"><button class="btn-secondary" id="uoaCancel">VOLTAR</button><button class="btn-primary" id="uoaSave">SALVAR ALTERAÇÕES</button></div></div>`;
+  document.body.appendChild(modal);modal.querySelector('#uoaCancel').onclick=()=>modal.remove();
+  modal.querySelector('#uoaSave').onclick=async()=>{
+   const raw=modal.querySelector('#uoaNumber').value.trim().replace(/\D/g,'');
+   if(raw&&raw.length!==10){alert('O número oficial do WK precisa ter 10 dígitos.');return;}
+   const update={machine:modal.querySelector('#uoaMachine').value.trim(),sector:modal.querySelector('#uoaSector').value.trim(),maintenance_type:modal.querySelector('#uoaType').value,priority:modal.querySelector('#uoaPriority').value,description:modal.querySelector('#uoaDescription').value.trim()};
+   if(raw)update.os_number=raw;
+   else if(String(o.os_number||'').startsWith('PENDENTE-'))update.os_number='PENDENTE-'+Date.now().toString();
+   const result=await db.from('os_orders').update(update).eq('id',id);
+   if(result.error){alert('Erro ao salvar: '+result.error.message);return;}
+   try{if(typeof insertExecutionHistory==='function')await insertExecutionHistory({os_id:o.id,os_number:raw||o.os_number,employee:'PCM / Administrador',action:'O.S. DE USUÁRIO EDITADA',reason:raw?'Dados ajustados e numeração WK atribuída.':'Dados da solicitação ajustados.',started_at:null,ended_at:new Date().toISOString(),duration_seconds:0});}catch(e){console.warn(e)}
+   modal.remove();toast('O.S. atualizada. A numeração oficial ficará visível para o funcionário.');await adminRender();
+  };
+ }catch(e){console.error(e);alert('Não foi possível abrir a O.S.: '+(e.message||''));}
+};
+window.pcmOpenUserOSRequest=async function(){if(!currentUser||isAdmin){alert('Esta função é para usuários funcionários.');return;}hideViews(view());await userLoad();};
+window.pcmOpenAdminUserOS=adminLoad;
+window.pcmStartUserOS=async function(id){
+ if(!currentUser||isAdmin)return;
+ try{
+  const r=await db.from('os_orders').select('*').eq('id',id).single();if(r.error)throw r.error;
+  const o=r.data;if(!String(o.observations||'').includes(MARK))throw new Error('Esta O.S. não é uma solicitação de usuário.');
+  if(String(o.status||'').toUpperCase().includes('FINALIZ')||String(o.status||'').toUpperCase().includes('CANCEL')){alert('Esta O.S. já foi encerrada.');return;}
+  if(typeof startOS==='function'){await startOS(id);await renderMine();return;}
+  const now=new Date().toISOString();const up=await db.from('os_orders').update({status:'EM PRODUÇÃO',started_at:now,active_employee:currentUser,paused_at:null}).eq('id',id);
+  if(up.error)throw up.error;
+  if(typeof insertExecutionHistory==='function')await insertExecutionHistory({os_id:o.id,os_number:o.os_number,employee:currentUser,action:'INICIADA',reason:'O.S. aberta pelo usuário iniciada sem autorização prévia.',started_at:now,ended_at:null,duration_seconds:0});
+  toast('O.S. iniciada.');await renderMine();if(typeof loadEmployeeOrders==='function')await loadEmployeeOrders();
+ }catch(e){console.error(e);alert('Não foi possível iniciar a O.S.: '+(e.message||''));}
+};
+const oldNavigate=window.navigateTo;
+window.navigateTo=function(id,button){
+ if(id==='view-user-os-request'){window.pcmOpenUserOSRequest();return;}
+ if(id==='view-admin-user-os'){window.pcmOpenAdminUserOS();return;}
+ return oldNavigate?oldNavigate(id,button):undefined;
+};
+const oldRefresh=window.refreshFactoryNavigation;
+window.refreshFactoryNavigation=function(){if(oldRefresh)oldRefresh();addNav();};
+window.addEventListener('load',()=>setTimeout(()=>{addNav();},500));
+})();
+</script>
+
 </body>
 </html>
