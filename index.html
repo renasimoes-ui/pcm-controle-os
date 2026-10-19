@@ -10427,6 +10427,7 @@ async function userLoad(){
   if(!currentUser||isAdmin){toast('Entre com um usuário funcionário para abrir esta solicitação.','error');return;}
   const machine=$('uomMachine').value.trim(),sector=$('uomSector').value.trim(),type=$('uomType').value,priority=$('uomPriority').value,description=$('uomDescription').value.trim(),observations=$('uomObservations').value.trim();
   if(!machine||!sector||!type||!description){toast('Preencha os campos obrigatórios.','error');return;}
+  const oldError=$('uomSaveError');if(oldError)oldError.remove();
   const btn=$('uomSubmit');btn.disabled=true;btn.textContent='CADASTRANDO...';
   const payload={requester_name:String(currentUser),equipment:machine,sector,maintenance_type:type,priority,description,observations,status:'ABERTA',official_os_number:null};
   try{
@@ -10434,7 +10435,14 @@ async function userLoad(){
    if(result.error)throw result.error;
    toast('Solicitação aberta e salva no Supabase.');
    $('userOSForm').reset();await renderMine();
-  }catch(err){console.error('Erro ao criar solicitação em '+TABLE,err);toast('Não foi possível salvar em '+TABLE+'. Confira se a tabela tem as colunas esperadas e se as políticas de acesso permitem INSERT. '+(err.message||''),'error');}
+  }catch(err){
+   console.error('Erro ao criar solicitação em '+TABLE,{message:err?.message,code:err?.code,details:err?.details,hint:err?.hint,error:err});
+   const info=[err?.message,err?.details,err?.hint,err?.code?'Código: '+err.code:null].filter(Boolean).join(' | ');
+   let box=$('uomSaveError');
+   if(!box){box=document.createElement('div');box.id='uomSaveError';box.style.cssText='margin-top:12px;padding:12px;border:1px solid #ef4444;border-radius:8px;color:#b91c1c;background:#fef2f2;font-size:13px;white-space:normal;overflow-wrap:anywhere';$('userOSForm')?.appendChild(box);}
+   box.textContent='Falha ao salvar a solicitação: '+(info||'O Supabase não retornou detalhes. Abra F12 > Console para ver o erro completo.');
+   toast('Não foi possível salvar a solicitação. Veja os detalhes em vermelho abaixo do formulário.','error');
+  }
   finally{btn.disabled=false;btn.textContent='ABRIR SOLICITAÇÃO';}
  };
  await renderMine();
