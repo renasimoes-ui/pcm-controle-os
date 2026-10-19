@@ -5422,7 +5422,7 @@ async function adminStartOS(osId){
 
 async function loadEmployeeOrders(){
     if(!currentUser || isAdmin) return;
-    const {data,error}=await db.from("os_orders").select("*").order("created_at",{ascending:false});
+    const {data,error}=await db.from("os_orders").select("*").order("opening_date",{ascending:false});
     if(error){console.error(error);return;}
     const myOrders=(data||[]).filter(order=>responsibleMatchesUser(order.responsible,currentUser));
     employeeHistoryMeta=new Map();
@@ -6811,7 +6811,7 @@ function historyDate(value){
 async function getHistoryExportData(){
     await ensureSupabase();
     const [ordersResult, execResult] = await Promise.all([
-        db.from("os_orders").select("*").order("created_at",{ascending:false}),
+        db.from("os_orders").select("*").order("opening_date",{ascending:false}),
         db.from("os_execution_history").select("*").order("created_at",{ascending:false}).limit(2000)
     ]);
     if(ordersResult.error) throw ordersResult.error;
@@ -10322,7 +10322,7 @@ async function buildPurchaseNotifications(){
   try{const client=await ensureSupabase();let q=client.from('purchase_requests').select('id,material,quantity,unit,os_number,status,requester_name,updated_at,created_at').order('updated_at',{ascending:false}).limit(100);if(!isAdmin)q=q.eq('requester_name',currentUser);const r=await q;if(r.error)throw r.error;return (r.data||[]).filter(x=>isAdmin||['COMPRADO','RECUSADO'].includes(String(x.status||'').toUpperCase())).map(x=>({key:notifyId('purchase',x.id),icon:statusIcon(x.status),title:String(x.status||'').toUpperCase()==='COMPRADO'?'Material comprado':'Pedido de compra atualizado',text:`${x.material||'Material'} • ${x.quantity||'-'} ${x.unit||'UN'} — ${String(x.status||'').toUpperCase()==='RECUSADO'?'pedido recusado':'compra concluída'}.`,meta:`${x.os_number?'O.S. '+x.os_number+' • ':''}${x.requester_name||'-'}`,time:x.updated_at||x.created_at,category:'COMPRAS',purchaseId:x.id}));}catch(e){return []}
 }
 async function collectNotifications(){
-  let orders=[];try{orders=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];if(!orders.length&&isAdmin){const r=await db.from('os_orders').select('*').order('created_at',{ascending:false}).limit(300);if(!r.error)orders=r.data||[]}}catch(e){}
+  let orders=[];try{orders=Array.isArray(window.dashboardOrders)?window.dashboardOrders:[];if(!orders.length&&isAdmin){const r=await db.from('os_orders').select('*').order('opening_date',{ascending:false}).limit(300);if(!r.error)orders=r.data||[]}}catch(e){}
   notifyRows=[...buildOrderNotifications(orders),...(await buildPurchaseNotifications())].sort((a,b)=>new Date(b.time||0)-new Date(a.time||0));
   updateNotificationBadge();return notifyRows;
 }
@@ -10448,7 +10448,7 @@ async function isUserOrder(order){
 async function renderMine(){
  const host=$('uomMine');if(!host||!currentUser||isAdmin)return;
  try{
-  const r=await db.from('os_orders').select('*').eq('responsible',currentUser).order('created_at',{ascending:false}).limit(300);
+  const r=await db.from('os_orders').select('*').eq('responsible',currentUser).order('opening_date',{ascending:false}).limit(300);
   if(r.error)throw r.error;
   const rows=(r.data||[]).filter(o=>String(o.observations||'').includes(MARK));
   host.innerHTML=rows.length?rows.map(o=>`<div class="os-card"><div class="os-card-top"><div class="os-number">${esc((o.os_number&&!String(o.os_number).startsWith('PENDENTE-'))?('O.S. '+o.os_number):'O.S. aguardando numeração')}</div><span class="status">${esc(o.status||'O.S. ABERTA')}</span></div><div class="os-info"><div><strong>Equipamento:</strong> ${esc(o.machine||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div></div><div class="employee-actions">${!String(o.status||'').toUpperCase().includes('FINALIZ')&&!String(o.status||'').toUpperCase().includes('CANCEL')?`<button class="action-btn btn-start" onclick="pcmStartUserOS('${esc(o.id)}')">▶ INICIAR / ABRIR</button>`:''}</div></div>`).join(''):'<div class="pcm-empty">Você ainda não abriu O.S. por este painel.</div>';
@@ -10464,7 +10464,7 @@ async function adminLoad(){
 async function adminRender(){
  const host=$('uoaRows');if(!host)return;
  try{
-  const r=await db.from('os_orders').select('*').order('created_at',{ascending:false}).limit(500);
+  const r=await db.from('os_orders').select('*').order('opening_date',{ascending:false}).limit(500);
   if(r.error)throw r.error;
   const rows=(r.data||[]).filter(o=>String(o.observations||'').includes(MARK));
   host.innerHTML=rows.length?rows.map(o=>`<div class="os-card"><div class="os-card-top"><div class="os-number">${esc(o.os_number&&!String(o.os_number).startsWith('PENDENTE-')?'O.S. '+o.os_number:'SEM NUMERAÇÃO')}</div><span class="status">${esc(o.status||'-')}</span></div><div class="os-info"><div><strong>Solicitante:</strong> ${esc(o.responsible||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.machine||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo:</strong> ${esc(o.maintenance_type||'-')} • <strong>Prioridade:</strong> ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Data:</strong> ${esc(o.opening_date||'-')}</div></div><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR O.S. / ATRIBUIR Nº WK</button></div>`).join(''):'<div class="pcm-empty">Nenhuma O.S. aberta por usuários foi encontrada.</div>';
