@@ -10508,13 +10508,37 @@ async function adminLoad(){
  v.innerHTML=`<div class="topbar"><div><div class="page-title">O.S. Usuários</div><div class="page-subtitle">Solicitações dos funcionários. Edite os dados e atribua a numeração oficial WK.</div></div><button class="btn-secondary" id="uoaRefresh">↻ ATUALIZAR</button></div><div class="panel"><div id="uoaRows">Carregando...</div></div>`;
  $('uoaRefresh').onclick=adminRender;await adminRender();
 }
+function pcmUserOSRow(o){
+ const st=cleanStatus(o.status||'ABERTA');
+ const colors={'ABERTA':'#38bdf8','EM PRODUÇÃO':'#22c55e','PAUSADA':'#f59e0b','FINALIZADA':'#94a3b8','CANCELADA':'#ef4444'};
+ const c=colors[st]||'#94a3b8';
+ const num=o.official_os_number?'O.S. WK '+esc(o.official_os_number):'SEM Nº WK';
+ const when=o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-';
+ return `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #1e293b"><div style="flex:1 1 220px;min-width:0"><strong style="font-size:12px">${num}</strong><div style="color:#64748b;font-size:10px;margin-top:3px">${esc(o.equipment||'-')} • ${esc(o.sector||'-')} • ${esc(o.requester_name||'-')}</div></div><div style="color:#64748b;font-size:10px;white-space:nowrap">${esc(when)}</div><span style="font-size:9px;font-weight:800;letter-spacing:.4px;padding:4px 9px;border-radius:999px;white-space:nowrap;color:${c};border:1px solid ${c};background:${c}1a">${esc(st)}</span><button class="btn-secondary" style="padding:6px 12px;font-size:11px;font-weight:800;white-space:nowrap" onclick="pcmShowUserOSDetails('${esc(o.id)}')">DETALHES ›</button></div>`;
+}
+window.pcmAdminFinishUserOS=async function(id){
+ if(!isAdmin){toast('Somente o PCM pode finalizar uma solicitação.','error');return;}
+ if(!confirm('Confirmar a FINALIZAÇÃO desta solicitação?'))return;
+ try{
+  const cur=await db.from(TABLE).select('*').eq('id',id).single();if(cur.error)throw cur.error;const o=cur.data;
+  if(['FINALIZADA','CANCELADA'].includes(cleanStatus(o.status)))throw new Error('Esta solicitação já foi encerrada.');
+  const now=new Date().toISOString();
+  const elapsed=(cleanStatus(o.status)==='EM PRODUÇÃO'&&o.started_at)?Math.max(0,Math.floor((Date.now()-new Date(o.started_at).getTime())/1000)):0;
+  const total=Number(o.total_service_seconds||0)+elapsed;
+  const up=await db.from(TABLE).update({status:'FINALIZADA',finished_at:now,started_at:null,active_employee:null,paused_at:null,total_service_seconds:total}).eq('id',id);
+  if(up.error)throw up.error;
+  try{const hr=await db.from('os_user_request_execution_history').insert({request_id:String(id),employee:String(currentUser||'PCM'),action:'FINALIZADA PELO PCM',reason:null,started_at:o.started_at||null,ended_at:now,duration_seconds:elapsed});if(hr.error)console.warn('Finalização salva sem evento no histórico:',hr.error);}catch(he){console.warn(he);}
+  toast('Solicitação finalizada.');
+  await adminRender();await renderUserOSDashboard();
+ }catch(e){console.error(e);toast('Não foi possível finalizar: '+(e.message||''),'error');}
+};
 async function adminRender(){
  const host=$('uoaRows');if(!host)return;
  try{
   const r=await db.from(TABLE).select('*').order('created_at',{ascending:false}).limit(500);
   if(r.error)throw r.error;
   const rows=r.data||[];
-  host.innerHTML=rows.length?rows.map(o=>`<div class="os-card"><div class="os-card-top"><div class="os-number">${o.official_os_number?'O.S. WK '+esc(o.official_os_number):'SEM NUMERAÇÃO WK'}</div><span class="status">${esc(o.status||'ABERTA')}</span></div><div class="os-info"><div><strong>Solicitante:</strong> ${esc(o.requester_name||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo:</strong> ${esc(o.maintenance_type||'-')} • <strong>Prioridade:</strong> ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Observações:</strong> ${esc(o.observations||'-')}</div><div><strong>Data:</strong> ${esc(o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-')}</div></div><div class="employee-actions"><button class="action-btn btn-material" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕ VER DETALHES / HISTÓRICO</button><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR / ATRIBUIR Nº WK</button>${!['FINALIZADA','CANCELADA'].includes(cleanStatus(o.status))?`<button class="action-btn btn-emergency" onclick="pcmCancelUserOS('${esc(o.id)}')">✕ CANCELAR SOLICITAÇÃO</button>`:''}</div></div>`).join(''):'<div class="pcm-empty">Nenhuma solicitação foi encontrada.</div>';
+  host.innerHTML=rows.length?rows.map(pcmUserOSRow).join(''):'<div class="pcm-empty">Nenhuma solicitação foi encontrada.</div>';
  }catch(e){console.error(e);host.innerHTML='<div class="pcm-empty">Falha ao consultar os_user_requests. Confira as permissões SELECT e os nomes das colunas. '+esc(e.message||'')+'</div>';}
 }
 window.pcmCancelUserOS=async function(id){
@@ -10562,8 +10586,8 @@ window.pcmShowUserOSDetails=async function(id){
   let hist=[];const hr=await db.from('os_user_request_execution_history').select('*').eq('request_id',String(id)).order('created_at',{ascending:false}).limit(100);if(!hr.error)hist=hr.data||[];
   const fmt=x=>x?new Date(x).toLocaleString('pt-BR'):'-';
   const dur=n=>{n=Math.max(0,Number(n)||0);return [Math.floor(n/3600),Math.floor(n%3600/60),Math.floor(n%60)].map(v=>String(v).padStart(2,'0')).join(':')};
-  const modal=document.createElement('div');modal.className='modal';modal.style.display='flex';modal.innerHTML=`<div class="modal-box" style="max-width:850px;max-height:88vh;overflow:auto"><div class="modal-title">Detalhes da solicitação ${o.official_os_number?'— O.S. WK '+esc(o.official_os_number):'— sem número WK'}</div><div class="form-grid"><div class="form-group"><label class="form-label">Solicitante</label><div>${esc(o.requester_name||'-')}</div></div><div class="form-group"><label class="form-label">Status</label><div>${esc(o.status||'-')}</div></div><div class="form-group"><label class="form-label">Equipamento</label><div>${esc(o.equipment||'-')}</div></div><div class="form-group"><label class="form-label">Setor</label><div>${esc(o.sector||'-')}</div></div><div class="form-group"><label class="form-label">Tipo / prioridade</label><div>${esc(o.maintenance_type||'-')} / ${esc(o.priority||'-')}</div></div><div class="form-group"><label class="form-label">Abertura</label><div>${esc(fmt(o.created_at))}</div></div><div class="form-group full"><label class="form-label">Descrição</label><div>${esc(o.description||'-')}</div></div><div class="form-group full"><label class="form-label">Observações</label><div>${esc(o.observations||'-')}</div></div><div class="form-group"><label class="form-label">Início atual</label><div>${esc(fmt(o.started_at))}</div></div><div class="form-group"><label class="form-label">Pausa</label><div>${esc(fmt(o.paused_at))}</div></div><div class="form-group"><label class="form-label">Finalização</label><div>${esc(fmt(o.finished_at))}</div></div><div class="form-group"><label class="form-label">Tempo trabalhado</label><div>${esc(dur(o.total_service_seconds))}</div></div></div><div class="panel-title" style="margin-top:18px">Histórico de execução</div><div>${hist.length?hist.map(h=>`<div style="padding:9px 0;border-bottom:1px solid #e5e7eb"><b>${esc(h.action||'ATUALIZAÇÃO')}</b> — ${esc(fmt(h.created_at))}<br><small>${esc(h.employee||'-')}${h.duration_seconds!=null?' • '+esc(dur(h.duration_seconds)):''}${h.reason?' • '+esc(h.reason):''}</small></div>`).join(''):'<div class="pcm-empty">Nenhum evento registrado ou histórico indisponível.</div>'}</div><div class="modal-buttons"><button class="btn-secondary" id="uodClose">FECHAR</button><button class="btn-primary" id="uodEdit">EDITAR / ATRIBUIR Nº WK</button></div></div>`;
-  document.body.appendChild(modal);modal.querySelector('#uodClose').onclick=()=>modal.remove();modal.querySelector('#uodEdit').onclick=()=>{modal.remove();window.pcmEditUserOS(id);};
+  const modal=document.createElement('div');modal.className='modal';modal.style.display='flex';modal.innerHTML=`<div class="modal-box" style="max-width:850px;max-height:88vh;overflow:auto"><div class="modal-title">Detalhes da solicitação ${o.official_os_number?'— O.S. WK '+esc(o.official_os_number):'— sem número WK'}</div><div class="form-grid"><div class="form-group"><label class="form-label">Solicitante</label><div>${esc(o.requester_name||'-')}</div></div><div class="form-group"><label class="form-label">Status</label><div>${esc(o.status||'-')}</div></div><div class="form-group"><label class="form-label">Equipamento</label><div>${esc(o.equipment||'-')}</div></div><div class="form-group"><label class="form-label">Setor</label><div>${esc(o.sector||'-')}</div></div><div class="form-group"><label class="form-label">Tipo / prioridade</label><div>${esc(o.maintenance_type||'-')} / ${esc(o.priority||'-')}</div></div><div class="form-group"><label class="form-label">Abertura</label><div>${esc(fmt(o.created_at))}</div></div><div class="form-group full"><label class="form-label">Descrição</label><div>${esc(o.description||'-')}</div></div><div class="form-group full"><label class="form-label">Observações</label><div>${esc(o.observations||'-')}</div></div><div class="form-group"><label class="form-label">Início atual</label><div>${esc(fmt(o.started_at))}</div></div><div class="form-group"><label class="form-label">Pausa</label><div>${esc(fmt(o.paused_at))}</div></div><div class="form-group"><label class="form-label">Finalização</label><div>${esc(fmt(o.finished_at))}</div></div><div class="form-group"><label class="form-label">Tempo trabalhado</label><div>${esc(dur(o.total_service_seconds))}</div></div></div><div class="panel-title" style="margin-top:18px">Histórico de execução</div><div>${hist.length?hist.map(h=>`<div style="padding:9px 0;border-bottom:1px solid #e5e7eb"><b>${esc(h.action||'ATUALIZAÇÃO')}</b> — ${esc(fmt(h.created_at))}<br><small>${esc(h.employee||'-')}${h.duration_seconds!=null?' • '+esc(dur(h.duration_seconds)):''}${h.reason?' • '+esc(h.reason):''}</small></div>`).join(''):'<div class="pcm-empty">Nenhum evento registrado ou histórico indisponível.</div>'}</div><div class="modal-buttons" style="flex-wrap:wrap;gap:8px"><button class="btn-secondary" id="uodClose">FECHAR</button>${!['FINALIZADA','CANCELADA'].includes(cleanStatus(o.status))?'<button class="btn-secondary" id="uodCancel" style="color:#ef4444;border-color:#ef4444">✕ CANCELAR</button><button class="btn-secondary" id="uodFinish" style="color:#22c55e;border-color:#22c55e">✔ FINALIZAR</button>':''}<button class="btn-primary" id="uodEdit">EDITAR / ATRIBUIR Nº WK</button></div></div>`;
+  document.body.appendChild(modal);modal.querySelector('#uodClose').onclick=()=>modal.remove();modal.querySelector('#uodEdit').onclick=()=>{modal.remove();window.pcmEditUserOS(id);};const uodF=modal.querySelector('#uodFinish');if(uodF)uodF.onclick=()=>{modal.remove();window.pcmAdminFinishUserOS(id);};const uodC=modal.querySelector('#uodCancel');if(uodC)uodC.onclick=()=>{modal.remove();window.pcmCancelUserOS(id);};
  }catch(e){console.error(e);alert('Não foi possível abrir os detalhes: '+(e.message||''));}
 };
 window.pcmEditUserOS=async function(id){
@@ -10587,7 +10611,7 @@ window.pcmEditUserOS=async function(id){
    const update={equipment:modal.querySelector('#uoaMachine').value.trim(),sector:modal.querySelector('#uoaSector').value.trim(),maintenance_type:modal.querySelector('#uoaType').value,priority:modal.querySelector('#uoaPriority').value,status:modal.querySelector('#uoaStatus').value,description:modal.querySelector('#uoaDescription').value.trim(),observations:modal.querySelector('#uoaObservations').value.trim(),official_os_number:raw||null};
    const result=await db.from(TABLE).update(update).eq('id',id);
    if(result.error){alert('Erro ao salvar: '+result.error.message);return;}
-   modal.remove();toast('Solicitação atualizada.');await adminRender();
+   modal.remove();toast('Solicitação atualizada.');await adminRender();await renderUserOSDashboard();
   };
  }catch(e){console.error(e);alert('Não foi possível abrir a solicitação: '+(e.message||''));}
 };
@@ -10611,20 +10635,16 @@ async function renderUserOSDashboard(){
   const activeHost=$('activeJobsContainer');
   if(activeHost){
    let runningPanel=$('pcmUserRequestsInProduction');
-   if(!runningPanel){runningPanel=document.createElement('div');runningPanel.id='pcmUserRequestsInProduction';runningPanel.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid #26364d';activeHost.appendChild(runningPanel);}
+   if(!runningPanel){runningPanel=document.createElement('div');runningPanel.id='pcmUserRequestsInProduction';runningPanel.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid #26364d';activeHost.insertAdjacentElement('afterend',runningPanel);}else if(runningPanel.parentElement===activeHost){activeHost.insertAdjacentElement('afterend',runningPanel);}
    const running=rows.filter(o=>cleanStatus(o.status)==='EM PRODUÇÃO');
-   runningPanel.innerHTML=running.length?`<div style="font-size:12px;font-weight:800;color:#cbd5e1;margin:0 0 8px">🧾 Solicitações de funcionários em execução</div><div class="pcm-user-requests-dash-list">${running.map(o=>{
-    const safeId=String(o.id).replace(/[^a-zA-Z0-9_-]/g,'');
+   runningPanel.innerHTML=running.length?`<div style="font-size:12px;font-weight:800;color:#cbd5e1;margin:0 0 4px">🧾 Solicitações de funcionários em execução</div><div>${running.map(o=>{
     const started=o.started_at||'';
-    const num=o.official_os_number?'WK '+esc(o.official_os_number):'SEM NÚMERO WK';
+    const num=o.official_os_number?'O.S. '+esc(o.official_os_number):'SEM Nº WK';
     const base=Number(o.total_service_seconds||0);
-    return `<div class="os-card" style="margin-bottom:8px"><div class="os-card-top"><div class="os-number">${num}</div><span class="status">EM PRODUÇÃO</span></div><div class="os-info"><div><strong>Funcionário:</strong> ${esc(o.active_employee||o.requester_name||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Iniciada em:</strong> ${esc(started?new Date(started).toLocaleString('pt-BR'):'Horário não registrado')}</div><div><strong>Tempo nesta execução:</strong> <b data-user-timer="1" data-base-seconds="${base}" data-started-at="${esc(started)}">${formatUserOSDuration(base+(started?Math.max(0,Math.floor((Date.now()-new Date(started).getTime())/1000)):0))}</b></div></div><div class="employee-actions"><button class="action-btn btn-material" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕ VER DETALHES / HISTÓRICO</button><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR / ATRIBUIR Nº WK</button></div></div>`;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:15px;padding:11px 0;border-bottom:1px solid #1e293b"><div style="min-width:0"><strong style="font-size:12px">${num}</strong><div style="color:#64748b;font-size:10px;margin-top:3px">${esc(o.equipment||'-')} • ${esc(o.sector||'-')}</div></div><div style="text-align:right;display:flex;align-items:center;gap:10px"><div><div style="font-size:11px;font-weight:800">${esc(o.active_employee||o.requester_name||'-')}</div><div class="timer"><b data-user-timer="1" data-base-seconds="${base}" data-started-at="${esc(started)}">${formatUserOSDuration(base+(started?Math.max(0,Math.floor((Date.now()-new Date(started).getTime())/1000)):0))}</b></div></div><button class="btn-secondary" style="padding:4px 8px;font-size:11px" title="Ver detalhes / histórico" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕</button></div></div>`;
    }).join('')}</div>`:'<div style="color:#64748b;font-size:11px;padding:6px 0">Nenhuma solicitação de funcionário em produção.</div>';
   }
-  host.innerHTML=rows.length?`<div class="pcm-user-requests-dash-list">${rows.map(o=>{
-   const st=cleanStatus(o.status||'ABERTA');const num=o.official_os_number?'O.S. WK '+esc(o.official_os_number):'SEM NÚMERO WK';
-   return `<div class="os-card"><div class="os-card-top"><div class="os-number">${num}</div><span class="status">${esc(st)}</span></div><div class="os-info"><div><strong>Solicitante:</strong> ${esc(o.requester_name||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo / prioridade:</strong> ${esc(o.maintenance_type||'-')} • ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Observações:</strong> ${esc(o.observations||'-')}</div><div><strong>Tempo trabalhado:</strong> ${formatUserOSDuration(o.total_service_seconds||0)}</div><div><strong>Aberta em:</strong> ${esc(o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-')}</div></div><div class="employee-actions"><button class="action-btn btn-material" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕ VER DETALHES / HISTÓRICO</button><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR / ATRIBUIR Nº WK</button>${!['FINALIZADA','CANCELADA'].includes(st)?`<button class="action-btn btn-emergency" onclick="pcmCancelUserOS('${esc(o.id)}')">✕ CANCELAR SOLICITAÇÃO</button>`:''}</div></div>`;
-  }).join('')}</div>`:'<div class="pcm-empty">Nenhuma solicitação de funcionário encontrada.</div>';
+  host.innerHTML=rows.length?`<div>${rows.map(pcmUserOSRow).join('')}</div>`:'<div class="pcm-empty">Nenhuma solicitação de funcionário encontrada.</div>';
  }catch(e){console.error('Dashboard solicitações funcionários:',e);host.innerHTML='<div class="pcm-empty">Não foi possível carregar as solicitações dos funcionários: '+esc(e.message||'')+'</div>';}
 }
 window.renderUserOSDashboard=renderUserOSDashboard;
@@ -10666,6 +10686,19 @@ if(!window.__pcmUserOSLivePoll){
    if(typeof window.renderUserOSDashboard==='function')await window.renderUserOSDashboard();
   }catch(e){console.error('Sincronização ao vivo das O.S. de funcionários:',e);}
  },3000);
+}
+/* v13: renderActiveJobs() do dashboard tradicional recria o conteúdo de
+   #activeJobsContainer. Reanexamos as solicitações de os_user_requests
+   DEPOIS de cada renderização tradicional para que não sejam apagadas. */
+const pcmOriginalRenderActiveJobs=window.renderActiveJobs;
+if(typeof pcmOriginalRenderActiveJobs==='function'&&!pcmOriginalRenderActiveJobs.__pcmUserOSIntegrated){
+ const pcmRenderActiveJobsIntegrated=function(){
+  const result=pcmOriginalRenderActiveJobs.apply(this,arguments);
+  setTimeout(()=>{if(typeof window.renderUserOSDashboard==='function')window.renderUserOSDashboard();},120);
+  return result;
+ };
+ pcmRenderActiveJobsIntegrated.__pcmUserOSIntegrated=true;
+ window.renderActiveJobs=pcmRenderActiveJobsIntegrated;
 }
 })();
 </script>
