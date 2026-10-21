@@ -3163,6 +3163,21 @@ button{min-height:44px}
 .modal button{min-height:50px!important;touch-action:manipulation!important}
 }</style>
 <style>.user-os-new-highlight{outline:3px solid #16a34a!important;box-shadow:0 0 0 5px rgba(22,163,74,.15)!important;transition:box-shadow .2s ease}</style>
+
+<style id="pcm-user-os-v9-polish">
+.user-os-execution-card{border:1px solid rgba(148,163,184,.28);border-radius:16px;padding:18px;margin:12px 0;background:linear-gradient(145deg,rgba(20,24,32,.98),rgba(12,14,19,.98));box-shadow:0 8px 24px rgba(0,0,0,.16)}
+.user-os-execution-card .number{font-weight:800;font-size:15px;letter-spacing:.2px}
+.user-os-execution-card .machine{font-size:19px;font-weight:800;margin-top:12px}
+.user-os-execution-card .description{margin-top:12px;line-height:1.55;white-space:pre-wrap}
+.user-os-execution-card .timer{font-size:20px;font-weight:800;margin:14px 0}
+.user-os-execution-meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin:12px 0;color:var(--text-secondary,#94a3b8);font-size:12px}
+.user-os-execution-card .employee-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.user-os-execution-card .employee-actions .action-btn{width:100%;min-height:44px}
+#pcmUserRequestsDashboard .dashboard-section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+#pcmUserRequestsDashRows .pcm-user-requests-dash-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px}
+#pcmUserRequestsDashboard .os-card{height:100%;margin:0}
+@media(max-width:600px){.user-os-execution-card{padding:14px}.user-os-execution-card .employee-actions{grid-template-columns:1fr}.user-os-execution-card .machine{font-size:17px}}
+</style>
 </head>
 
 <body>
@@ -10463,7 +10478,27 @@ async function renderMine(){
   const r=await db.from(TABLE).select('*').eq('requester_name',String(currentUser)).order('created_at',{ascending:false}).limit(300);
   if(r.error)throw r.error;
   const rows=r.data||[];
-  host.innerHTML=rows.length?rows.map(o=>{const st=cleanStatus(o.status||'ABERTA');const secs=Number(o.total_service_seconds||0)+(st==='EM PRODUÇÃO'&&o.started_at?Math.max(0,Math.floor((Date.now()-new Date(o.started_at).getTime())/1000)):0);let action='';if(st==='ABERTA')action=`<button class="action-btn btn-start" onclick="pcmStartUserOS('${esc(o.id)}')">▶ INICIAR</button>`;else if(st==='EM PRODUÇÃO')action=`<button class="action-btn btn-material" onclick="pcmPauseUserOS('${esc(o.id)}')">⏸ PAUSAR</button><button class="action-btn btn-start" onclick="pcmFinishUserOS('${esc(o.id)}')">✓ FINALIZAR</button>`;else if(st==='PAUSADA')action=`<button class="action-btn btn-start" onclick="pcmResumeUserOS('${esc(o.id)}')">▶ RETOMAR</button>`;return `<div class="os-card" id="user-os-card-${esc(o.id)}"><div class="os-card-top"><div class="os-number">${o.official_os_number?'O.S. WK '+esc(o.official_os_number):'Aguardando numeração WK'}</div><span class="status">${esc(st)}</span></div><div class="os-info"><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo:</strong> ${esc(o.maintenance_type||'-')} • <strong>Prioridade:</strong> ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Data de abertura:</strong> ${esc(o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-')}</div><div><strong>Tempo trabalhado:</strong> ${esc(formatUserOSDuration(secs))}</div>${o.started_at&&st==='EM PRODUÇÃO'?`<div><strong>Início da etapa atual:</strong> ${esc(new Date(o.started_at).toLocaleString('pt-BR'))}</div>`:''}</div><div class="employee-actions">${action}</div><div class="os-info" style="margin-top:8px"><strong>Histórico de execução</strong><div id="uoh-${esc(o.id)}">Carregando histórico...</div></div></div>`}).join(''):'<div class="pcm-empty">Você ainda não abriu solicitações por este painel.</div>';
+  host.innerHTML=rows.length?rows.map(o=>{
+   const st=cleanStatus(o.status||'ABERTA');
+   const secs=Number(o.total_service_seconds||0)+(st==='EM PRODUÇÃO'&&o.started_at?Math.max(0,Math.floor((Date.now()-new Date(o.started_at).getTime())/1000)):0);
+   let action='';
+   if(st==='ABERTA')action=`<button class="action-btn btn-start" onclick="pcmStartUserOS('${esc(o.id)}')">▶ INICIAR O.S.</button>`;
+   else if(st==='EM PRODUÇÃO')action=`<button class="action-btn btn-pause" onclick="pcmPauseUserOS('${esc(o.id)}')">⏸ PAUSAR</button><button class="action-btn btn-material" onclick="pcmRequestMaterialUserOS('${esc(o.id)}')">📦 REQUISITAR MATERIAL</button><button class="action-btn btn-finish" onclick="pcmFinishUserOS('${esc(o.id)}')">✓ FINALIZAR O.S.</button><button class="action-btn btn-emergency" onclick="pcmEmergencyStopUserOS('${esc(o.id)}')">▲ PARADA IMEDIATA</button>`;
+   else if(st==='PAUSADA')action=`<div class="factory-note warning">⏸ Pausada: ${esc(o.pause_reason||'Motivo não informado')}</div><button class="action-btn btn-start" onclick="pcmResumeUserOS('${esc(o.id)}')">▶ RETOMAR O.S.</button>`;
+   else if(st==='FINALIZADA')action='<div class="factory-note success">✓ Solicitação finalizada.</div>';
+   const number=o.official_os_number?'O.S. '+esc(o.official_os_number):'SOLICITAÇÃO • AGUARDANDO Nº WK';
+   return `<div class="employee-os user-os-execution-card" id="user-os-card-${esc(o.id)}">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div class="number">${number}</div><div class="priority ${String(o.priority||'').toUpperCase()==='ALTA'?'priority-alta':''}">${esc(o.priority||'MODERADA')}</div></div>
+    <div class="machine">${esc(o.equipment||'Equipamento não informado')}</div>
+    <div style="color:#94a3b8;font-size:11px;margin-top:4px">${esc(o.sector||'-')} • ${esc(o.maintenance_type||'-')} • Solicitante: ${esc(o.requester_name||'-')}</div>
+    <div class="description">${esc(o.description||'-')}</div>
+    <div class="timer" ${st==='EM PRODUÇÃO'?'data-user-timer="1" data-base-seconds="'+Number(o.total_service_seconds||0)+'" data-started-at="'+esc(o.started_at||'')+'"':''}>⏱ ${formatUserOSDuration(secs)}</div>
+    ${o.observations?`<div class="factory-observation"><b>Observações:</b><br>${esc(o.observations)}</div>`:''}
+    <div class="user-os-execution-meta"><span><b>Status:</b> ${esc(st)}</span><span><b>Abertura:</b> ${esc(o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-')}</span>${o.started_at?`<span><b>Início da etapa:</b> ${esc(new Date(o.started_at).toLocaleString('pt-BR'))}</span>`:''}${o.finished_at?`<span><b>Finalizada:</b> ${esc(new Date(o.finished_at).toLocaleString('pt-BR'))}</span>`:''}</div>
+    <div class="employee-actions">${action}</div>
+    <div class="factory-observation" style="margin-top:10px"><b>Histórico de execução</b><div id="uoh-${esc(o.id)}">Carregando histórico...</div></div>
+   </div>`;
+  }).join(''):'<div class="pcm-empty">Você ainda não abriu solicitações por este painel.</div>';
   for(const o of rows) await renderUserOSHistory(o.id);
  }catch(e){console.error(e);host.innerHTML='<div class="pcm-empty">Não foi possível carregar suas solicitações. Confira as permissões SELECT da tabela os_user_requests.</div>';}
 }
@@ -10517,6 +10552,40 @@ window.pcmEditUserOS=async function(id){
    modal.remove();toast('Solicitação atualizada.');await adminRender();
   };
  }catch(e){console.error(e);alert('Não foi possível abrir a solicitação: '+(e.message||''));}
+};
+/* Solicitações de funcionários também aparecem no dashboard principal do PCM. */
+async function renderUserOSDashboard(){
+ if(!isAdmin)return;
+ const dash=$('view-dashboard');if(!dash)return;
+ let panel=$('pcmUserRequestsDashboard');
+ if(!panel){
+  panel=document.createElement('div');panel.id='pcmUserRequestsDashboard';panel.className='panel';
+  panel.innerHTML='<div class="dashboard-section-head"><div><div class="panel-title">🧾 Solicitações de O.S. dos funcionários</div><div class="dashboard-kpis-note">Solicitações sem número WK também aparecem aqui, junto ao acompanhamento das O.S. do PCM.</div></div><button class="btn-secondary" id="pcmUserRequestsDashRefresh">↻ ATUALIZAR</button></div><div id="pcmUserRequestsDashRows"><div class="pcm-empty">Carregando solicitações...</div></div>';
+  const kan=dash.querySelector('.kanban'); if(kan)kan.insertAdjacentElement('afterend',panel);else dash.appendChild(panel);
+  panel.querySelector('#pcmUserRequestsDashRefresh').onclick=renderUserOSDashboard;
+ }
+ const host=$('pcmUserRequestsDashRows');if(!host)return;
+ try{
+  const r=await db.from(TABLE).select('*').order('created_at',{ascending:false}).limit(200);if(r.error)throw r.error;
+  const rows=r.data||[];
+  host.innerHTML=rows.length?`<div class="pcm-user-requests-dash-list">${rows.map(o=>{
+   const st=cleanStatus(o.status||'ABERTA');const num=o.official_os_number?'O.S. WK '+esc(o.official_os_number):'SEM NÚMERO WK';
+   return `<div class="os-card"><div class="os-card-top"><div class="os-number">${num}</div><span class="status">${esc(st)}</span></div><div class="os-info"><div><strong>Solicitante:</strong> ${esc(o.requester_name||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo / prioridade:</strong> ${esc(o.maintenance_type||'-')} • ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Observações:</strong> ${esc(o.observations||'-')}</div><div><strong>Tempo trabalhado:</strong> ${formatUserOSDuration(o.total_service_seconds||0)}</div><div><strong>Aberta em:</strong> ${esc(o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-')}</div></div><div class="employee-actions"><button class="action-btn btn-material" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕ VER DETALHES</button><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR / ATRIBUIR Nº WK</button></div></div>`;
+  }).join('')}</div>`:'<div class="pcm-empty">Nenhuma solicitação de funcionário encontrada.</div>';
+ }catch(e){console.error('Dashboard solicitações funcionários:',e);host.innerHTML='<div class="pcm-empty">Não foi possível carregar as solicitações dos funcionários: '+esc(e.message||'')+'</div>';}
+}
+window.renderUserOSDashboard=renderUserOSDashboard;
+if(!window.__pcmUserOSTimer){window.__pcmUserOSTimer=setInterval(()=>{document.querySelectorAll('[data-user-timer="1"]').forEach(el=>{const base=Number(el.dataset.baseSeconds||0),started=el.dataset.startedAt?new Date(el.dataset.startedAt).getTime():Date.now();const total=base+Math.max(0,Math.floor((Date.now()-started)/1000));el.textContent='⏱ '+formatUserOSDuration(total);});},1000);}
+const pcmUserDashBaseLoad=window.loadDashboardData;
+if(typeof pcmUserDashBaseLoad==='function'&&!pcmUserDashBaseLoad.__userRequestsDashboard){
+ const wrapped=async function(){const result=await pcmUserDashBaseLoad.apply(this,arguments);setTimeout(()=>renderUserOSDashboard(),100);return result;};wrapped.__userRequestsDashboard=true;window.loadDashboardData=wrapped;
+}
+window.addEventListener('load',()=>setTimeout(()=>renderUserOSDashboard(),900));
+window.pcmRequestMaterialUserOS=async function(id){
+ try{const o=await userRequestOwned(id);if(cleanStatus(o.status)!=='EM PRODUÇÃO')throw new Error('A solicitação precisa estar em execução.');const detail=prompt('Descreva o material necessário:');if(detail===null)return;if(!detail.trim())throw new Error('Informe qual material é necessário.');await addUserOSHistory(o,'MATERIAL SOLICITADO',{reason:detail.trim()});toast('Pedido registrado no histórico da solicitação. O PCM poderá consultá-lo nos detalhes.');await renderMine();}catch(e){console.error(e);alert('Não foi possível registrar o material: '+(e.message||''));}
+};
+window.pcmEmergencyStopUserOS=async function(id){
+ try{const o=await userRequestOwned(id);if(cleanStatus(o.status)!=='EM PRODUÇÃO')throw new Error('A solicitação não está em execução.');if(!confirm('Confirmar PARADA IMEDIATA desta execução?'))return;const reason=prompt('Informe o motivo da parada imediata:');if(reason===null)return;if(!reason.trim())throw new Error('Informe o motivo da parada.');const now=new Date().toISOString();const elapsed=o.started_at?Math.max(0,Math.floor((Date.now()-new Date(o.started_at).getTime())/1000)):0;const total=Number(o.total_service_seconds||0)+elapsed;const up=await db.from(TABLE).update({status:'PAUSADA',started_at:null,paused_at:now,active_employee:null,pause_reason:'PARADA IMEDIATA: '+reason.trim(),total_service_seconds:total}).eq('id',id).eq('status','EM PRODUÇÃO');if(up.error)throw up.error;await addUserOSHistory(o,'PARADA IMEDIATA',{reason:reason.trim(),started_at:o.started_at,ended_at:now,duration_seconds:elapsed});toast('Parada imediata registrada.');await renderMine();}catch(e){console.error(e);alert('Não foi possível registrar a parada imediata: '+(e.message||''));}
 };
 window.pcmOpenUserOSRequest=async function(){if(!currentUser||isAdmin){alert('Esta função é para usuários funcionários.');return;}hideViews(view());await userLoad();};
 window.pcmOpenAdminUserOS=adminLoad;
