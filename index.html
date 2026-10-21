@@ -10514,9 +10514,47 @@ async function adminRender(){
   const r=await db.from(TABLE).select('*').order('created_at',{ascending:false}).limit(500);
   if(r.error)throw r.error;
   const rows=r.data||[];
-  host.innerHTML=rows.length?rows.map(o=>`<div class="os-card"><div class="os-card-top"><div class="os-number">${o.official_os_number?'O.S. WK '+esc(o.official_os_number):'SEM NUMERAÇÃO WK'}</div><span class="status">${esc(o.status||'ABERTA')}</span></div><div class="os-info"><div><strong>Solicitante:</strong> ${esc(o.requester_name||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo:</strong> ${esc(o.maintenance_type||'-')} • <strong>Prioridade:</strong> ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Observações:</strong> ${esc(o.observations||'-')}</div><div><strong>Data:</strong> ${esc(o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-')}</div></div><div class="employee-actions"><button class="action-btn btn-material" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕ VER DETALHES</button><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR / ATRIBUIR Nº WK</button></div></div>`).join(''):'<div class="pcm-empty">Nenhuma solicitação foi encontrada.</div>';
+  host.innerHTML=rows.length?rows.map(o=>`<div class="os-card"><div class="os-card-top"><div class="os-number">${o.official_os_number?'O.S. WK '+esc(o.official_os_number):'SEM NUMERAÇÃO WK'}</div><span class="status">${esc(o.status||'ABERTA')}</span></div><div class="os-info"><div><strong>Solicitante:</strong> ${esc(o.requester_name||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo:</strong> ${esc(o.maintenance_type||'-')} • <strong>Prioridade:</strong> ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Observações:</strong> ${esc(o.observations||'-')}</div><div><strong>Data:</strong> ${esc(o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-')}</div></div><div class="employee-actions"><button class="action-btn btn-material" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕ VER DETALHES / HISTÓRICO</button><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR / ATRIBUIR Nº WK</button>${!['FINALIZADA','CANCELADA'].includes(cleanStatus(o.status))?`<button class="action-btn btn-emergency" onclick="pcmCancelUserOS('${esc(o.id)}')">✕ CANCELAR SOLICITAÇÃO</button>`:''}</div></div>`).join(''):'<div class="pcm-empty">Nenhuma solicitação foi encontrada.</div>';
  }catch(e){console.error(e);host.innerHTML='<div class="pcm-empty">Falha ao consultar os_user_requests. Confira as permissões SELECT e os nomes das colunas. '+esc(e.message||'')+'</div>';}
 }
+window.pcmCancelUserOS=async function(id){
+ if(!isAdmin){toast('Somente o PCM pode cancelar uma solicitação.','error');return;}
+ const reason=prompt('Informe o motivo do cancelamento desta solicitação:');
+ if(reason===null)return;
+ if(!reason.trim()){toast('Informe o motivo do cancelamento.','error');return;}
+ if(!confirm('Confirmar o cancelamento? A solicitação será mantida no histórico e não será apagada.'))return;
+ try{
+  const current=await db.from(TABLE).select('*').eq('id',id).single();
+  if(current.error)throw current.error;
+  const o=current.data;
+  if(['FINALIZADA','CANCELADA'].includes(cleanStatus(o.status)))throw new Error('Esta solicitação já foi encerrada.');
+  const now=new Date().toISOString();
+  let total=Number(o.total_service_seconds||0);
+  if(cleanStatus(o.status)==='EM PRODUÇÃO'&&o.started_at){
+   total+=Math.max(0,Math.floor((Date.now()-new Date(o.started_at).getTime())/1000));
+  }
+  const up=await db.from(TABLE).update({
+   status:'CANCELADA',
+   started_at:null,
+   paused_at:o.paused_at||null,
+   active_employee:null,
+   finished_at:now,
+   total_service_seconds:total,
+   pause_reason:'CANCELADA PELO PCM: '+reason.trim()
+  }).eq('id',id);
+  if(up.error)throw up.error;
+  try{
+   const hr=await db.from('os_user_request_execution_history').insert({
+    request_id:String(id),employee:String(currentUser||'PCM'),action:'SOLICITAÇÃO CANCELADA',
+    reason:reason.trim(),started_at:o.started_at||null,ended_at:now,duration_seconds:null
+   });
+   if(hr.error)console.warn('Cancelamento salvo, mas não foi possível registrar o evento no histórico:',hr.error);
+  }catch(historyError){console.warn('Cancelamento salvo sem evento no histórico:',historyError);}
+  toast('Solicitação cancelada e preservada no sistema.');
+  await adminRender();
+  await renderUserOSDashboard();
+ }catch(e){console.error(e);toast('Não foi possível cancelar: '+(e.message||''),'error');}
+};
 window.pcmShowUserOSDetails=async function(id){
  if(!isAdmin){alert('Acesso exclusivo do PCM/Administrador.');return;}
  try{
@@ -10570,7 +10608,7 @@ async function renderUserOSDashboard(){
   const rows=r.data||[];
   host.innerHTML=rows.length?`<div class="pcm-user-requests-dash-list">${rows.map(o=>{
    const st=cleanStatus(o.status||'ABERTA');const num=o.official_os_number?'O.S. WK '+esc(o.official_os_number):'SEM NÚMERO WK';
-   return `<div class="os-card"><div class="os-card-top"><div class="os-number">${num}</div><span class="status">${esc(st)}</span></div><div class="os-info"><div><strong>Solicitante:</strong> ${esc(o.requester_name||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo / prioridade:</strong> ${esc(o.maintenance_type||'-')} • ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Observações:</strong> ${esc(o.observations||'-')}</div><div><strong>Tempo trabalhado:</strong> ${formatUserOSDuration(o.total_service_seconds||0)}</div><div><strong>Aberta em:</strong> ${esc(o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-')}</div></div><div class="employee-actions"><button class="action-btn btn-material" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕ VER DETALHES</button><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR / ATRIBUIR Nº WK</button></div></div>`;
+   return `<div class="os-card"><div class="os-card-top"><div class="os-number">${num}</div><span class="status">${esc(st)}</span></div><div class="os-info"><div><strong>Solicitante:</strong> ${esc(o.requester_name||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo / prioridade:</strong> ${esc(o.maintenance_type||'-')} • ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Observações:</strong> ${esc(o.observations||'-')}</div><div><strong>Tempo trabalhado:</strong> ${formatUserOSDuration(o.total_service_seconds||0)}</div><div><strong>Aberta em:</strong> ${esc(o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-')}</div></div><div class="employee-actions"><button class="action-btn btn-material" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕ VER DETALHES / HISTÓRICO</button><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR / ATRIBUIR Nº WK</button>${!['FINALIZADA','CANCELADA'].includes(st)?`<button class="action-btn btn-emergency" onclick="pcmCancelUserOS('${esc(o.id)}')">✕ CANCELAR SOLICITAÇÃO</button>`:''}</div></div>`;
   }).join('')}</div>`:'<div class="pcm-empty">Nenhuma solicitação de funcionário encontrada.</div>';
  }catch(e){console.error('Dashboard solicitações funcionários:',e);host.innerHTML='<div class="pcm-empty">Não foi possível carregar as solicitações dos funcionários: '+esc(e.message||'')+'</div>';}
 }
