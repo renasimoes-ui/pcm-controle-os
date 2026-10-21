@@ -5511,8 +5511,7 @@ function createEmployeeCard(order){
 
     if(running){
         buttons+=`<button class="action-btn btn-pause" onclick="pauseOS(${order.id})">⏸ PAUSAR</button>`;
-        buttons+=`<button class="action-btn btn-material" onclick="openMaterialModal(${order.id})">📦 REQUISITAR MATERIAL</button>`;
-        buttons+=`<button class="action-btn btn-finish" onclick="finishOS(${order.id})">✓ FINALIZAR O.S.</button>`;
+            buttons+=`<button class="action-btn btn-finish" onclick="finishOS(${order.id})">✓ FINALIZAR O.S.</button>`;
         buttons+=`<button class="action-btn btn-emergency" onclick="emergencyStopOS(${order.id})">▲ PARADA IMEDIATA</button>`;
     }
 
@@ -7068,6 +7067,9 @@ async function exportHistoryPDF(){
   }
 })();
 <\/script>
+
+
+
 
 
 
@@ -10483,7 +10485,7 @@ async function renderMine(){
    const secs=Number(o.total_service_seconds||0)+(st==='EM PRODUÇÃO'&&o.started_at?Math.max(0,Math.floor((Date.now()-new Date(o.started_at).getTime())/1000)):0);
    let action='';
    if(st==='ABERTA')action=`<button class="action-btn btn-start" onclick="pcmStartUserOS('${esc(o.id)}')">▶ INICIAR O.S.</button>`;
-   else if(st==='EM PRODUÇÃO')action=`<button class="action-btn btn-pause" onclick="pcmPauseUserOS('${esc(o.id)}')">⏸ PAUSAR</button><button class="action-btn btn-material" onclick="pcmRequestMaterialUserOS('${esc(o.id)}')">📦 REQUISITAR MATERIAL</button><button class="action-btn btn-finish" onclick="pcmFinishUserOS('${esc(o.id)}')">✓ FINALIZAR O.S.</button><button class="action-btn btn-emergency" onclick="pcmEmergencyStopUserOS('${esc(o.id)}')">▲ PARADA IMEDIATA</button>`;
+   else if(st==='EM PRODUÇÃO')action=`<button class="action-btn btn-pause" onclick="pcmPauseUserOS('${esc(o.id)}')">⏸ PAUSAR</button><button class="action-btn btn-finish" onclick="pcmFinishUserOS('${esc(o.id)}')">✓ FINALIZAR O.S.</button><button class="action-btn btn-emergency" onclick="pcmEmergencyStopUserOS('${esc(o.id)}')">▲ PARADA IMEDIATA</button>`;
    else if(st==='PAUSADA')action=`<div class="factory-note warning">⏸ Pausada: ${esc(o.pause_reason||'Motivo não informado')}</div><button class="action-btn btn-start" onclick="pcmResumeUserOS('${esc(o.id)}')">▶ RETOMAR O.S.</button>`;
    else if(st==='FINALIZADA')action='<div class="factory-note success">✓ Solicitação finalizada.</div>';
    const number=o.official_os_number?'O.S. '+esc(o.official_os_number):'SOLICITAÇÃO • AGUARDANDO Nº WK';
@@ -10703,5 +10705,115 @@ if(typeof pcmOriginalRenderActiveJobs==='function'&&!pcmOriginalRenderActiveJobs
 })();
 </script>
 
+
+<script id="pcm-team-user-os-sync">
+/* Integração do status das O.S. abertas pelos funcionários na visão Equipe.
+   Mantém os_orders e os_user_requests separados, sem alterar o banco de dados. */
+(function(){
+  const originalLoadTeam=window.loadTeam;
+  if(typeof originalLoadTeam!=='function' || originalLoadTeam.__userRequestTeamSync) return;
+  async function loadTeamWithUserRequests(){
+    await originalLoadTeam.apply(this,arguments);
+    if(!window.isAdmin && typeof isAdmin!=='undefined' && !isAdmin) return;
+    const table=document.getElementById('teamTable');
+    if(!table) return;
+    try{
+      const result=await db.from('os_user_requests').select('id,requester_name,equipment,sector,status,started_at,total_service_seconds,active_employee,official_os_number');
+      if(result.error) throw result.error;
+      const requests=result.data||[];
+      const norm=x=>String(x||'').trim().toLocaleLowerCase('pt-BR');
+      const users=Array.isArray(window.usersRows)?window.usersRows:(typeof usersRows!=='undefined'?usersRows:[]);
+      const rows=Array.from(table.querySelectorAll('tr'));
+      rows.forEach(row=>{
+        const name=row.querySelector('td strong')?.textContent?.trim();
+        if(!name)return;
+        const active=requests.find(o=>String(o.status||'').toUpperCase()==='EM PRODUÇÃO' && norm(o.active_employee||o.requester_name)===norm(name));
+        if(!active)return;
+        const cells=row.querySelectorAll('td');
+        if(cells.length<4)return;
+        cells[2].innerHTML='<span class="team-busy"><span class="team-busy-dot"></span>EM SERVIÇO</span><div style="margin-top:5px;color:#64748b;font-size:9px">'+(active.official_os_number?'O.S. '+String(active.official_os_number).replace(/[&<>"']/g,''):'O.S. aberta pelo funcionário')+'<br>'+String(active.equipment||'').replace(/[&<>"']/g,'')+'</div>';
+        const base=Number(active.total_service_seconds||0);
+        const started=active.started_at?new Date(active.started_at).getTime():0;
+        const elapsed=started?Math.max(0,Math.floor((Date.now()-started)/1000)):0;
+        const total=base+elapsed;
+        cells[3].textContent=String(Math.floor(total/3600)).padStart(2,'0')+':'+String(Math.floor(total%3600/60)).padStart(2,'0')+':'+String(Math.floor(total%60)).padStart(2,'0');
+      });
+    }catch(e){console.warn('Não foi possível sincronizar O.S. de funcionários na equipe:',e);}
+  }
+  loadTeamWithUserRequests.__userRequestTeamSync=true;
+  window.loadTeam=loadTeamWithUserRequests;
+  if(typeof loadTeam==='function') loadTeam=loadTeamWithUserRequests;
+  if(!window.__pcmTeamUserOSClock){
+    window.__pcmTeamUserOSClock=setInterval(()=>{
+      if(typeof window.loadTeam==='function' && typeof isAdmin!=='undefined' && isAdmin){
+        const v=document.getElementById('view-team');
+        if(v&&!v.classList.contains('hidden')) window.loadTeam();
+      }
+    },5000);
+  }
+})();
+</script>
+
+<script id="pcm-user-os-history-integration">
+/* Histórico integrado: inclui solicitações abertas pelos funcionários. */
+(function(){
+  const esc = value => typeof window.escapeHtml === 'function'
+    ? window.escapeHtml(value == null ? '-' : String(value))
+    : String(value == null ? '-' : value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const norm = value => String(value || '').trim().toUpperCase();
+  const fmtDate = value => value ? new Date(value).toLocaleString('pt-BR') : '-';
+  const fmtSeconds = value => typeof window.formatSeconds === 'function' ? window.formatSeconds(Number(value || 0)) : (()=>{const n=Math.max(0,Number(value)||0);return `${Math.floor(n/3600)}h ${Math.floor(n%3600/60)}min`;})();
+
+  window.loadHistory = async function(){
+    if(typeof isAdmin !== 'undefined' && !isAdmin) return;
+    const table=document.getElementById('historyTable');
+    if(!table) return;
+    table.innerHTML='<tr><td colspan="7">Carregando histórico...</td></tr>';
+    try{
+      const [officialResult,userResult]=await Promise.all([
+        db.from('os_orders').select('*').order('created_at',{ascending:false}),
+        db.from('os_user_requests').select('*').order('created_at',{ascending:false}).limit(1000)
+      ]);
+      if(officialResult.error) throw officialResult.error;
+      const official=(officialResult.data||[]).map(o=>({...o,__userCreated:false}));
+      const user=(userResult.error?[]:(userResult.data||[])).map(o=>({...o,__userCreated:true}));
+      const orders=[...official,...user].sort((a,b)=>new Date(b.created_at||b.opening_date||0)-new Date(a.created_at||a.opening_date||0));
+      table.innerHTML=orders.map(o=>{
+        const isUser=o.__userCreated;
+        let seconds=isUser?Number(o.total_service_seconds||0):(typeof window.getTotalTime==='function'?window.getTotalTime(o):Number(o.total_service_seconds||0));
+        if(isUser && norm(o.status)==='EM PRODUÇÃO' && o.started_at) seconds+=Math.max(0,Math.floor((Date.now()-new Date(o.started_at).getTime())/1000));
+        const number=isUser?(o.official_os_number?`WK ${o.official_os_number}`:`SEM Nº WK (#${o.id})`):(o.os_number||'-');
+        const status=o.status||'ABERTA';
+        const priorityClassName=typeof window.priorityClass==='function'?window.priorityClass(o.priority):'';
+        const statusClassName=typeof window.statusClass==='function'?window.statusClass(status):'';
+        return `<tr><td><strong>${esc(number)}</strong>${isUser?'<div style="font-size:9px;color:#60a5fa;margin-top:3px">ABERTA PELO FUNCIONÁRIO</div>':''}</td><td>${esc(o.machine||o.equipment||'-')}</td><td>${esc(o.sector||'-')}</td><td>${esc(o.active_employee||o.responsible||o.requester_name||'-')}</td><td><span class="priority ${esc(priorityClassName)}">${esc(o.priority||'MODERADA')}</span></td><td><span class="status ${esc(statusClassName)}">${esc(status)}</span></td><td>${fmtSeconds(seconds)}</td></tr>`;
+      }).join('')||'<tr><td colspan="7">Nenhuma O.S. encontrada.</td></tr>';
+      await window.loadExecutionHistory();
+    }catch(e){console.error('Falha ao carregar histórico de O.S.:',e);table.innerHTML='<tr><td colspan="7">Não foi possível carregar o histórico. Verifique as permissões das tabelas no Supabase.</td></tr>';}
+  };
+
+  window.loadExecutionHistory = async function(){
+    const table=document.getElementById('executionHistoryTable');
+    if(!table)return;
+    table.innerHTML='<tr><td colspan="6">Carregando histórico de execução...</td></tr>';
+    try{
+      const [officialResult,userHistoryResult,userRequestsResult]=await Promise.all([
+        db.from('os_execution_history').select('*').order('created_at',{ascending:false}).limit(500),
+        db.from('os_user_request_execution_history').select('*').order('created_at',{ascending:false}).limit(1000),
+        db.from('os_user_requests').select('id,official_os_number,requester_name,equipment').limit(1000)
+      ]);
+      if(officialResult.error) throw officialResult.error;
+      const requestMap=new Map((userRequestsResult.error?[]:(userRequestsResult.data||[])).map(o=>[String(o.id),o]));
+      const official=(officialResult.data||[]).map(x=>({...x,__userCreated:false}));
+      const userEvents=(userHistoryResult.error?[]:(userHistoryResult.data||[])).map(x=>{
+        const request=requestMap.get(String(x.request_id))||{};
+        return {...x,__userCreated:true,os_number:request.official_os_number?`WK ${request.official_os_number}`:`SEM Nº WK (#${x.request_id})`,employee:x.employee||request.requester_name||'-',action:x.action||'ATUALIZAÇÃO',reason:x.reason||'-'};
+      });
+      const combined=[...official,...userEvents].sort((a,b)=>new Date(b.created_at||b.ended_at||0)-new Date(a.created_at||a.ended_at||0)).slice(0,500);
+      table.innerHTML=combined.map(item=>`<tr><td>${esc(item.os_number||item.os_id||item.request_id||'-')}</td><td>${esc(item.employee||'-')}</td><td>${esc(item.action||'-')}${item.__userCreated?'<div style="font-size:9px;color:#60a5fa">O.S. FUNCIONÁRIO</div>':''}</td><td>${esc(item.reason||'-')}</td><td>${fmtSeconds(item.duration_seconds||0)}</td><td>${esc(fmtDate(item.created_at||item.ended_at))}</td></tr>`).join('')||'<tr><td colspan="6">Nenhum evento de execução encontrado.</td></tr>';
+    }catch(e){console.error('Falha ao carregar histórico de execução:',e);table.innerHTML='<tr><td colspan="6">Não foi possível carregar o histórico de execução. Confira as permissões das tabelas no Supabase.</td></tr>';}
+  };
+})();
+</script>
 </body>
 </html>
