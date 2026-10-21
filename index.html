@@ -10606,6 +10606,21 @@ async function renderUserOSDashboard(){
  try{
   const r=await db.from(TABLE).select('*').order('created_at',{ascending:false}).limit(200);if(r.error)throw r.error;
   const rows=r.data||[];
+  /* As solicitações iniciadas pelos funcionários precisam aparecer também no painel
+     principal de produção, pois ficam em os_user_requests e não em os_orders. */
+  const activeHost=$('activeJobsContainer');
+  if(activeHost){
+   let runningPanel=$('pcmUserRequestsInProduction');
+   if(!runningPanel){runningPanel=document.createElement('div');runningPanel.id='pcmUserRequestsInProduction';runningPanel.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid #26364d';activeHost.appendChild(runningPanel);}
+   const running=rows.filter(o=>cleanStatus(o.status)==='EM PRODUÇÃO');
+   runningPanel.innerHTML=running.length?`<div style="font-size:12px;font-weight:800;color:#cbd5e1;margin:0 0 8px">🧾 Solicitações de funcionários em execução</div><div class="pcm-user-requests-dash-list">${running.map(o=>{
+    const safeId=String(o.id).replace(/[^a-zA-Z0-9_-]/g,'');
+    const started=o.started_at||'';
+    const num=o.official_os_number?'WK '+esc(o.official_os_number):'SEM NÚMERO WK';
+    const base=Number(o.total_service_seconds||0);
+    return `<div class="os-card" style="margin-bottom:8px"><div class="os-card-top"><div class="os-number">${num}</div><span class="status">EM PRODUÇÃO</span></div><div class="os-info"><div><strong>Funcionário:</strong> ${esc(o.active_employee||o.requester_name||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Iniciada em:</strong> ${esc(started?new Date(started).toLocaleString('pt-BR'):'Horário não registrado')}</div><div><strong>Tempo nesta execução:</strong> <b data-user-timer="1" data-base-seconds="${base}" data-started-at="${esc(started)}">${formatUserOSDuration(base+(started?Math.max(0,Math.floor((Date.now()-new Date(started).getTime())/1000)):0))}</b></div></div><div class="employee-actions"><button class="action-btn btn-material" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕ VER DETALHES / HISTÓRICO</button><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR / ATRIBUIR Nº WK</button></div></div>`;
+   }).join('')}</div>`:'<div style="color:#64748b;font-size:11px;padding:6px 0">Nenhuma solicitação de funcionário em produção.</div>';
+  }
   host.innerHTML=rows.length?`<div class="pcm-user-requests-dash-list">${rows.map(o=>{
    const st=cleanStatus(o.status||'ABERTA');const num=o.official_os_number?'O.S. WK '+esc(o.official_os_number):'SEM NÚMERO WK';
    return `<div class="os-card"><div class="os-card-top"><div class="os-number">${num}</div><span class="status">${esc(st)}</span></div><div class="os-info"><div><strong>Solicitante:</strong> ${esc(o.requester_name||'-')}</div><div><strong>Equipamento:</strong> ${esc(o.equipment||'-')}</div><div><strong>Setor:</strong> ${esc(o.sector||'-')}</div><div><strong>Tipo / prioridade:</strong> ${esc(o.maintenance_type||'-')} • ${esc(o.priority||'-')}</div><div><strong>Descrição:</strong> ${esc(o.description||'-')}</div><div><strong>Observações:</strong> ${esc(o.observations||'-')}</div><div><strong>Tempo trabalhado:</strong> ${formatUserOSDuration(o.total_service_seconds||0)}</div><div><strong>Aberta em:</strong> ${esc(o.created_at?new Date(o.created_at).toLocaleString('pt-BR'):'-')}</div></div><div class="employee-actions"><button class="action-btn btn-material" onclick="pcmShowUserOSDetails('${esc(o.id)}')">⌕ VER DETALHES / HISTÓRICO</button><button class="action-btn btn-start" onclick="pcmEditUserOS('${esc(o.id)}')">✎ EDITAR / ATRIBUIR Nº WK</button>${!['FINALIZADA','CANCELADA'].includes(st)?`<button class="action-btn btn-emergency" onclick="pcmCancelUserOS('${esc(o.id)}')">✕ CANCELAR SOLICITAÇÃO</button>`:''}</div></div>`;
