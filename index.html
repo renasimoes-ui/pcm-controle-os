@@ -10655,6 +10655,18 @@ window.navigateTo=function(id,button){if(id==='view-user-os-request'){window.pcm
 const oldRefresh=window.refreshFactoryNavigation;
 window.refreshFactoryNavigation=function(){if(oldRefresh)oldRefresh();addNav();};
 window.addEventListener('load',()=>setTimeout(addNav,500));
+/* Correção v12: sincronização automática do painel do PCM com os_user_requests.
+   O dashboard tradicional consulta os_orders; por isso, solicitações de funcionários
+   precisam ser consultadas periodicamente sem depender de atualizar a página. */
+if(!window.__pcmUserOSLivePoll){
+ window.__pcmUserOSLivePoll=setInterval(async()=>{
+  try{
+   const dash=document.getElementById('view-dashboard');
+   if(!isAdmin||!dash||dash.classList.contains('hidden'))return;
+   if(typeof window.renderUserOSDashboard==='function')await window.renderUserOSDashboard();
+  }catch(e){console.error('Sincronização ao vivo das O.S. de funcionários:',e);}
+ },3000);
+}
 })();
 </script>
 
