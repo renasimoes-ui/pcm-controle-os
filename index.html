@@ -3397,18 +3397,6 @@ button{min-height:44px}
             <div class="panel">
                 <div class="dashboard-section-head">
                     <div>
-                        <div class="panel-title">🔶 Solicitações de material pendentes</div>
-                        <div class="dashboard-kpis-note">Pedidos que precisam de ação do PCM.</div>
-                    </div>
-                </div>
-                <div id="materialRequestsContainer">
-                    <div style="color:#64748b;font-size:12px">Nenhuma solicitação pendente.</div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <div class="dashboard-section-head">
-                    <div>
                         <div class="panel-title">📋 Controle das O.S.</div>
                         <div class="dashboard-kpis-note">Visão completa por status.</div>
                     </div>
@@ -10815,5 +10803,185 @@ if(typeof pcmOriginalRenderActiveJobs==='function'&&!pcmOriginalRenderActiveJobs
   };
 })();
 </script>
+
+
+<!-- PCM FIX: integra O.S. abertas pelos funcionários nos indicadores e no relatório executivo.
+     Não altera main.js nem escreve dados no banco. -->
+<script id="pcm-user-os-dashboard-report-fix-v14">
+(function(){
+  'use strict';
+  if (window.__pcmUserOSDashboardReportFixV14) return;
+  window.__pcmUserOSDashboardReportFixV14 = true;
+
+  const norm = v => String(v == null ? '' : v).trim().toLocaleUpperCase('pt-BR');
+  const escReport = v => String(v == null || v === '' ? '-' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const localDay = value => {
+    if (!value) return '';
+    const raw = String(value).slice(0,10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  };
+  const today = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+  const normalizeStatus = value => {
+    const s=norm(value);
+    if (s==='ABERTA' || s==='O.S ABERTA' || s==='OS ABERTA') return 'O.S. ABERTA';
+    if (s==='EM PRODUÇÃO' || s==='EM PRODUCAO') return 'EM PRODUÇÃO';
+    if (s==='AGUARDANDO MATERIAL') return 'AGUARDANDO MATERIAL';
+    if (s.startsWith('FINALIZADA')) return 'FINALIZADA';
+    return s || 'O.S. ABERTA';
+  };
+  const mapUserRequest = o => ({
+    ...o,
+    __userCreated: true,
+    os_number: o.official_os_number ? ('WK '+o.official_os_number) : ('SOLICITAÇÃO #'+o.id),
+    machine: o.equipment || o.machine || '-',
+    sector: o.sector || '-',
+    responsible: o.active_employee || o.requester_name || '-',
+    active_employee: o.active_employee || (normalizeStatus(o.status)==='EM PRODUÇÃO' ? o.requester_name : null),
+    status: normalizeStatus(o.status),
+    priority: o.priority || 'MODERADA',
+    deadline: o.deadline || o.due_date || null,
+    total_service_seconds: Number(o.total_service_seconds || 0),
+    opening_date: o.opening_date || o.created_at || null
+  });
+  function dedupe(official, requests) {
+    const officialNumbers = new Set((official||[]).map(o=>norm(o.os_number).replace(/^WK\s*/,'' )).filter(Boolean));
+    return (requests||[]).filter(o=>{
+      const n=norm(o.official_os_number).replace(/^WK\s*/, '');
+      return !n || !officialNumbers.has(n);
+    });
+  }
+  async function fetchUserRequests(){
+    const result = await db.from('os_user_requests').select('*').order('created_at',{ascending:false}).limit(2000);
+    if (result.error) throw result.error;
+    return result.data || [];
+  }
+  function withinDashboardDay(o){
+    const day=localDay(o.opening_date || o.created_at || o.started_at);
+    const st=normalizeStatus(o.status);
+    return !day || day===today() || (st==='PAUSADA' && day<today());
+  }
+  function setText(id,value){const el=document.getElementById(id);if(el)el.textContent=String(value);}
+  function updateAttention(all){
+    const now=new Date();
+    const day=today();
+    const overdue=all.filter(o=>{
+      const status=normalizeStatus(o.status);
+      const due=localDay(o.deadline);
+      return due && due<day && !['FINALIZADA','CANCELADA'].includes(status);
+    }).length;
+    const dueToday=all.filter(o=>localDay(o.deadline)===day && !['FINALIZADA','CANCELADA'].includes(normalizeStatus(o.status))).length;
+    const noResp=all.filter(o=>!['FINALIZADA','CANCELADA'].includes(normalizeStatus(o.status)) && !String(o.responsible||o.active_employee||'').trim()).length;
+    const times=all.map(o=>Number(o.total_service_seconds||0)).filter(n=>n>0);
+    const avg=times.length?Math.round(times.reduce((a,b)=>a+b,0)/times.length):0;
+    setText('fpOverdue',overdue);setText('fpDueToday',dueToday);setText('fpNoResp',noResp);
+    const avgEl=document.getElementById('fpAvgTime');
+    if(avgEl){if(typeof window.formatSeconds==='function')avgEl.textContent=window.formatSeconds(avg);else avgEl.textContent=Math.floor(avg/3600)+'h '+Math.floor((avg%3600)/60)+'m';}
+  }
+  async function syncDashboardAndReports(){
+    if(typeof isAdmin!=='undefined' && !isAdmin) return;
+    const official=Array.isArray(dashboardOrders)?dashboardOrders:[];
+    const allRequests=await fetchUserRequests();
+    const userAll=allRequests.map(mapUserRequest);
+    const userToday=dedupe(official,userAll).filter(withinDashboardDay);
+    const combined=[...official,...userToday];
+    window.pcmUserOSAllRows=userAll;
+    window.pcmCombinedDashboardRows=combined;
+
+    setText('statAbertas',combined.filter(o=>normalizeStatus(o.status)==='O.S. ABERTA').length);
+    setText('statProducao',combined.filter(o=>normalizeStatus(o.status)==='EM PRODUÇÃO').length);
+    setText('statMaterial',combined.filter(o=>normalizeStatus(o.status)==='AGUARDANDO MATERIAL').length);
+    setText('statFinalizadas',combined.filter(o=>normalizeStatus(o.status)==='FINALIZADA').length);
+    setText('statUrgentes',combined.filter(o=>norm(o.priority)==='ALTA' && !['FINALIZADA','CANCELADA'].includes(normalizeStatus(o.status))).length);
+    const activeNames=new Set(combined.filter(o=>normalizeStatus(o.status)==='EM PRODUÇÃO').map(o=>String(o.active_employee||o.responsible||'').trim()).filter(Boolean));
+    setText('statAtivos',activeNames.size);
+    updateAttention(combined);
+
+    // Mantém o relatório gerencial atualizado com solicitações dos funcionários.
+    window.pcmCombinedReportRows=[...official,...dedupe(official,userAll)];
+    const reports=document.getElementById('view-reports');
+    if(reports && !reports.classList.contains('hidden') && typeof window.pcmRefreshIntegratedReports==='function') window.pcmRefreshIntegratedReports();
+  }
+
+  const originalLoad=window.loadDashboardData;
+  if(typeof originalLoad==='function' && !originalLoad.__pcmUserOSReportFixV14){
+    const wrapped=async function(){
+      const result=await originalLoad.apply(this,arguments);
+      try{await syncDashboardAndReports();}
+      catch(e){console.error('[PCM] Não foi possível integrar O.S. dos funcionários nos indicadores:',e);}
+      return result;
+    };
+    wrapped.__pcmUserOSReportFixV14=true;
+    window.loadDashboardData=wrapped;
+  }
+
+  // O relatório executivo passa a consultar as duas origens e imprime as O.S. de funcionários.
+  window.fpPrintExecutiveReport=async function(){
+    let official=Array.isArray(dashboardOrders)?dashboardOrders:[];
+    let userRows=[];
+    try{userRows=(await fetchUserRequests()).map(mapUserRequest);}catch(e){console.error('[PCM] Erro ao buscar solicitações para o PDF:',e);alert('Não foi possível carregar as O.S. dos funcionários para o relatório. Verifique as permissões da tabela os_user_requests no Supabase.');return;}
+    userRows=dedupe(official,userRows).filter(withinDashboardDay);
+    const orders=[...official,...userRows].sort((a,b)=>{
+      const da=localDay(a.deadline),dbv=localDay(b.deadline);return (da||'9999').localeCompare(dbv||'9999');
+    });
+    const win=window.open('','_blank');
+    if(!win){alert('O navegador bloqueou a janela do relatório. Permita pop-ups para este sistema e tente novamente.');return;}
+    const rows=orders.map(o=>{
+      const seconds=Number(o.total_service_seconds||0);
+      const time=typeof window.formatSeconds==='function'?window.formatSeconds(seconds):(Math.floor(seconds/3600)+'h '+Math.floor((seconds%3600)/60)+'m');
+      return '<tr><td>'+escReport(o.os_number||o.official_os_number||('Solicitação #'+o.id))+'</td><td>'+escReport(o.machine||o.equipment)+'</td><td>'+escReport(o.sector)+'</td><td>'+escReport(o.responsible||o.active_employee||o.requester_name)+'</td><td>'+escReport(normalizeStatus(o.status))+'</td><td>'+escReport(o.priority||'MODERADA')+'</td><td>'+escReport(o.deadline||o.due_date||'-')+'</td><td>'+escReport(time)+'</td></tr>';
+    }).join('');
+    const count=s=>orders.filter(o=>normalizeStatus(o.status)===s).length;
+    const overdue=orders.filter(o=>{const d=localDay(o.deadline);return d&&d<today()&&!['FINALIZADA','CANCELADA'].includes(normalizeStatus(o.status));}).length;
+    win.document.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Relatório PCM - Controle de O.S.</title><style>body{font:12px Arial,sans-serif;margin:28px;color:#111}h1{margin:0 0 5px}p{color:#555}.cards{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}.card{border:1px solid #ddd;padding:12px;min-width:100px}.card b{font-size:20px;display:block}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:7px;text-align:left;vertical-align:top}th{background:#f3f4f6;font-size:10px}@media print{button{display:none}body{margin:12px}tr{break-inside:avoid}}</style></head><body><h1>PCM • CONTROLE DE O.S.</h1><p>Relatório executivo • gerado em '+escReport(new Date().toLocaleString('pt-BR'))+' • inclui O.S. do PCM e solicitações de funcionários.</p><div class="cards"><div class="card"><b>'+count('O.S. ABERTA')+'</b>O.S. abertas</div><div class="card"><b>'+count('EM PRODUÇÃO')+'</b>Em produção</div><div class="card"><b>'+count('AGUARDANDO MATERIAL')+'</b>Aguardando material</div><div class="card"><b>'+count('FINALIZADA')+'</b>Finalizadas</div><div class="card"><b>'+overdue+'</b>Atrasadas</div></div><table><thead><tr><th>O.S. / solicitação</th><th>Equipamento</th><th>Setor</th><th>Responsável / solicitante</th><th>Status</th><th>Prioridade</th><th>Prazo</th><th>Tempo trabalhado</th></tr></thead><tbody>'+ (rows||'<tr><td colspan="8">Nenhuma O.S. encontrada para o painel atual.</td></tr>') +'</tbody></table><script>window.onload=function(){setTimeout(function(){window.print();},300)};<\/script></body></html>');
+    win.document.close();
+  };
+
+  // Integra as O.S. dos funcionários também à tela de relatórios gerenciais.
+  const oldReportOrders=window.reportOrders;
+  window.pcmRefreshIntegratedReports=function(){
+    const view=document.getElementById('view-reports');
+    if(!view || view.classList.contains('hidden'))return;
+    const host=view.querySelector('#pcmReportHost');
+    if(!host)return;
+    const originalRows=Array.isArray(dashboardOrders)?dashboardOrders:[];
+    const userRows=Array.isArray(window.pcmUserOSAllRows)?window.pcmUserOSAllRows:[];
+    const all=[...originalRows,...dedupe(originalRows,userRows)];
+    const period=view.querySelector('#reportPeriod')?.value||'7';
+    const sector=view.querySelector('#reportSector')?.value||'ALL';
+    const status=view.querySelector('#reportStatus')?.value||'ALL';
+    const now=Date.now(),days=period==='today'?1:period==='all'?99999:Number(period);
+    const filtered=all.filter(o=>{const d=new Date(o.created_at||o.opening_date||0).getTime();const dateOk=period==='all'||(d&&now-d<=days*86400000);return dateOk&&(sector==='ALL'||(o.sector||'')===sector)&&(status==='ALL'||normalizeStatus(o.status)===normalizeStatus(status));});
+    const esc=escReport, fmt=v=>{const n=Math.max(0,Number(v)||0);return typeof window.formatSeconds==='function'?window.formatSeconds(n):(Math.floor(n/3600)+'h '+Math.floor(n%3600/60)+'m');};
+    const done=filtered.filter(o=>normalizeStatus(o.status)==='FINALIZADA').length;
+    const running=filtered.filter(o=>normalizeStatus(o.status)==='EM PRODUÇÃO').length;
+    const paused=filtered.filter(o=>normalizeStatus(o.status)==='PAUSADA').length;
+    const opened=filtered.filter(o=>!['FINALIZADA','CANCELADA'].includes(normalizeStatus(o.status))).length;
+    const late=filtered.filter(o=>{const d=localDay(o.deadline);return d&&d<today()&&!['FINALIZADA','CANCELADA'].includes(normalizeStatus(o.status));}).length;
+    const mat=filtered.filter(o=>normalizeStatus(o.status)==='AGUARDANDO MATERIAL').length;
+    const avg=filtered.length?filtered.reduce((s,o)=>s+Number(o.total_service_seconds||0),0)/filtered.length:0;
+    const machines=new Map();filtered.forEach(o=>{const k=o.machine||o.equipment||'-';machines.set(k,(machines.get(k)||0)+1)});
+    const people=new Map();filtered.forEach(o=>{const k=o.active_employee||o.responsible||o.requester_name||'Não definido';if(!people.has(k))people.set(k,{total:0,done:0,time:0});const x=people.get(k);x.total++;if(normalizeStatus(o.status)==='FINALIZADA')x.done++;x.time+=Number(o.total_service_seconds||0)});
+    const machineRows=[...machines.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10),peopleRows=[...people.entries()].sort((a,b)=>b[1].done-a[1].done).slice(0,10);
+    host.innerHTML='<div class="pcm-report-kpis"><div class="pcm-report-kpi"><span>O.S. no período</span><b>'+filtered.length+'</b></div><div class="pcm-report-kpi"><span>O.S. abertas</span><b>'+opened+'</b></div><div class="pcm-report-kpi"><span>Em execução</span><b>'+running+'</b></div><div class="pcm-report-kpi"><span>Pausadas</span><b>'+paused+'</b></div><div class="pcm-report-kpi"><span>Finalizadas</span><b>'+done+'</b></div><div class="pcm-report-kpi"><span>Atrasadas</span><b>'+late+'</b></div><div class="pcm-report-kpi"><span>Aguardando material</span><b>'+mat+'</b></div><div class="pcm-report-kpi"><span>Tempo médio</span><b>'+fmt(avg)+'</b></div></div><div class="pcm-report-grid"><div class="pcm-report-card"><h3>🏭 Máquinas com maior volume</h3><table class="pcm-report-table"><thead><tr><th>Máquina</th><th>O.S.</th></tr></thead><tbody>'+(machineRows.map(x=>'<tr><td>'+esc(x[0])+'</td><td><b>'+x[1]+'</b></td></tr>').join('')||'<tr><td colspan="2">Sem dados</td></tr>')+'</tbody></table></div><div class="pcm-report-card"><h3>👷 Desempenho por responsável</h3><table class="pcm-report-table"><thead><tr><th>Responsável</th><th>O.S.</th><th>Final.</th><th>Tempo</th></tr></thead><tbody>'+(peopleRows.map(x=>'<tr><td>'+esc(x[0])+'</td><td>'+x[1].total+'</td><td>'+x[1].done+'</td><td>'+fmt(x[1].time)+'</td></tr>').join('')||'<tr><td colspan="4">Sem dados</td></tr>')+'</tbody></table></div></div>';
+  };
+  // Reaplica a integração quando a tela de relatórios é aberta ou seus filtros são usados.
+  const previousNavigateV14=window.navigateTo;
+  if(typeof previousNavigateV14==='function' && !previousNavigateV14.__pcmUserOSReportNavigateV14){
+    const navigateV14=function(viewId,button){
+      const result=previousNavigateV14.apply(this,arguments);
+      if(viewId==='view-reports')setTimeout(()=>{syncDashboardAndReports().catch(e=>console.error('[PCM] Atualização dos relatórios:',e));},250);
+      return result;
+    };
+    navigateV14.__pcmUserOSReportNavigateV14=true;
+    window.navigateTo=navigateV14;
+  }
+  // Atualiza os relatórios gerenciais depois da carga inicial e dos refreshes.
+  window.addEventListener('load',()=>setTimeout(()=>{if(typeof window.loadDashboardData==='function' && typeof isAdmin!=='undefined' && isAdmin)window.loadDashboardData();},1200));
+})();
+</script>
+
 </body>
 </html>
