@@ -9169,6 +9169,13 @@ function pcmActions(order){
 }
 
 window.pcmShowOrderDetails=async function(osId){
+  // fmtDate existe em outro escopo do arquivo; definimos a versão local
+  // para que os detalhes da O.S. não dependam de uma variável inacessível.
+  const fmtDate = value => {
+    if (!value) return '-';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('pt-BR');
+  };
   /*
      O detalhe administrativo também precisa funcionar para O.S. do
      histórico, inclusive quando ela não pertence ao dia atual.
