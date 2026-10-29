@@ -3796,6 +3796,7 @@ button{min-height:44px}
                                 <th>Prioridade</th>
                                 <th>Status</th>
                                 <th>Tempo</th>
+                                <th>Ações do PCM</th>
                             </tr>
 
                         </thead>
@@ -4934,18 +4935,19 @@ async function loadDashboardData(){
     const allDashboardOrders = data || [];
 
     /*
-       PAINEL DIÁRIO + O.S. PAUSADAS DE DIAS ANTERIORES
-       Uma O.S. que ficou PAUSADA não deixa de ser operacional só porque
-       virou o dia. Ela continua aparecendo no dashboard até ser retomada
-       ou encerrada.
+       PAINEL DIÁRIO + O.S. PENDENTES DE DIAS ANTERIORES
+       A virada do dia não pode esconder uma O.S. ainda não encerrada.
+       Mantém abertas, em produção, pausadas e aguardando PCM no painel,
+       sem duplicar registros nem alterar a data original.
     */
     dashboardOrders = allDashboardOrders
         .filter(o => {
             const day = orderDayKey(o);
-            const status = String(o?.status || '').toUpperCase();
+            const status = String(o?.status || '').trim().toUpperCase();
             const isToday = day === todayKey;
-            const isCarryOverPaused = status === 'PAUSADA' && day && day < todayKey;
-            return isToday || isCarryOverPaused;
+            const terminal = ['FINALIZADA', 'FINALIZADA - OBSERVAÇÃO', 'CANCELADA'].includes(status);
+            const isCarryOverPending = Boolean(day && day < todayKey && !terminal);
+            return isToday || isCarryOverPending;
         })
         .slice()
         .sort((a,b)=>{
@@ -4963,11 +4965,12 @@ async function loadDashboardData(){
     const dashDateLabel=document.querySelector('#view-dashboard .dashboard-hero .dashboard-description');
     if(dashDateLabel){
         const label=new Date(nowLocal).toLocaleDateString('pt-BR');
-        const carriedPaused = dashboardOrders.filter(o =>
-            String(o?.status||'').toUpperCase()==='PAUSADA' &&
-            String(o?.opening_date||'').slice(0,10) < todayKey
-        ).length;
-        dashDateLabel.innerHTML=`Acompanhe a operação da fábrica em tempo real.<br><strong style="color:#f8fafc">PAINEL DIÁRIO • ${label}</strong>${carriedPaused ? `<br><span style="color:#fbbf24">⏸ ${carriedPaused} O.S. PAUSADA(S) DE DIA(S) ANTERIOR(ES) EM ACOMPANHAMENTO</span>` : ''}`;
+        const carriedPending = dashboardOrders.filter(o => {
+            const day = orderDayKey(o);
+            const status = String(o?.status||'').trim().toUpperCase();
+            return day && day < todayKey && !['FINALIZADA','FINALIZADA - OBSERVAÇÃO','CANCELADA'].includes(status);
+        }).length;
+        dashDateLabel.innerHTML=`Acompanhe a operação da fábrica em tempo real.<br><strong style="color:#f8fafc">PAINEL DIÁRIO • ${label}</strong>${carriedPending ? `<br><span style="color:#fbbf24">↻ ${carriedPending} O.S. PENDENTE(S) DE DIAS ANTERIORES EM ACOMPANHAMENTO</span>` : ''}`;
     }
 
     const abertas =
@@ -7435,30 +7438,20 @@ async function loadMachines(){
 ========================================================= */
 
 function startRefreshTimer(){
-
+    // O relógio visual atualiza a cada segundo, mas não consulta o Supabase
+    // nem redesenha todas as O.S. nesse intervalo. A sincronização dos dados
+    // fica sob responsabilidade da atualização automática de 30 segundos.
     if(timerInterval){
         clearInterval(timerInterval);
     }
 
-
-    timerInterval =
-        setInterval(async ()=>{
-
+    timerInterval = setInterval(()=>{
+        try {
             updateVisibleTimers();
-
-
-            if(isAdmin){
-
-                renderActiveJobs();
-
-            }else{
-
-                await loadEmployeeOrders();
-
-            }
-
-        },1000);
-
+        } catch (e) {
+            console.warn("Falha ao atualizar os temporizadores visuais:", e);
+        }
+    },1000);
 }
 
 
@@ -7818,7 +7811,7 @@ document
   function startAutoRefresh(){
     clearInterval(refreshTimer);
     refreshTimer=setInterval(()=>{
-      if(document.hidden||!navigator.onLine)return;
+      if(document.hidden||!navigator.onLine||!currentUser)return;
       try{
         if(typeof isAdmin!=='undefined' && isAdmin && typeof loadDashboardData==='function') loadDashboardData();
         else if(typeof loadEmployeeOrders==='function') loadEmployeeOrders();
@@ -10840,7 +10833,7 @@ if(typeof pcmOriginalRenderActiveJobs==='function'&&!pcmOriginalRenderActiveJobs
     if(typeof isAdmin !== 'undefined' && !isAdmin) return;
     const table=document.getElementById('historyTable');
     if(!table) return;
-    table.innerHTML='<tr><td colspan="7">Carregando histórico...</td></tr>';
+    table.innerHTML='<tr><td colspan="8">Carregando histórico...</td></tr>';
     try{
       const [officialResult,userResult]=await Promise.all([
         db.from('os_orders').select('*').order('created_at',{ascending:false}),
@@ -10858,10 +10851,13 @@ if(typeof pcmOriginalRenderActiveJobs==='function'&&!pcmOriginalRenderActiveJobs
         const status=o.status||'ABERTA';
         const priorityClassName=typeof window.priorityClass==='function'?window.priorityClass(o.priority):'';
         const statusClassName=typeof window.statusClass==='function'?window.statusClass(status):'';
-        return `<tr><td><strong>${esc(number)}</strong>${isUser?'<div style="font-size:9px;color:#60a5fa;margin-top:3px">ABERTA PELO FUNCIONÁRIO</div>':''}</td><td>${esc(o.machine||o.equipment||'-')}</td><td>${esc(o.sector||'-')}</td><td>${esc(o.active_employee||o.responsible||o.requester_name||'-')}</td><td><span class="priority ${esc(priorityClassName)}">${esc(o.priority||'MODERADA')}</span></td><td><span class="status ${esc(statusClassName)}">${esc(status)}</span></td><td>${fmtSeconds(seconds)}</td></tr>`;
+        const actions = isUser
+          ? `<button type="button" class="action-btn pcm-details-btn" onclick="pcmShowUserOSDetails(${Number(o.id)});return false;">DETALHES</button> <button type="button" class="action-btn pcm-admin-edit" onclick="pcmEditUserOS(${Number(o.id)});return false;">EDITAR</button>`
+          : `<button type="button" class="action-btn pcm-details-btn" onclick="pcmShowOrderDetails(${Number(o.id)});return false;">DETALHES</button> <button type="button" class="action-btn pcm-admin-edit" onclick="adminEditOS(${Number(o.id)});return false;">EDITAR O.S.</button>`;
+        return `<tr><td><strong>${esc(number)}</strong>${isUser?'<div style="font-size:9px;color:#60a5fa;margin-top:3px">ABERTA PELO FUNCIONÁRIO</div>':''}</td><td>${esc(o.machine||o.equipment||'-')}</td><td>${esc(o.sector||'-')}</td><td>${esc(o.active_employee||o.responsible||o.requester_name||'-')}</td><td><span class="priority ${esc(priorityClassName)}">${esc(o.priority||'MODERADA')}</span></td><td><span class="status ${esc(statusClassName)}">${esc(status)}</span></td><td>${fmtSeconds(seconds)}</td><td style="min-width:180px;white-space:nowrap">${actions}</td></tr>`;
       }).join('')||'<tr><td colspan="7">Nenhuma O.S. encontrada.</td></tr>';
       await window.loadExecutionHistory();
-    }catch(e){console.error('Falha ao carregar histórico de O.S.:',e);table.innerHTML='<tr><td colspan="7">Não foi possível carregar o histórico. Verifique as permissões das tabelas no Supabase.</td></tr>';}
+    }catch(e){console.error('Falha ao carregar histórico de O.S.:',e);table.innerHTML='<tr><td colspan="8">Não foi possível carregar o histórico. Verifique as permissões das tabelas no Supabase.</td></tr>';}
   };
 
   window.loadExecutionHistory = async function(){
