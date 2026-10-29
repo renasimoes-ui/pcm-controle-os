@@ -9233,6 +9233,8 @@ window.pcmShowOrderDetails=async function(osId){
   const el=document.createElement('div');
   el.id='pcmOrderDetailsModal';
   el.className='modal';
+  // O modal precisa ser exibido explicitamente; a classe .modal pode iniciar com display:none.
+  el.style.display='flex';
   el.innerHTML=`<div class="modal-box" style="max-height:92vh;overflow:auto">
     <div class="modal-title">O.S. ${esc(order.os_number)}</div>
     <div class="modal-description">Detalhes completos e controles administrativos da O.S.</div>
