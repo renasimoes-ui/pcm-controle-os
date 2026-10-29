@@ -9193,6 +9193,11 @@ window.pcmShowOrderDetails=async function(osId){
   const start=order.started_at||'';
   const finish=order.finished_at||'';
   const status=order.status==='FINALIZADA - AGUARDANDO PCM'?'FINALIZADA • AGUARDANDO PCM':order.status;
+  // created_at registra o momento real em que a O.S. foi cadastrada no sistema.
+  // opening_date é a data operacional e pode não conter horário.
+  const openedAtLabel=order.created_at
+    ? fmtLocal(order.created_at)
+    : (order.opening_date ? `${fmtDate(order.opening_date)} • horário não registrado` : 'Horário não registrado');
 
   const old=document.getElementById('pcmOrderDetailsModal');
   if(old)old.remove();
@@ -9233,6 +9238,8 @@ window.pcmShowOrderDetails=async function(osId){
     <div class="modal-description">Detalhes completos e controles administrativos da O.S.</div>
 
     <div class="pcm-detail-grid">
+      <div class="pcm-detail-item"><span>Aberta no sistema (data e horário)</span><b>${esc(openedAtLabel)}</b></div>
+      <div class="pcm-detail-item"><span>Data operacional da O.S.</span><b>${esc(order.opening_date ? fmtDate(order.opening_date) : '-')}</b></div>
       <div class="pcm-detail-item"><span>Máquina</span><b>${esc(order.machine||'-')}</b></div>
       <div class="pcm-detail-item"><span>TAG</span><b>${esc(order.tag||'-')}</b></div>
       <div class="pcm-detail-item"><span>Setor</span><b>${esc(order.sector||'-')}</b></div>
@@ -10852,7 +10859,8 @@ if(typeof pcmOriginalRenderActiveJobs==='function'&&!pcmOriginalRenderActiveJobs
         const priorityClassName=typeof window.priorityClass==='function'?window.priorityClass(o.priority):'';
         const statusClassName=typeof window.statusClass==='function'?window.statusClass(status):'';
         const actions = isUser
-          ? `<button type="button" class="action-btn pcm-details-btn" onclick="pcmShowUserOSDetails(${Number(o.id)});return false;">DETALHES</button> <button type="button" class="action-btn pcm-admin-edit" onclick="pcmEditUserOS(${Number(o.id)});return false;">EDITAR</button>`
+          // IDs de solicitações de funcionários podem ser UUIDs; não converter para Number.
+          ? `<button type="button" class="action-btn pcm-details-btn" onclick="pcmShowUserOSDetails('${String(o.id)}');return false;">DETALHES</button> <button type="button" class="action-btn pcm-admin-edit" onclick="pcmEditUserOS('${String(o.id)}');return false;">EDITAR</button>`
           : `<button type="button" class="action-btn pcm-details-btn" onclick="pcmShowOrderDetails(${Number(o.id)});return false;">DETALHES</button> <button type="button" class="action-btn pcm-admin-edit" onclick="adminEditOS(${Number(o.id)});return false;">EDITAR O.S.</button>`;
         return `<tr><td><strong>${esc(number)}</strong>${isUser?'<div style="font-size:9px;color:#60a5fa;margin-top:3px">ABERTA PELO FUNCIONÁRIO</div>':''}</td><td>${esc(o.machine||o.equipment||'-')}</td><td>${esc(o.sector||'-')}</td><td>${esc(o.active_employee||o.responsible||o.requester_name||'-')}</td><td><span class="priority ${esc(priorityClassName)}">${esc(o.priority||'MODERADA')}</span></td><td><span class="status ${esc(statusClassName)}">${esc(status)}</span></td><td>${fmtSeconds(seconds)}</td><td style="min-width:180px;white-space:nowrap">${actions}</td></tr>`;
       }).join('')||'<tr><td colspan="7">Nenhuma O.S. encontrada.</td></tr>';
