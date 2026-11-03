@@ -3262,6 +3262,8 @@ button{min-height:44px}
 }
 @media(prefers-reduced-motion:reduce){#loginScreen.os-login-modern *,#loginScreen.os-login-modern *:before,#loginScreen.os-login-modern *:after{animation:none!important;transition:none!important}}
 </style>
+
+
 </head>
 
 <body>
@@ -8855,8 +8857,10 @@ window.finishOS=async function(osId){
         return false;
       }
 
-      const total=Math.floor((b-a)/1000);
-      if(total<0){alert('O tempo total não pode ser negativo.');return false;}
+      /* Preserva o tempo já acumulado em períodos anteriores de execução. */
+      const previousTotal=Math.max(0,Number(order.total_service_seconds||0));
+      const total=previousTotal+Math.floor((b-a)/1000);
+      if(total<previousTotal){alert('O tempo total não pode ser negativo.');return false;}
 
       const startIso=new Date(start).toISOString();
       const finishIso=new Date(finish).toISOString();
@@ -10746,13 +10750,90 @@ window.pcmEmergencyStopUserOS=async function(id){
 window.pcmOpenUserOSRequest=async function(){if(!currentUser||isAdmin){alert('Esta função é para usuários funcionários.');return;}hideViews(view());await userLoad();};
 window.pcmOpenAdminUserOS=adminLoad;
 function formatUserOSDuration(value){const n=Math.max(0,Number(value)||0);return String(Math.floor(n/3600)).padStart(2,'0')+':'+String(Math.floor(n%3600/60)).padStart(2,'0')+':'+String(Math.floor(n%60)).padStart(2,'0');}
-async function renderUserOSHistory(id){const host=$('uoh-'+id);if(!host)return;try{const r=await db.from('os_user_request_execution_history').select('*').eq('request_id',String(id)).order('created_at',{ascending:false}).limit(20);if(r.error)throw r.error;host.innerHTML=(r.data||[]).length?(r.data||[]).map(h=>`<div style="padding:5px 0;border-top:1px solid #e5e7eb"><b>${esc(h.action||'ATUALIZAÇÃO')}</b> — ${esc(h.created_at?new Date(h.created_at).toLocaleString('pt-BR'):'-')}<br><small>${esc(h.employee||'-')}${h.duration_seconds!=null?' • '+esc(formatUserOSDuration(h.duration_seconds)):''}${h.reason?' • '+esc(h.reason):''}</small></div>`).join(''):'<small>Sem eventos registrados.</small>';}catch(e){console.error('Histórico da solicitação:',e);host.textContent='Histórico indisponível. Verifique a tabela os_user_request_execution_history no Supabase.';}}
+async function renderUserOSHistory(id){
+ const host=$('uoh-'+id);if(!host)return;
+ const dateTime=value=>value?new Date(value).toLocaleString('pt-BR'):'—';
+ try{
+  const r=await db.from('os_user_request_execution_history').select('*').eq('request_id',String(id)).order('created_at',{ascending:false}).limit(100);
+  if(r.error)throw r.error;
+  const rows=r.data||[];
+  if(!rows.length){host.innerHTML='<div class="pcm-history-empty">Nenhum evento de execução registrado.</div>';return;}
+  host.innerHTML=`<div class="pcm-history-table-wrap"><table class="pcm-history-table"><thead><tr><th>Data do registro</th><th>Etapa</th><th>Responsável</th><th>Início</th><th>Fim</th><th>Duração</th><th>Observação</th></tr></thead><tbody>${rows.map(h=>`<tr><td>${esc(dateTime(h.created_at))}</td><td><b>${esc(h.action||'ATUALIZAÇÃO')}</b></td><td>${esc(h.employee||'—')}</td><td>${esc(dateTime(h.started_at))}</td><td>${esc(dateTime(h.ended_at))}</td><td>${h.duration_seconds!=null?esc(formatUserOSDuration(h.duration_seconds)):'—'}</td><td>${esc(h.reason||'—')}</td></tr>`).join('')}</tbody></table></div>`;
+ }catch(e){console.error('Histórico da solicitação:',e);host.innerHTML='<div class="pcm-history-empty">Histórico indisponível. Verifique a tabela os_user_request_execution_history no Supabase.</div>';}
+}
 async function userRequestOwned(id){if(!currentUser||isAdmin)throw new Error('Entre como funcionário para executar esta solicitação.');const r=await db.from(TABLE).select('*').eq('id',id).single();if(r.error)throw r.error;const o=r.data;if(String(o.requester_name)!==String(currentUser))throw new Error('Você só pode executar solicitações abertas por você.');if(['FINALIZADA','CANCELADA'].includes(cleanStatus(o.status)))throw new Error('Esta solicitação já foi encerrada.');return o;}
 async function addUserOSHistory(o,action,details={}){const r=await db.from('os_user_request_execution_history').insert({request_id:String(o.id),employee:String(currentUser),action,reason:details.reason||null,started_at:details.started_at||null,ended_at:details.ended_at||null,duration_seconds:details.duration_seconds??null});if(r.error)throw r.error;}
 window.pcmStartUserOS=async function(id){try{const o=await userRequestOwned(id);if(cleanStatus(o.status)!=='ABERTA')throw new Error('Somente uma solicitação ABERTA pode ser iniciada.');const now=new Date().toISOString();const up=await db.from(TABLE).update({status:'EM PRODUÇÃO',started_at:now,active_employee:String(currentUser),paused_at:null}).eq('id',id).eq('status','ABERTA');if(up.error)throw up.error;await addUserOSHistory(o,'INÍCIO DA EXECUÇÃO',{started_at:now});toast('Execução iniciada. Redirecionando para Minhas O.S.');await renderMine();if(typeof window.navigateTo==='function')window.navigateTo('view-employee',document.querySelector('#employeeMenu .nav-btn'));setTimeout(()=>document.getElementById('user-os-card-'+String(id).replace(/[^a-zA-Z0-9_-]/g,''))?.scrollIntoView({behavior:'smooth',block:'center'}),150);}catch(e){console.error(e);alert('Não foi possível iniciar a solicitação: '+(e.message||''));}};
 window.pcmPauseUserOS=async function(id){try{const o=await userRequestOwned(id);if(cleanStatus(o.status)!=='EM PRODUÇÃO'||String(o.active_employee||o.requester_name)!==String(currentUser))throw new Error('Esta solicitação não está em execução com você.');const reason=prompt('Informe o motivo da pausa:');if(reason===null)return;if(!reason.trim())throw new Error('Informe o motivo da pausa.');const now=new Date().toISOString();const elapsed=o.started_at?Math.max(0,Math.floor((Date.now()-new Date(o.started_at).getTime())/1000)):0;const total=Number(o.total_service_seconds||0)+elapsed;const up=await db.from(TABLE).update({status:'PAUSADA',started_at:null,paused_at:now,active_employee:null,pause_reason:reason.trim(),total_service_seconds:total}).eq('id',id).eq('status','EM PRODUÇÃO');if(up.error)throw up.error;await addUserOSHistory(o,'PAUSADA',{reason:reason.trim(),started_at:o.started_at,ended_at:now,duration_seconds:elapsed});toast('Solicitação pausada; tempo trabalhado e motivo registrados.');await renderMine();}catch(e){console.error(e);alert('Não foi possível pausar a solicitação: '+(e.message||''));}};
 window.pcmResumeUserOS=async function(id){try{const o=await userRequestOwned(id);if(cleanStatus(o.status)!=='PAUSADA')throw new Error('Somente uma solicitação PAUSADA pode ser retomada.');const now=new Date().toISOString();const up=await db.from(TABLE).update({status:'EM PRODUÇÃO',started_at:now,active_employee:String(currentUser),paused_at:null}).eq('id',id).eq('status','PAUSADA');if(up.error)throw up.error;await addUserOSHistory(o,'RETOMADA DA EXECUÇÃO',{started_at:now,reason:o.pause_reason||null});toast('Execução retomada e novo horário registrado.');await renderMine();}catch(e){console.error(e);alert('Não foi possível retomar a solicitação: '+(e.message||''));}};
-window.pcmFinishUserOS=async function(id){try{const o=await userRequestOwned(id);if(cleanStatus(o.status)!=='EM PRODUÇÃO'||String(o.active_employee||o.requester_name)!==String(currentUser))throw new Error('Esta solicitação não está em execução com você.');const now=new Date().toISOString();const elapsed=o.started_at?Math.max(0,Math.floor((Date.now()-new Date(o.started_at).getTime())/1000)):0;const total=Number(o.total_service_seconds||0)+elapsed;const up=await db.from(TABLE).update({status:'FINALIZADA',finished_at:now,started_at:null,active_employee:null,paused_at:null,total_service_seconds:total}).eq('id',id).eq('status','EM PRODUÇÃO');if(up.error)throw up.error;await addUserOSHistory(o,'FINALIZADA',{started_at:o.started_at,ended_at:now,duration_seconds:elapsed});toast('Solicitação finalizada. Tempo total registrado: '+formatUserOSDuration(total));await renderMine();}catch(e){console.error(e);alert('Não foi possível finalizar a solicitação: '+(e.message||''));}};
+window.pcmFinishUserOS=async function(id){
+ try{
+  const o=await userRequestOwned(id);
+  if(cleanStatus(o.status)!=='EM PRODUÇÃO'||String(o.active_employee||o.requester_name)!==String(currentUser)){
+   throw new Error('Esta solicitação não está em execução com você.');
+  }
+  const base=Math.max(0,Number(o.total_service_seconds||0));
+  const localValue=(value)=>{
+   const d=value?new Date(value):new Date();
+   if(!Number.isFinite(d.getTime()))return '';
+   const pad=n=>String(n).padStart(2,'0');
+   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const fmtDate=value=>value?new Date(value).toLocaleString('pt-BR'):'—';
+  const dur=value=>{
+   const n=Math.max(0,Number(value)||0);
+   return String(Math.floor(n/3600)).padStart(2,'0')+':'+String(Math.floor(n%3600/60)).padStart(2,'0')+':'+String(Math.floor(n%60)).padStart(2,'0');
+  };
+  const initialEnd=new Date();
+  const initialElapsed=o.started_at?Math.max(0,Math.floor((initialEnd.getTime()-new Date(o.started_at).getTime())/1000)):0;
+  const modalFields=`
+   <div class="factory-note">Confira o período e o resumo antes de concluir. O tempo já acumulado nas etapas anteriores será preservado.</div>
+   <div class="pcm-finish-summary-grid">
+    <div class="pcm-finish-summary-item"><small>Solicitação</small><b>${esc(o.official_os_number?'O.S. '+o.official_os_number:'SEM Nº WK')}</b></div>
+    <div class="pcm-finish-summary-item"><small>Equipamento</small><b>${esc(o.equipment||'—')}</b></div>
+    <div class="pcm-finish-summary-item"><small>Responsável</small><b>${esc(o.active_employee||o.requester_name||currentUser||'—')}</b></div>
+    <div class="pcm-finish-summary-item"><small>Tempo acumulado anterior</small><b>${dur(base)}</b></div>
+   </div>
+   <label for="pcmUserFinishStart">Início deste período</label>
+   <input id="pcmUserFinishStart" type="datetime-local" value="${localValue(o.started_at)}" required>
+   <label for="pcmUserFinishEnd">Fim do serviço</label>
+   <input id="pcmUserFinishEnd" type="datetime-local" value="${localValue(initialEnd.toISOString())}" required>
+   <div class="pcm-finish-total-box"><small>Tempo total previsto</small><strong id="pcmUserFinishTotal">${dur(base+initialElapsed)}</strong><small>HH:MM:SS · inclui o tempo acumulado anteriormente</small></div>
+  `;
+  const modalEl=window.modal('pcmFinishUserOSModal','Finalizar O.S.','Revise o resumo do tempo trabalhado.',modalFields,'CONFIRMAR FINALIZAÇÃO',async el=>{
+   const startValue=el.querySelector('#pcmUserFinishStart').value;
+   const endValue=el.querySelector('#pcmUserFinishEnd').value;
+   if(!startValue||!endValue){alert('Informe o início e o fim do serviço.');return false;}
+   const a=new Date(startValue).getTime(),b=new Date(endValue).getTime();
+   if(!Number.isFinite(a)||!Number.isFinite(b)||b<a){alert('Confira os horários de início e fim.');return false;}
+   const elapsed=Math.floor((b-a)/1000);
+   const total=base+elapsed;
+   const startIso=new Date(startValue).toISOString();
+   const finishIso=new Date(endValue).toISOString();
+   const up=await db.from(TABLE).update({status:'FINALIZADA',finished_at:finishIso,started_at:null,active_employee:null,paused_at:null,total_service_seconds:total}).eq('id',id).eq('status','EM PRODUÇÃO');
+   if(up.error)throw up.error;
+   let historySaved=true;
+   try{
+    await addUserOSHistory(o,'FINALIZADA',{started_at:startIso,ended_at:finishIso,duration_seconds:elapsed});
+   }catch(historyError){
+    historySaved=false;
+    console.error('O.S. finalizada, mas houve falha ao gravar o histórico:',historyError);
+   }
+   try{await renderMine();}catch(refreshError){console.error('Falha ao atualizar Minhas O.S. após finalizar:',refreshError);}
+   if(historySaved)toast('O.S. finalizada. Tempo total: '+dur(total));
+   else alert('A O.S. foi finalizada e o tempo foi salvo, mas o histórico não foi registrado. Avise o PCM para conferência.');
+   return true;
+  });
+  const updatePreview=()=>{
+   const a=new Date(modalEl.querySelector('#pcmUserFinishStart').value).getTime();
+   const b=new Date(modalEl.querySelector('#pcmUserFinishEnd').value).getTime();
+   const target=modalEl.querySelector('#pcmUserFinishTotal');
+   if(target)target.textContent=Number.isFinite(a)&&Number.isFinite(b)&&b>=a?dur(base+Math.floor((b-a)/1000)):'Verifique os horários';
+  };
+  modalEl.querySelector('#pcmUserFinishStart').addEventListener('input',updatePreview);
+  modalEl.querySelector('#pcmUserFinishEnd').addEventListener('input',updatePreview);
+ }catch(e){console.error(e);alert('Não foi possível finalizar a solicitação: '+(e.message||''));}
+};
 const oldNavigate=window.navigateTo;
 window.navigateTo=function(id,button){if(id==='view-user-os-request'){window.pcmOpenUserOSRequest();return;}if(id==='view-admin-user-os'){window.pcmOpenAdminUserOS();return;}return oldNavigate?oldNavigate(id,button):undefined;};
 const oldRefresh=window.refreshFactoryNavigation;
@@ -11080,5 +11161,22 @@ if(typeof pcmOriginalRenderActiveJobs==='function'&&!pcmOriginalRenderActiveJobs
 })();
 </script>
 
+<style id="pcm-os-execution-unified-v14">
+/* v14: padronização localizada da finalização e do histórico; sem alterar as tabelas existentes. */
+.pcm-finish-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.pcm-finish-summary-item{min-width:0;padding:10px 12px;border:1px solid #334155;border-radius:9px;background:rgba(15,23,42,.55)}
+.pcm-finish-summary-item small,.pcm-finish-total-box small{display:block;color:#94a3b8;font-size:10px;margin-bottom:5px}
+.pcm-finish-summary-item b{display:block;color:#f8fafc;font-size:12px;overflow-wrap:anywhere}
+.pcm-finish-total-box{margin:12px 0;padding:14px;border:1px solid #2563eb;border-radius:10px;background:rgba(29,78,216,.12)}
+.pcm-finish-total-box strong{display:block;font-size:27px;line-height:1.25;color:#f8fafc;font-variant-numeric:tabular-nums;margin:3px 0 6px}
+.pcm-history-table-wrap{width:100%;overflow-x:auto;border:1px solid #334155;border-radius:9px;margin-top:8px}
+.pcm-history-table{width:100%;min-width:760px;border-collapse:collapse;font-size:11px;color:inherit}
+.pcm-history-table th,.pcm-history-table td{padding:9px 10px;text-align:left;vertical-align:top;border-bottom:1px solid #334155}
+.pcm-history-table th{background:rgba(51,65,85,.55);font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.pcm-history-table tbody tr:last-child td{border-bottom:0}
+.pcm-history-table tbody tr:hover{background:rgba(148,163,184,.06)}
+.pcm-history-empty{padding:10px 12px;color:#94a3b8;font-size:12px}
+@media(max-width:600px){.pcm-finish-summary-grid{grid-template-columns:1fr 1fr}.pcm-finish-summary-item{padding:8px}.pcm-finish-total-box strong{font-size:24px}}
+</style>
 </body>
 </html>
