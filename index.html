@@ -4292,6 +4292,25 @@ async function login(){
         return;
     }
 
+    // Autentica também o acesso à IA no servidor. Se a IA ainda não estiver
+    // configurada, o PCM continua funcionando normalmente.
+    window.PCM_AI_TOKEN = null;
+    try{
+        const aiAuthResponse = await fetch("/api/ia-auth", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({name: foundUser.name, pin: String(pin)})
+        });
+        const aiAuthData = await aiAuthResponse.json().catch(()=>({}));
+        if(aiAuthResponse.ok && aiAuthData.token){
+            window.PCM_AI_TOKEN = aiAuthData.token;
+        }else{
+            console.warn("[PCM IA] Autenticação da IA indisponível:", aiAuthData.error || aiAuthResponse.status);
+        }
+    }catch(aiAuthError){
+        console.warn("[PCM IA] Backend ainda não configurado ou indisponível:", aiAuthError);
+    }
+
     error.classList.add("hidden");
     currentUser = foundUser.name;
     isAdmin = foundUser.role === "admin" || foundUser.name === "PCM / Administrador";
@@ -4368,6 +4387,7 @@ function logout(){
 
     currentUser = null;
     isAdmin = false;
+    window.PCM_AI_TOKEN = null;
 
     if(timerInterval){
         clearInterval(timerInterval);
@@ -7149,6 +7169,166 @@ async function exportHistoryPDF(){
 
 
 
+
+
+<style id="pcm-ai-assistant-styles">
+#pcmAiLauncher{position:fixed;right:22px;bottom:22px;z-index:99980;display:none}
+#pcmAiLauncher button{border:0;border-radius:999px;padding:13px 18px;background:#176b4b;color:#fff;font-weight:800;box-shadow:0 8px 28px #0005;cursor:pointer;display:flex;align-items:center;gap:9px;font-size:14px}
+#pcmAiWindow{position:fixed;right:22px;bottom:82px;width:min(430px,calc(100vw - 24px));height:min(620px,calc(100dvh - 110px));z-index:99990;background:#0f172a;color:#e5e7eb;border:1px solid #334155;border-radius:18px;box-shadow:0 18px 60px #0008;display:none;overflow:hidden;font-family:Inter,Arial,sans-serif}
+#pcmAiWindow.open{display:flex;flex-direction:column}
+#pcmAiHeader{padding:15px 16px;background:#142b27;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px}
+#pcmAiHeader .pcm-ai-mark{width:38px;height:38px;border-radius:12px;background:#176b4b;display:grid;place-items:center;font-size:20px}
+#pcmAiHeader strong{display:block;font-size:14px}
+#pcmAiHeader small{display:block;color:#a7c4b8;font-size:11px;margin-top:3px}
+#pcmAiClose{margin-left:auto;background:transparent;color:#e5e7eb;border:0;font-size:24px;cursor:pointer}
+#pcmAiMessages{padding:14px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:12px}
+.pcm-ai-msg{max-width:92%;padding:11px 12px;border-radius:13px;font-size:13px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.pcm-ai-msg.user{align-self:flex-end;background:#176b4b;color:white;border-bottom-right-radius:4px}
+.pcm-ai-msg.assistant{align-self:flex-start;background:#1e293b;border:1px solid #334155;border-bottom-left-radius:4px}
+.pcm-ai-msg.system{align-self:center;background:#332b18;color:#f4d58d;font-size:11px;max-width:100%;text-align:center}
+.pcm-ai-sources{margin-top:10px;padding-top:8px;border-top:1px solid #475569;font-size:11px}
+.pcm-ai-sources a{display:block;color:#86c5ff;text-decoration:underline;margin-top:5px;overflow-wrap:anywhere}
+#pcmAiComposer{padding:12px;border-top:1px solid #334155;background:#111c30;display:flex;gap:8px;align-items:flex-end}
+#pcmAiQuestion{flex:1;min-width:0;resize:none;max-height:110px;min-height:42px;border:1px solid #475569;border-radius:12px;padding:10px;background:#0b1220;color:#f8fafc;font:13px Inter,Arial,sans-serif;outline:none}
+#pcmAiSend{border:0;border-radius:11px;background:#176b4b;color:white;padding:12px 14px;font-weight:800;cursor:pointer}
+#pcmAiSend:disabled{opacity:.5;cursor:not-allowed}
+#pcmAiHint{padding:0 14px 10px;background:#111c30;color:#94a3b8;font-size:10px;line-height:1.4}
+@media(max-width:600px){#pcmAiLauncher{right:12px;bottom:12px}#pcmAiWindow{right:8px;bottom:72px;width:calc(100vw - 16px);height:min(72dvh,620px)}}
+</style>
+
+<div id="pcmAiLauncher">
+  <button type="button" id="pcmAiOpenBtn" aria-label="Abrir Assistente IA do PCM">
+    <span aria-hidden="true">✦</span> Assistente IA
+  </button>
+</div>
+
+<section id="pcmAiWindow" aria-label="Assistente IA do PCM" aria-live="polite">
+  <header id="pcmAiHeader">
+    <div class="pcm-ai-mark" aria-hidden="true">✦</div>
+    <div>
+      <strong>IA DO PCM</strong>
+      <small>Pesquisa técnica para manutenção</small>
+    </div>
+    <button type="button" id="pcmAiClose" aria-label="Fechar">×</button>
+  </header>
+  <div id="pcmAiMessages">
+    <div class="pcm-ai-msg assistant">Olá! Sou a assistente técnica do PCM. Posso ajudar a pesquisar procedimentos, componentes, falhas e serviços de manutenção. O que você precisa encontrar?</div>
+  </div>
+  <form id="pcmAiComposer">
+    <textarea id="pcmAiQuestion" rows="1" maxlength="1500" placeholder="Ex.: como verificar folga em um rolamento?"></textarea>
+    <button id="pcmAiSend" type="submit">Enviar</button>
+  </form>
+  <div id="pcmAiHint">Confira sempre o manual do fabricante e os procedimentos de segurança da AB antes de executar um serviço.</div>
+</section>
+
+<script id="pcm-ai-assistant-script">
+(function(){
+  const launcher = document.getElementById("pcmAiLauncher");
+  const openBtn = document.getElementById("pcmAiOpenBtn");
+  const win = document.getElementById("pcmAiWindow");
+  const closeBtn = document.getElementById("pcmAiClose");
+  const messagesEl = document.getElementById("pcmAiMessages");
+  const form = document.getElementById("pcmAiComposer");
+  const questionEl = document.getElementById("pcmAiQuestion");
+  const sendBtn = document.getElementById("pcmAiSend");
+  const app = document.getElementById("app");
+  const conversation = [];
+
+  function updateVisibility(){
+    const loggedIn = app && !app.classList.contains("hidden");
+    launcher.style.display = loggedIn ? "block" : "none";
+    if(!loggedIn) win.classList.remove("open");
+  }
+  if(app){
+    new MutationObserver(updateVisibility).observe(app,{attributes:true,attributeFilter:["class"]});
+    updateVisibility();
+  }
+
+  function addMessage(role,text,sources){
+    const item = document.createElement("div");
+    item.className = "pcm-ai-msg " + role;
+    item.textContent = text;
+    if(Array.isArray(sources) && sources.length){
+      const sourceBox = document.createElement("div");
+      sourceBox.className = "pcm-ai-sources";
+      const title = document.createElement("strong");
+      title.textContent = "Fontes consultadas";
+      sourceBox.appendChild(title);
+      sources.slice(0,6).forEach(source=>{
+        if(!source || !source.url) return;
+        try{
+          const url = new URL(source.url);
+          if(!["https:","http:"].includes(url.protocol)) return;
+          const link = document.createElement("a");
+          link.href = url.href;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = source.title || url.hostname;
+          sourceBox.appendChild(link);
+        }catch(e){}
+      });
+      item.appendChild(sourceBox);
+    }
+    messagesEl.appendChild(item);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  openBtn.addEventListener("click",()=>{
+    if(!window.PCM_AI_TOKEN){
+      addMessage("system","A IA ainda não está conectada. O PCM continua funcionando; peça ao administrador para configurar o serviço de IA no Vercel.");
+    }
+    win.classList.add("open");
+    questionEl.focus();
+  });
+  closeBtn.addEventListener("click",()=>win.classList.remove("open"));
+
+  form.addEventListener("submit",async event=>{
+    event.preventDefault();
+    const question = questionEl.value.trim();
+    if(!question || sendBtn.disabled) return;
+    if(!window.PCM_AI_TOKEN){
+      addMessage("system","Não foi possível autenticar a IA. Verifique se as variáveis do serviço foram configuradas no Vercel e entre novamente no sistema.");
+      return;
+    }
+
+    addMessage("user",question);
+    conversation.push({role:"user",content:question});
+    questionEl.value = "";
+    sendBtn.disabled = true;
+    sendBtn.textContent = "…";
+    const waiting = document.createElement("div");
+    waiting.className = "pcm-ai-msg assistant";
+    waiting.textContent = "Pesquisando informações técnicas…";
+    messagesEl.appendChild(waiting);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    try{
+      const response = await fetch("/api/ia",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":"Bearer " + window.PCM_AI_TOKEN
+        },
+        body:JSON.stringify({messages:conversation.slice(-10)})
+      });
+      const data = await response.json().catch(()=>({}));
+      waiting.remove();
+      if(!response.ok) throw new Error(data.error || "Falha ao consultar a IA ("+response.status+").");
+      const answer = String(data.answer || "Não consegui gerar uma resposta.");
+      conversation.push({role:"assistant",content:answer});
+      addMessage("assistant",answer,data.sources || []);
+    }catch(error){
+      waiting.remove();
+      addMessage("system",error.message || "Não foi possível consultar a IA. Tente novamente.");
+      conversation.pop();
+    }finally{
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Enviar";
+      questionEl.focus();
+    }
+  });
+})();
+</script>
 
 </body></html>`);
         popup.document.close();
